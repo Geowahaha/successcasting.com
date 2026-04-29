@@ -1,0 +1,1674 @@
+[
+  {
+    "updatedAt": "2026-04-29T04:56:03.637Z",
+    "createdAt": "2026-04-29T04:56:03.637Z",
+    "id": "xXN3Lbtu9JTLFJBf",
+    "name": "🏭 SuccessCasting Factory Automation Hub - Marketplace Backbone",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## 🔔 WEBHOOK RECEIVERS\nรับ Order/Event จาก 4 Platforms\nShopee · Lazada · TikTok · Facebook",
+          "height": 320,
+          "width": 380,
+          "color": 4
+        },
+        "id": "73007071-55d8-429c-b106-b50787c5da28",
+        "name": "Webhook Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "shopee/orders",
+          "responseMode": "responseNode",
+          "options": {
+            "rawBody": true
+          }
+        },
+        "id": "38451537-4b47-4a3e-b87d-674f26d073da",
+        "name": "Shopee Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          64,
+          112
+        ],
+        "webhookId": "shopee-orders-wh"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "lazada/orders",
+          "responseMode": "responseNode",
+          "options": {
+            "rawBody": true
+          }
+        },
+        "id": "42f9b486-b848-4e15-a338-3c4126b3cc8c",
+        "name": "Lazada Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          64,
+          304
+        ],
+        "webhookId": "lazada-orders-wh"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "tiktok/orders",
+          "responseMode": "responseNode",
+          "options": {
+            "rawBody": true
+          }
+        },
+        "id": "d51e790c-8ea2-479b-9231-df96f1b46aae",
+        "name": "TikTok Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          64,
+          512
+        ],
+        "webhookId": "tiktok-orders-wh"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "facebook/orders",
+          "responseMode": "responseNode",
+          "options": {
+            "rawBody": true
+          }
+        },
+        "id": "bcf24c5b-0949-4211-8403-6f3c31ee6ace",
+        "name": "Facebook Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          64,
+          704
+        ],
+        "webhookId": "facebook-orders-wh"
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// === SUCCESSCASTING WEBHOOK SIGNATURE VERIFICATION ===\nconst crypto = require('crypto');\nconst headers = $input.item.json.headers || {};\nconst platform = $input.item.json.platform || 'unknown';\nconst rawBody = $input.item.json.body || $input.item.json.payload || {};\nconst allowUnsigned = String($env.FACTORY_WEBHOOK_ALLOW_UNSIGNED || 'false').toLowerCase() === 'true';\n\nfunction h(name) { return headers[name] || headers[name.toLowerCase()] || headers[name.toUpperCase()]; }\nfunction hmac(secret, body, prefix='') {\n  return prefix + crypto.createHmac('sha256', secret).update(typeof body === 'string' ? body : JSON.stringify(body)).digest('hex');\n}\nconst secretMap = {\n  shopee: $env.SHOPEE_APP_SECRET || '',\n  lazada: $env.LAZADA_APP_SECRET || '',\n  tiktok: $env.TIKTOK_APP_SECRET || '',\n  facebook: $env.FB_APP_SECRET || ''\n};\nconst secret = secretMap[platform] || '';\nlet verified = false;\nlet reason = 'missing_signature';\n\nif (!secret && allowUnsigned) {\n  verified = true;\n  reason = 'unsigned_allowed_bootstrap_mode';\n} else if (platform === 'shopee') {\n  const sig = h('x-shopee-signature');\n  verified = !!sig && sig === hmac(secret, rawBody);\n  reason = verified ? 'hmac_ok' : 'hmac_failed';\n} else if (platform === 'facebook') {\n  const sig = h('x-hub-signature-256');\n  verified = !!sig && sig === hmac(secret, rawBody, 'sha256=');\n  reason = verified ? 'hmac_ok' : 'hmac_failed';\n} else if (platform === 'lazada') {\n  verified = !!h('x-lazada-signature') || (!!secret && !!h('authorization'));\n  reason = verified ? 'signature_present' : 'missing_signature';\n} else if (platform === 'tiktok') {\n  verified = !!h('x-tts-signature');\n  reason = verified ? 'signature_present' : 'missing_signature';\n} else {\n  verified = allowUnsigned;\n  reason = verified ? 'unknown_platform_allowed' : 'unknown_platform';\n}\n\nreturn { json: { platform, verified, verify_reason: reason, payload: rawBody, receivedAt: new Date().toISOString(), headers } };"
+        },
+        "id": "46c7d388-af79-43e9-9c25-0ec6c55aec6d",
+        "name": "Verify Signature",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          512,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "verify-check",
+                "leftValue": "={{ $json.verified }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "ad7c76ac-a809-47b3-87cc-df70c26bbba9",
+        "name": "Signature Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          720,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## ❌ REJECTED\nWebhook signature ไม่ถูกต้อง\nบันทึกเป็น suspicious activity",
+          "height": 200,
+          "width": 280,
+          "color": 7
+        },
+        "id": "77f368b3-e4fb-44ba-a17b-cfdb83d621d6",
+        "name": "Rejected Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          960,
+          608
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/webhook/security-log",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "type",
+                "value": "invalid_signature"
+              },
+              {
+                "name": "platform",
+                "value": "={{ $json.platform }}"
+              },
+              {
+                "name": "timestamp",
+                "value": "={{ $json.receivedAt }}"
+              },
+              {
+                "name": "ip",
+                "value": "={{ $json.headers['x-forwarded-for'] || 'unknown' }}"
+              }
+            ]
+          },
+          "options": {
+            "timeout": 5000
+          }
+        },
+        "id": "159728c4-d383-4b2b-8218-0f0ec66800d1",
+        "name": "Log Suspicious Activity",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          960,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\"status\": \"rejected\", \"reason\": \"invalid_signature\"}",
+          "options": {
+            "responseCode": 403
+          }
+        },
+        "id": "4d475e1a-d4eb-41f4-931f-0bdf151c665c",
+        "name": "Respond 403",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1200,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## ⚙️ ORDER PROCESSING PIPELINE\nNormalize → Validate → Save → Stock Update → Notify",
+          "height": 320,
+          "width": 500,
+          "color": 6
+        },
+        "id": "d9bd4b16-973d-460b-b902-f27e409c1c3c",
+        "name": "Processing Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          944,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// === NORMALIZE ORDER DATA ===\n// Convert platform-specific order format to unified schema\nconst platform = $input.item.json.platform;\nconst payload = $input.item.json.payload;\n\nconst normalizers = {\n  shopee: (data) => ({\n    platform_order_id: data.order_sn || data.order_id,\n    platform: 'shopee',\n    status: data.order_status || 'new',\n    customer: {\n      name: data.buyer_username || '',\n      address: data.shipping_address || {}\n    },\n    items: (data.item_list || []).map(item => ({\n      sku: item.model_sku || item.item_sku,\n      name: item.model_name || item.item_name,\n      quantity: item.model_quantity_purchased || 1,\n      price: (item.model_original_price || 0) / 100,\n      platform_price: (item.model_discounted_price || item.model_original_price || 0) / 100\n    })),\n    total_amount: (data.total_amount || 0) / 100,\n    currency: data.currency || 'THB',\n    created_at: data.create_time ? new Date(data.create_time * 1000).toISOString() : new Date().toISOString()\n  }),\n\n  lazada: (data) => ({\n    platform_order_id: data.order_id || data.order_number,\n    platform: 'lazada',\n    status: data.statuses ? data.statuses[0] : 'new',\n    customer: {\n      name: data.address_shipping?.first_name + ' ' + (data.address_shipping?.last_name || ''),\n      address: data.address_shipping || {}\n    },\n    items: (data.order_items || data.items || []).map(item => ({\n      sku: item.sku || item.seller_sku,\n      name: item.name,\n      quantity: item.quantity || 1,\n      price: parseFloat(item.item_price || 0),\n      platform_price: parseFloat(item.paid_price || item.item_price || 0)\n    })),\n    total_amount: parseFloat(data.price || data.grand_total || 0),\n    currency: data.currency || 'THB',\n    created_at: data.created_at || new Date().toISOString()\n  }),\n\n  tiktok: (data) => ({\n    platform_order_id: data.order_id,\n    platform: 'tiktok',\n    status: data.order_status || 'new',\n    customer: {\n      name: data.buyer_email || '',\n      address: data.shipping_address || {}\n    },\n    items: (data.order_line_list || []).map(item => ({\n      sku: item.seller_sku || item.product_id,\n      name: item.product_name,\n      quantity: item.quantity || 1,\n      price: parseFloat(item.original_price || 0),\n      platform_price: parseFloat(item.sale_price || item.original_price || 0)\n    })),\n    total_amount: parseFloat(data.payment?.total_amount || data.total_amount || 0),\n    currency: data.currency || 'THB',\n    created_at: data.create_time ? new Date(parseInt(data.create_time) * 1000).toISOString() : new Date().toISOString()\n  }),\n\n  facebook: (data) => ({\n    platform_order_id: data.id || data.order_id,\n    platform: 'facebook',\n    status: data.order_status || data.status || 'new',\n    customer: {\n      name: data.buyer?.name || '',\n      address: data.shipping_address || {}\n    },\n    items: (data.items || data.line_items || []).map(item => ({\n      sku: item.retailer_id || item.product_id,\n      name: item.name || item.title,\n      quantity: item.quantity || 1,\n      price: parseFloat(item.price?.amount || item.unit_price || 0),\n      platform_price: parseFloat(item.price?.amount || item.unit_price || 0)\n    })),\n    total_amount: parseFloat(data.total?.amount || data.total_price || 0),\n    currency: data.total?.currency || data.currency || 'THB',\n    created_at: data.created_time || new Date().toISOString()\n  })\n};\n\nconst normalize = normalizers[platform];\nif (!normalize) {\n  throw new Error(`Unsupported platform: ${platform}`);\n}\n\nconst order = normalize(payload);\n\n// Validation\nconst errors = [];\nif (!order.platform_order_id) errors.push('Missing order ID');\nif (!order.items || order.items.length === 0) errors.push('No items in order');\nif (order.total_amount <= 0) errors.push('Invalid total amount');\n\nreturn {\n  json: {\n    ...order,\n    _validation: {\n      valid: errors.length === 0,\n      errors,\n      normalized_at: new Date().toISOString()\n    }\n  }\n};"
+        },
+        "id": "b55ca83c-b1d9-40de-92aa-b4f611b12bbe",
+        "name": "Normalize Order",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          992,
+          208
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "validation-check",
+                "leftValue": "={{ $json._validation.valid }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "4d88236c-2252-4adb-a692-dbaf7a3b22ee",
+        "name": "Order Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1232,
+          208
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/orders",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ platform_order_id: $json.platform_order_id, platform: $json.platform, status: $json.status, customer: $json.customer, items: $json.items, total_amount: $json.total_amount, currency: $json.currency, created_at: $json.created_at }) }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true
+              }
+            },
+            "timeout": 10000
+          }
+        },
+        "id": "4a2684b9-3e0d-45d5-af8a-4f4c06f64345",
+        "name": "Save Order to DB",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1488,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// === STOCK DEDUCTION LOGIC ===\nconst order = $input.item.json;\nconst items = order.items || [];\n\n// Calculate stock to deduct per SKU\nconst deductions = items.map(item => ({\n  sku: item.sku,\n  quantity: item.quantity,\n  platform: order.platform,\n  order_id: order.platform_order_id\n}));\n\nreturn {\n  json: {\n    deductions,\n    platform: order.platform,\n    order_id: order.platform_order_id,\n    total_items: items.reduce((sum, i) => sum + i.quantity, 0),\n    processed_at: new Date().toISOString()\n  }\n};"
+        },
+        "id": "343f19f7-c6df-46f8-8035-5451e03ecf74",
+        "name": "Calculate Stock Deduction",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1744,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/stock/deduct",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.deductions) }}",
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "id": "9abe8c61-a86d-403c-8ef1-f3795c2cfbbc",
+        "name": "Deduct Stock",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2000,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/notifications/line",
+          "sendBody": true,
+          "contentType": "json",
+          "options": {
+            "timeout": 10000
+          },
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ channel: \"line\", message: \"=\\ud83d\\uded2 New Order [{{ $('Normalize Order').item.json.platform.toUpperCase() }}]\\nOrder: {{ $('Normalize Order').item.json.platform_order_id }}\\nItems: {{ $('Calculate Stock Deduction').item.json.total_items }} \\u0e0a\\u0e34\\u0e49\\u0e19\\nTotal: \\u0e3f{{ $('Normalize Order').item.json.total_amount?.toLocaleString() }}\\nTime: {{ $('Normalize Order').item.json.created_at }}\" }) }}"
+        },
+        "id": "6d5bad12-33e2-4def-83cd-3e8f3893a584",
+        "name": "LINE: New Order",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2272,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\"status\": \"ok\", \"order_id\": \"{{ $('Normalize Order').item.json.platform_order_id }}\", \"platform\": \"{{ $('Normalize Order').item.json.platform }}\", \"processed_at\": \"{{ $now.toISO() }}\"}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "id": "99c6ca29-c1bb-457c-acaf-bcf175618ed6",
+        "name": "Respond 200 OK",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          2272,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/notifications/line",
+          "sendBody": true,
+          "contentType": "json",
+          "options": {
+            "timeout": 10000
+          },
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ channel: \"line\", message: \"=\\u26a0\\ufe0f Order Validation Failed\\nPlatform: {{ $json.platform }}\\nOrder: {{ $json.platform_order_id }}\\nErrors: {{ $json._validation.errors.join(', ') }}\" }) }}"
+        },
+        "id": "53044119-030b-4e4f-b842-c3ef4999f514",
+        "name": "LINE: Invalid Order",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1488,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\"status\": \"validation_failed\", \"errors\": {{ JSON.stringify($json._validation.errors) }} }",
+          "options": {
+            "responseCode": 422
+          }
+        },
+        "id": "ceec22c3-f84b-471e-b447-853801509086",
+        "name": "Respond 422",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1744,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## 🔄 STOCK SYNC ENGINE\nซิงค์สต็อกทุก 15 นาที\nShopee · Lazada · TikTok · Facebook",
+          "height": 500,
+          "width": 420,
+          "color": 3
+        },
+        "id": "32fb54ea-e282-4456-ab88-33d7d5348c64",
+        "name": "Stock Sync Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          1008
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 15
+              }
+            ]
+          }
+        },
+        "id": "efdc6cb0-ac0e-4217-a1ee-afb27dbf6859",
+        "name": "Stock Sync (15min)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          64,
+          1104
+        ]
+      },
+      {
+        "parameters": {
+          "url": "http://factory-api:5000/api/products",
+          "options": {
+            "timeout": 15000
+          }
+        },
+        "id": "f035bb70-440d-47fc-9f20-f8019389b001",
+        "name": "Fetch All Products",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          304,
+          1104
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// === STOCK ALLOCATION ENGINE ===\n// Calculate available stock per platform\nconst products = $input.all().map(i => i.json);\nconst SAFETY_STOCK_PERCENT = 0.1;\nconst ALLOCATION = {\n  shopee: 0.35,\n  lazada: 0.30,\n  tiktok: 0.20,\n  facebook: 0.15\n};\n\nconst syncTasks = [];\n\nfor (const product of products) {\n  const stock = product.total_stock || 0;\n  const safetyStock = Math.max(\n    product.safety_stock || 0,\n    Math.floor(stock * SAFETY_STOCK_PERCENT)\n  );\n  const available = Math.max(0, stock - safetyStock);\n\n  for (const [platform, ratio] of Object.entries(ALLOCATION)) {\n    const allocated = Math.floor(available * ratio);\n    syncTasks.push({\n      sku: product.sku,\n      platform,\n      stock_to_sync: allocated,\n      safety_stock: safetyStock,\n      total_stock: stock,\n      sync_time: new Date().toISOString()\n    });\n  }\n}\n\nreturn syncTasks.map(task => ({ json: task }));"
+        },
+        "id": "ea1c2be0-28d8-4a46-aa6e-b34252a9d6d6",
+        "name": "Calculate Allocation",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          544,
+          1104
+        ]
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.platform }}",
+                      "rightValue": "shopee",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": "Shopee"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.platform }}",
+                      "rightValue": "lazada",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": "Lazada"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.platform }}",
+                      "rightValue": "tiktok",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": "TikTok"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.platform }}",
+                      "rightValue": "facebook",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": "Facebook"
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra"
+          }
+        },
+        "id": "29eb248a-af1f-44ca-b604-6963ec27d5ce",
+        "name": "Route by Platform",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3,
+        "position": [
+          784,
+          1104
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/platforms/shopee/stock-sync",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ sku: $json.sku, stock: $json.stock_to_sync, platform: $json.platform }) }}",
+          "options": {
+            "batching": {
+              "batch": {}
+            },
+            "timeout": 15000
+          }
+        },
+        "id": "56fd7b95-c424-420e-a6a1-bc90fbfab894",
+        "name": "Sync Shopee Stock",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1072,
+          912
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/platforms/lazada/stock-sync",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ sku: $json.sku, stock: $json.stock_to_sync, platform: $json.platform }) }}",
+          "options": {
+            "batching": {
+              "batch": {}
+            },
+            "timeout": 15000
+          }
+        },
+        "id": "2b700a5e-55ea-4b71-9923-b9ddf9a798f3",
+        "name": "Sync Lazada Stock",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1072,
+          1072
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/platforms/tiktok/stock-sync",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ sku: $json.sku, stock: $json.stock_to_sync, platform: $json.platform }) }}",
+          "options": {
+            "batching": {
+              "batch": {}
+            },
+            "timeout": 15000
+          }
+        },
+        "id": "94d35f1a-7611-4dd8-80d6-8bbedd7e4a06",
+        "name": "Sync TikTok Stock",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1072,
+          1232
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/platforms/facebook/stock-sync",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ sku: $json.sku, stock: $json.stock_to_sync, platform: $json.platform }) }}",
+          "options": {
+            "batching": {
+              "batch": {}
+            },
+            "timeout": 15000
+          }
+        },
+        "id": "5ae86c40-48f4-4ee2-b5fd-6eb7b58332cd",
+        "name": "Sync Facebook Stock",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1072,
+          1392
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// === AGGREGATE SYNC RESULTS ===\nconst results = $input.all().map(i => i.json);\nconst success = results.filter(r => r.statusCode >= 200 && r.statusCode < 300).length;\nconst failed = results.length - success;\n\nreturn [{\n  json: {\n    total: results.length,\n    success,\n    failed,\n    synced_at: new Date().toISOString(),\n    summary: `${success}/${results.length} SKUs synced`\n  }\n}];"
+        },
+        "id": "622326db-aee4-4dbf-ae58-0f83a4dcf357",
+        "name": "Aggregate Results",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1328,
+          1104
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/notifications/line",
+          "sendBody": true,
+          "contentType": "json",
+          "options": {
+            "timeout": 10000
+          },
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ channel: \"line\", message: \"=\\ud83d\\udd04 Stock Sync Complete\\n\\u2705 Success: {{ $json.success }}\\n\\u274c Failed: {{ $json.failed }}\\n\\ud83d\\udcca Total: {{ $json.total }} SKUs\\n\\ud83d\\udd50 {{ $json.synced_at }}\" }) }}"
+        },
+        "id": "7657f72b-4722-4229-bf91-c58104abb989",
+        "name": "LINE: Sync Report",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1568,
+          1104
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## 🔑 TOKEN MANAGEMENT\nรีเฟรช API Token ทุก Platform\nทุกวัน 02:00 น.",
+          "height": 400,
+          "width": 420,
+          "color": 5
+        },
+        "id": "620deef6-0e2d-43a3-ba69-ff47d4ce5b78",
+        "name": "Token Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          1600
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 2 * * *"
+              }
+            ]
+          }
+        },
+        "id": "d9cb066e-e579-4ae9-bc7d-3f54afeac83a",
+        "name": "Token Refresh (Daily 2AM)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          64,
+          1712
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const platforms = ['shopee','lazada','tiktok','facebook'];\nreturn platforms.map(name => ({ json: { name, platform: name, url: `http://factory-api:5000/api/platforms/${name}/token-refresh`, body: { mode: 'managed-by-factory' } } }));"
+        },
+        "id": "e27e3fe0-753c-43d4-bab7-33947d27d78f",
+        "name": "Prepare Token Requests",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          304,
+          1712
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $json.url }}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.body) }}",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "id": "5b7c5835-74c5-4c42-bbfe-a20e504bd35c",
+        "name": "Refresh Tokens",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          544,
+          1712
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/tokens/update",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ platform: $json.platform, new_token: $json.access_token, new_refresh_token: $json.refresh_token, expires_at: $json.expires_in, updated_at: new Date().toISOString() }) }}",
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "id": "1d42e4cc-36ee-419c-a83f-12db2178ecc7",
+        "name": "Save New Tokens",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          784,
+          1712
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/notifications/line",
+          "sendBody": true,
+          "contentType": "json",
+          "options": {
+            "timeout": 10000
+          },
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ channel: \"line\", message: \"=\\ud83d\\udd11 Token Refresh Complete\\nAll platforms updated successfully\\n\\ud83d\\udd50 {{ new Date().toISOString() }}\" }) }}"
+        },
+        "id": "cd25f686-5145-424c-a9be-06ec6151a061",
+        "name": "LINE: Token OK",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1024,
+          1712
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## 📊 REPORTING\nDaily Report 09:00 · Weekly Report Mon 09:00",
+          "height": 400,
+          "width": 420,
+          "color": 2
+        },
+        "id": "08a7043e-5e36-4ff3-810a-fb1dffc1374c",
+        "name": "Report Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          2208
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 9 * * *"
+              }
+            ]
+          }
+        },
+        "id": "021cc35b-4faf-4974-88af-bae7411ff457",
+        "name": "Daily Report (9AM)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          64,
+          2304
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 9 * * 1"
+              }
+            ]
+          }
+        },
+        "id": "fe1eb599-877c-4732-9b0b-4da98c013750",
+        "name": "Weekly Report (Mon 9AM)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          64,
+          2512
+        ]
+      },
+      {
+        "parameters": {
+          "url": "http://factory-api:5000/api/reports/daily",
+          "options": {
+            "timeout": 15000
+          }
+        },
+        "id": "8abd247f-aefd-4787-93e4-6c11d93bb8c9",
+        "name": "Get Daily Report",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          304,
+          2304
+        ]
+      },
+      {
+        "parameters": {
+          "url": "http://factory-api:5000/api/reports/weekly",
+          "options": {
+            "timeout": 15000
+          }
+        },
+        "id": "14c7490b-669a-473d-b2a1-c3807bcd42d5",
+        "name": "Get Weekly Report",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          304,
+          2512
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// === FORMAT DAILY REPORT ===\nconst data = $input.item.json;\nconst platforms = data.by_platform || {};\n\nlet msg = `📊 Daily Report - ${new Date().toLocaleDateString('th-TH')}`;\nmsg += `\\n${'─'.repeat(28)}`;\nmsg += `\\n🛒 Orders: ${data.total_orders || 0}`;\nmsg += `\\n💰 Revenue: ฿${(data.total_revenue || 0).toLocaleString()}`;\nmsg += `\\n${'─'.repeat(28)}`;\n\nfor (const [platform, info] of Object.entries(platforms)) {\n  const emoji = { shopee: '🟠', lazada: '🔵', tiktok: '⚫', facebook: '🔷' }[platform] || '⚪';\n  msg += `\\n${emoji} ${platform.toUpperCase()}`;\n  msg += `\\n   Orders: ${info.orders || 0} | Revenue: ฿${(info.revenue || 0).toLocaleString()}`;\n}\n\nmsg += `\\n${'─'.repeat(28)}`;\nmsg += `\\n🕐 Generated: ${new Date().toISOString()}`;\n\nreturn [{ json: { message: msg, type: 'daily' } }];"
+        },
+        "id": "4bd16605-c08a-4c2d-a700-46086238c0b6",
+        "name": "Format Daily Report",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          544,
+          2304
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// === FORMAT WEEKLY REPORT ===\nconst data = $input.item.json;\nconst platforms = data.by_platform || {};\n\nlet msg = `📈 Weekly Report`;\nmsg += `\\n${'═'.repeat(28)}`;\nmsg += `\\n🛒 Total Orders: ${data.total_orders || 0}`;\nmsg += `\\n💰 Total Revenue: ฿${(data.total_revenue || 0).toLocaleString()}`;\nmsg += `\\n📦 Avg Order Value: ฿${data.total_orders ? Math.round((data.total_revenue || 0) / data.total_orders).toLocaleString() : 0}`;\nmsg += `\\n${'═'.repeat(28)}`;\n\nfor (const [platform, info] of Object.entries(platforms)) {\n  const emoji = { shopee: '🟠', lazada: '🔵', tiktok: '⚫', facebook: '🔷' }[platform] || '⚪';\n  msg += `\\n${emoji} ${platform.toUpperCase()}`;\n  msg += `\\n   Orders: ${info.orders || 0}`;\n  msg += `\\n   Revenue: ฿${(info.revenue || 0).toLocaleString()}`;\n  msg += `\\n   Top SKU: ${info.top_sku || 'N/A'}`;\n}\n\n// Low stock alerts\nif (data.low_stock && data.low_stock.length > 0) {\n  msg += `\\n\\n⚠️ LOW STOCK ALERTS`;\n  msg += `\\n${'─'.repeat(28)}`;\n  for (const item of data.low_stock) {\n    msg += `\\n🔴 ${item.sku}: ${item.stock} left`;\n  }\n}\n\nmsg += `\\n${'═'.repeat(28)}`;\nmsg += `\\n🕐 Generated: ${new Date().toISOString()}`;\n\nreturn [{ json: { message: msg, type: 'weekly' } }];"
+        },
+        "id": "3f210b2b-7865-42b3-a303-04e76d91ad37",
+        "name": "Format Weekly Report",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          544,
+          2512
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/notifications/line",
+          "sendBody": true,
+          "contentType": "json",
+          "options": {
+            "timeout": 10000
+          },
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ channel: \"line\", message: \"={{ $json.message }}\" }) }}"
+        },
+        "id": "9eda5083-70a3-4c3e-9126-978e4462c802",
+        "name": "LINE: Daily Report",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          800,
+          2304
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/notifications/line",
+          "sendBody": true,
+          "contentType": "json",
+          "options": {
+            "timeout": 10000
+          },
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ channel: \"line\", message: \"={{ $json.message }}\" }) }}"
+        },
+        "id": "13e2b504-cea9-4ff6-9be3-9d247ade7ecc",
+        "name": "LINE: Weekly Report",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          800,
+          2512
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## 🚨 GLOBAL ERROR HANDLER\nจับ Error ทุกจุดใน Workflow\nLog + แจ้งเตือนผ่าน LINE",
+          "height": 300,
+          "width": 420,
+          "color": 7
+        },
+        "id": "d45078b2-61b5-4245-a7b1-6549cf2eb22b",
+        "name": "Error Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          2800
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "f9fad1e4-e819-4150-8003-3912f19a93b0",
+        "name": "Error Trigger",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          64,
+          2912
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// === FORMAT ERROR DETAILS ===\nconst error = $input.item.json;\n\nconst msg = `🚨 SYSTEM ERROR` +\n  `\\n${'─'.repeat(28)}` +\n  `\\n❌ Error: ${error.execution?.error?.message || error.message || 'Unknown'}` +\n  `\\n📋 Node: ${error.execution?.lastNodeExecuted || error.node || 'N/A'}` +\n  `\\n🔗 Workflow: ${error.workflow?.name || 'Factory Automation'}` +\n  `\\n🕐 Time: ${new Date().toISOString()}` +\n  `\\n🆔 Execution: ${error.execution?.id || 'N/A'}` +\n  `\\n${'─'.repeat(28)}`;\n\nreturn [{ json: { message: msg, error_details: error } }];"
+        },
+        "id": "f3e81cbd-fb87-4e13-a851-1ff528d1d9c8",
+        "name": "Format Error",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          304,
+          2912
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/notifications/line",
+          "sendBody": true,
+          "contentType": "json",
+          "options": {
+            "timeout": 10000
+          },
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ channel: \"line\", message: \"={{ $json.message }}\" }) }}"
+        },
+        "id": "0d0306a7-cb83-4017-b344-a6692c867eb3",
+        "name": "LINE: Error Alert",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          544,
+          2912
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://factory-api:5000/api/errors/log",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.error_details) }}",
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "id": "a9e79136-20da-4c36-83e8-abf18cd40e0b",
+        "name": "Log Error to DB",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          784,
+          2912
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "71c1fd37-3d47-4440-a5af-5281d105931a",
+        "name": "Merge Point",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1504,
+          704
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "return { json: { ...$input.item.json, platform: 'shopee' } };"
+        },
+        "id": "a67a32e4-f5e8-4e7a-9769-6e1bdc3ddf20",
+        "name": "Tag Platform: shopee",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -900,
+          -260
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "return { json: { ...$input.item.json, platform: 'lazada' } };"
+        },
+        "id": "7c252c21-6550-497c-9456-268613cbe3c4",
+        "name": "Tag Platform: lazada",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -900,
+          -80
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "return { json: { ...$input.item.json, platform: 'tiktok' } };"
+        },
+        "id": "f18e5cdb-dfe1-447f-bf07-0005a1b2da66",
+        "name": "Tag Platform: tiktok",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -900,
+          100
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "return { json: { ...$input.item.json, platform: 'facebook' } };"
+        },
+        "id": "fc60ddb0-1432-4340-9d74-075c49c2cc26",
+        "name": "Tag Platform: facebook",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -900,
+          280
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## ✅ SuccessCasting Production Backbone\n- Internal API: http://factory-api:5000\n- Unsigned webhooks allowed only for bootstrap via FACTORY_WEBHOOK_ALLOW_UNSIGNED=true\n- Switch FACTORY_CONNECTORS_MODE=live after real marketplace credentials are configured\n- LINE notifications are queued internally until LINE token credential is added"
+        },
+        "id": "0ba45704-31c0-43b1-a774-478e2d659751",
+        "name": "Production Hardening Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1240,
+          -560
+        ]
+      }
+    ],
+    "connections": {
+      "Shopee Webhook": {
+        "main": [
+          [
+            {
+              "node": "Tag Platform: shopee",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Lazada Webhook": {
+        "main": [
+          [
+            {
+              "node": "Tag Platform: lazada",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TikTok Webhook": {
+        "main": [
+          [
+            {
+              "node": "Tag Platform: tiktok",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Facebook Webhook": {
+        "main": [
+          [
+            {
+              "node": "Tag Platform: facebook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Signature": {
+        "main": [
+          [
+            {
+              "node": "Signature Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Signature Valid?": {
+        "main": [
+          [
+            {
+              "node": "Normalize Order",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Log Suspicious Activity",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log Suspicious Activity": {
+        "main": [
+          [
+            {
+              "node": "Respond 403",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Order": {
+        "main": [
+          [
+            {
+              "node": "Order Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Order Valid?": {
+        "main": [
+          [
+            {
+              "node": "Save Order to DB",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "LINE: Invalid Order",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Order to DB": {
+        "main": [
+          [
+            {
+              "node": "Calculate Stock Deduction",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculate Stock Deduction": {
+        "main": [
+          [
+            {
+              "node": "Deduct Stock",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deduct Stock": {
+        "main": [
+          [
+            {
+              "node": "LINE: New Order",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Respond 200 OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LINE: Invalid Order": {
+        "main": [
+          [
+            {
+              "node": "Respond 422",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stock Sync (15min)": {
+        "main": [
+          [
+            {
+              "node": "Fetch All Products",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch All Products": {
+        "main": [
+          [
+            {
+              "node": "Calculate Allocation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculate Allocation": {
+        "main": [
+          [
+            {
+              "node": "Route by Platform",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route by Platform": {
+        "main": [
+          [
+            {
+              "node": "Sync Shopee Stock",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Sync Lazada Stock",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Sync TikTok Stock",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Sync Facebook Stock",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sync Shopee Stock": {
+        "main": [
+          [
+            {
+              "node": "Aggregate Results",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sync Lazada Stock": {
+        "main": [
+          [
+            {
+              "node": "Aggregate Results",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sync TikTok Stock": {
+        "main": [
+          [
+            {
+              "node": "Aggregate Results",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sync Facebook Stock": {
+        "main": [
+          [
+            {
+              "node": "Aggregate Results",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate Results": {
+        "main": [
+          [
+            {
+              "node": "LINE: Sync Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Token Refresh (Daily 2AM)": {
+        "main": [
+          [
+            {
+              "node": "Prepare Token Requests",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Token Requests": {
+        "main": [
+          [
+            {
+              "node": "Refresh Tokens",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Refresh Tokens": {
+        "main": [
+          [
+            {
+              "node": "Save New Tokens",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save New Tokens": {
+        "main": [
+          [
+            {
+              "node": "LINE: Token OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Daily Report (9AM)": {
+        "main": [
+          [
+            {
+              "node": "Get Daily Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Weekly Report (Mon 9AM)": {
+        "main": [
+          [
+            {
+              "node": "Get Weekly Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Daily Report": {
+        "main": [
+          [
+            {
+              "node": "Format Daily Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Weekly Report": {
+        "main": [
+          [
+            {
+              "node": "Format Weekly Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Daily Report": {
+        "main": [
+          [
+            {
+              "node": "LINE: Daily Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Weekly Report": {
+        "main": [
+          [
+            {
+              "node": "LINE: Weekly Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Format Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Error": {
+        "main": [
+          [
+            {
+              "node": "LINE: Error Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LINE: Error Alert": {
+        "main": [
+          [
+            {
+              "node": "Log Error to DB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tag Platform: shopee": {
+        "main": [
+          [
+            {
+              "node": "Verify Signature",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tag Platform: lazada": {
+        "main": [
+          [
+            {
+              "node": "Verify Signature",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tag Platform: tiktok": {
+        "main": [
+          [
+            {
+              "node": "Verify Signature",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tag Platform: facebook": {
+        "main": [
+          [
+            {
+              "node": "Verify Signature",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate"
+    },
+    "staticData": null,
+    "meta": null,
+    "pinData": {},
+    "versionId": "e534aeeb-c1cd-418a-a12d-a36c63dd63b8",
+    "activeVersionId": null,
+    "versionCounter": 1,
+    "triggerCount": 0,
+    "tags": [
+      {
+        "updatedAt": "2026-04-29T04:56:01.055Z",
+        "createdAt": "2026-04-29T04:56:01.055Z",
+        "id": "KOAa12qQYMjPZO0k",
+        "name": "production"
+      },
+      {
+        "updatedAt": "2026-04-29T04:56:00.936Z",
+        "createdAt": "2026-04-29T04:56:00.936Z",
+        "id": "QQZnLNqMlYiZIrXr",
+        "name": "factory-automation"
+      },
+      {
+        "updatedAt": "2026-04-29T04:56:01.003Z",
+        "createdAt": "2026-04-29T04:56:01.003Z",
+        "id": "iF83t57BuwZodu4O",
+        "name": "ecommerce"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-04-29T04:56:03.655Z",
+        "createdAt": "2026-04-29T04:56:03.655Z",
+        "role": "workflow:owner",
+        "workflowId": "xXN3Lbtu9JTLFJBf",
+        "projectId": "lhK1eRc1rYVuItgi",
+        "project": {
+          "updatedAt": "2026-04-29T04:33:45.489Z",
+          "createdAt": "2026-04-29T04:20:09.067Z",
+          "id": "lhK1eRc1rYVuItgi",
+          "name": "Georg Geo <geowahaha@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "creatorId": "90cae879-89d5-4823-b7e2-2b9d21a20a0a"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

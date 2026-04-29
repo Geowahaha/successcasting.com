@@ -1,0 +1,49 @@
+services:
+  factory-api:
+    build: .
+    container_name: factory-api
+    restart: unless-stopped
+    environment:
+      - FACTORY_DB=/data/factory.sqlite
+      - FACTORY_CONNECTORS_MODE=${FACTORY_CONNECTORS_MODE:-mock}
+      - TZ=Asia/Bangkok
+    volumes:
+      - factory_api_data:/data
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/healthz', timeout=3).read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  n8n:
+    image: n8nio/n8n:2.18.4
+    container_name: n8n
+    restart: always
+    depends_on:
+      - factory-api
+    environment:
+      - TZ=Asia/Bangkok
+      - GENERIC_TIMEZONE=Asia/Bangkok
+      - N8N_SECURE_COOKIE=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RELEASE_TYPE=stable
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://43.128.75.149:5678/}
+      - FACTORY_API_BASE=http://factory-api:5000
+      - SHOPEE_APP_SECRET=${SHOPEE_APP_SECRET:-}
+      - LAZADA_APP_SECRET=${LAZADA_APP_SECRET:-}
+      - TIKTOK_APP_SECRET=${TIKTOK_APP_SECRET:-}
+      - FB_APP_SECRET=${FB_APP_SECRET:-}
+      - FACTORY_WEBHOOK_ALLOW_UNSIGNED=${FACTORY_WEBHOOK_ALLOW_UNSIGNED:-true}
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:
+    external: true
+  factory_api_data:
