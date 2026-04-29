@@ -289,11 +289,6 @@
           "specifyBody": "json",
           "jsonBody": "={{ JSON.stringify({ platform_order_id: $json.platform_order_id, platform: $json.platform, status: $json.status, customer: $json.customer, items: $json.items, total_amount: $json.total_amount, currency: $json.currency, created_at: $json.created_at }) }}",
           "options": {
-            "response": {
-              "response": {
-                "fullResponse": true
-              }
-            },
             "timeout": 10000
           }
         },
@@ -309,7 +304,7 @@
       {
         "parameters": {
           "mode": "runOnceForEachItem",
-          "jsCode": "// === STOCK DEDUCTION LOGIC ===\nconst order = $input.item.json;\nconst items = order.items || [];\n\n// Calculate stock to deduct per SKU\nconst deductions = items.map(item => ({\n  sku: item.sku,\n  quantity: item.quantity,\n  platform: order.platform,\n  order_id: order.platform_order_id\n}));\n\nreturn {\n  json: {\n    deductions,\n    platform: order.platform,\n    order_id: order.platform_order_id,\n    total_items: items.reduce((sum, i) => sum + i.quantity, 0),\n    processed_at: new Date().toISOString()\n  }\n};"
+          "jsCode": "// === STOCK DEDUCTION LOGIC ===\nconst response = $input.item.json || {};\nconst order = response.body || response;\nconst items = order.items || [];\nconst deductions = items.map(item => ({\n  sku: item.sku,\n  quantity: Number(item.quantity || 0),\n  platform: order.platform,\n  order_id: order.platform_order_id || order.order_id\n})).filter(d => d.sku && d.quantity > 0);\nreturn {\n  json: {\n    deductions,\n    platform: order.platform,\n    order_id: order.platform_order_id || order.order_id,\n    total_items: deductions.reduce((sum, i) => sum + i.quantity, 0),\n    processed_at: new Date().toISOString()\n  }\n};"
         },
         "id": "343f19f7-c6df-46f8-8035-5451e03ecf74",
         "name": "Calculate Stock Deduction",
