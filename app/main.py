@@ -179,7 +179,16 @@ def save_order(order: Order) -> dict[str, Any]:
             """,
             (order.platform_order_id, order.platform, order.status, jdump(order.customer), jdump(order.items), order.total_amount, order.currency, created_at, now_iso()),
         )
-    return {"status": "ok", "platform": order.platform, "order_id": order.platform_order_id}
+    return {
+        "status": "ok",
+        "platform": order.platform,
+        "platform_order_id": order.platform_order_id,
+        "order_id": order.platform_order_id,
+        "items": order.items,
+        "total_amount": order.total_amount,
+        "currency": order.currency,
+        "created_at": created_at,
+    }
 
 
 @app.get("/api/orders")
