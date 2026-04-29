@@ -364,7 +364,7 @@
       {
         "parameters": {
           "respondWith": "json",
-          "responseBody": "={\"status\": \"ok\", \"order_id\": \"{{ $('Normalize Order').item.json.platform_order_id }}\", \"platform\": \"{{ $('Normalize Order').item.json.platform }}\", \"processed_at\": \"{{ $now.toISO() }}\"}",
+          "responseBody": "={{ JSON.stringify({ status: \"ok\", processed_at: $now.toISO() }) }}",
           "options": {
             "responseCode": 200
           }
@@ -1012,7 +1012,7 @@
       {
         "parameters": {
           "mode": "runOnceForEachItem",
-          "jsCode": "// === FORMAT ERROR DETAILS ===\nconst error = $input.item.json;\n\nconst msg = `🚨 SYSTEM ERROR` +\n  `\\n${'─'.repeat(28)}` +\n  `\\n❌ Error: ${error.execution?.error?.message || error.message || 'Unknown'}` +\n  `\\n📋 Node: ${error.execution?.lastNodeExecuted || error.node || 'N/A'}` +\n  `\\n🔗 Workflow: ${error.workflow?.name || 'Factory Automation'}` +\n  `\\n🕐 Time: ${new Date().toISOString()}` +\n  `\\n🆔 Execution: ${error.execution?.id || 'N/A'}` +\n  `\\n${'─'.repeat(28)}`;\n\nreturn [{ json: { message: msg, error_details: error } }];"
+          "jsCode": "// === FORMAT ERROR DETAILS ===\nconst error = $input.item.json || {};\nconst msg = `🚨 SYSTEM ERROR` +\n  `\\nError: ${error.execution?.error?.message || error.message || 'Unknown'}` +\n  `\\nNode: ${error.execution?.lastNodeExecuted || error.node || 'N/A'}` +\n  `\\nWorkflow: ${error.workflow?.name || 'Factory Automation'}` +\n  `\\nTime: ${new Date().toISOString()}`;\nreturn { json: { message: msg, error_details: error } };"
         },
         "id": "f3e81cbd-fb87-4e13-a851-1ff528d1d9c8",
         "name": "Format Error",
@@ -1050,7 +1050,7 @@
           "url": "http://factory-api:5000/api/errors/log",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify($json.error_details) }}",
+          "jsonBody": "={{ JSON.stringify($json.error_details || $json) }}",
           "options": {
             "timeout": 10000
           }
@@ -1252,7 +1252,7 @@
           ],
           [
             {
-              "node": "LINE: Invalid Order",
+              "node": "Respond 422",
               "type": "main",
               "index": 0
             }
@@ -1284,11 +1284,6 @@
       "Deduct Stock": {
         "main": [
           [
-            {
-              "node": "LINE: New Order",
-              "type": "main",
-              "index": 0
-            },
             {
               "node": "Respond 200 OK",
               "type": "main",
@@ -1419,13 +1414,7 @@
       },
       "Aggregate Results": {
         "main": [
-          [
-            {
-              "node": "LINE: Sync Report",
-              "type": "main",
-              "index": 0
-            }
-          ]
+          []
         ]
       },
       "Token Refresh (Daily 2AM)": {
@@ -1463,13 +1452,7 @@
       },
       "Save New Tokens": {
         "main": [
-          [
-            {
-              "node": "LINE: Token OK",
-              "type": "main",
-              "index": 0
-            }
-          ]
+          []
         ]
       },
       "Daily Report (9AM)": {
@@ -1518,24 +1501,12 @@
       },
       "Format Daily Report": {
         "main": [
-          [
-            {
-              "node": "LINE: Daily Report",
-              "type": "main",
-              "index": 0
-            }
-          ]
+          []
         ]
       },
       "Format Weekly Report": {
         "main": [
-          [
-            {
-              "node": "LINE: Weekly Report",
-              "type": "main",
-              "index": 0
-            }
-          ]
+          []
         ]
       },
       "Error Trigger": {
@@ -1553,7 +1524,7 @@
         "main": [
           [
             {
-              "node": "LINE: Error Alert",
+              "node": "Log Error to DB",
               "type": "main",
               "index": 0
             }
