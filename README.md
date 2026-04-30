@@ -18,6 +18,20 @@
   - `POST http://43.128.75.149:5678/webhook/tiktok/orders`
   - `POST http://43.128.75.149:5678/webhook/facebook/orders`
 
+## Customer Connect Center
+
+The public dashboard at `/` is also the Customer Connect Center. It provides:
+
+- Add LINE OA button (`LINE_OA_URL`)
+- Start Telegram Bot button (`TELEGRAM_BOT_URL`)
+- Email confirmation button (`CUSTOMER_SUPPORT_EMAIL` / SMTP later)
+- Instagram DM button (`INSTAGRAM_DM_URL`)
+- `POST /api/customers/connect`: creates/reuses a durable `customer_id`, logs contact methods/interactions, and returns Thai customer feedback + `status_url`
+- `GET /customers/{customer_id}`: customer receipt/status page
+- `GET /api/customers/status`: aggregate public status only; no PII
+
+Social-platform direct replies require captured platform IDs from real user interactions. Email is queued/not-configured unless SMTP env is present.
+
 ## Modes
 
 Default deployment is safe bootstrap mode:

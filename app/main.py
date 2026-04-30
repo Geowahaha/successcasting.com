@@ -1,6 +1,8 @@
 import json
 import os
+import re
 import sqlite3
+import uuid
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
@@ -35,6 +37,42 @@ def jdump(value: Any) -> str:
 
 def rowdict(row: sqlite3.Row | None) -> dict[str, Any] | None:
     return dict(row) if row else None
+
+
+def normalize_contact(kind: str, value: str | None) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    if kind == "email":
+        return raw.lower()
+    if kind == "phone":
+        digits = re.sub(r"[^0-9+]", "", raw)
+        if digits.startswith("0"):
+            return "+66" + digits[1:]
+        return digits
+    if kind in {"line_id", "instagram", "telegram"}:
+        return raw.lstrip("@").lower()
+    return raw
+
+
+def public_customer_id() -> str:
+    return "cust_" + uuid.uuid4().hex[:12]
+
+
+def contact_rows(payload: dict[str, Any]) -> list[tuple[str, str]]:
+    mapping = {
+        "email": payload.get("email"),
+        "phone": payload.get("phone"),
+        "line_id": payload.get("line_id"),
+        "instagram": payload.get("instagram"),
+        "telegram": payload.get("telegram_username"),
+    }
+    rows = []
+    for kind, value in mapping.items():
+        normalized = normalize_contact(kind, value)
+        if normalized:
+            rows.append((kind, normalized))
+    return rows
 
 
 def init_db() -> None:
@@ -102,6 +140,47 @@ def init_db() -> None:
                 payload_json TEXT NOT NULL DEFAULT '{}',
                 created_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS customers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL DEFAULT '',
+                company TEXT NOT NULL DEFAULT '',
+                email TEXT NOT NULL DEFAULT '',
+                phone TEXT NOT NULL DEFAULT '',
+                line_id TEXT NOT NULL DEFAULT '',
+                instagram TEXT NOT NULL DEFAULT '',
+                telegram_username TEXT NOT NULL DEFAULT '',
+                preferred_contact TEXT NOT NULL DEFAULT 'email',
+                first_seen_at TEXT NOT NULL,
+                last_seen_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS contact_methods (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id TEXT NOT NULL,
+                type TEXT NOT NULL,
+                value TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                UNIQUE(type, value)
+            );
+            CREATE TABLE IF NOT EXISTS interactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id TEXT NOT NULL,
+                source TEXT NOT NULL DEFAULT 'web',
+                direction TEXT NOT NULL DEFAULT 'inbound',
+                subject TEXT NOT NULL DEFAULT '',
+                body TEXT NOT NULL DEFAULT '',
+                payload_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS outbound_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id TEXT NOT NULL,
+                channel TEXT NOT NULL,
+                destination TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'queued',
+                error TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL
+            );
             """
         )
         # Seed demo-safe inventory so the factory can run immediately.
@@ -144,6 +223,8 @@ def healthz() -> dict[str, Any]:
             "orders": conn.execute("SELECT COUNT(*) c FROM orders").fetchone()["c"],
             "products": conn.execute("SELECT COUNT(*) c FROM products").fetchone()["c"],
             "stock_events": conn.execute("SELECT COUNT(*) c FROM stock_ledger").fetchone()["c"],
+            "customers": conn.execute("SELECT COUNT(*) c FROM customers").fetchone()["c"],
+            "interactions": conn.execute("SELECT COUNT(*) c FROM interactions").fetchone()["c"],
         }
     return {"status": "ok", "mode": CONNECTORS_MODE, "db": str(DB_PATH), "counts": counts}
 
@@ -151,14 +232,119 @@ def healthz() -> dict[str, Any]:
 @app.get("/", response_class=HTMLResponse)
 def dashboard() -> str:
     health = healthz()
-    return f"""<!doctype html><html><head><meta charset='utf-8'><title>SuccessCasting Factory</title>
-    <style>body{{font-family:system-ui;margin:40px;background:#0b1020;color:#eaf0ff}}.card{{background:#141b34;padding:22px;border-radius:16px;max-width:900px}}code{{color:#7ee787}}</style></head>
-    <body><div class='card'><h1>🏭 SuccessCasting Automation Factory</h1>
-    <p>Status: <b>{health['status']}</b> | Connector mode: <b>{health['mode']}</b></p>
-    <p>Orders: {health['counts']['orders']} | Products: {health['counts']['products']} | Stock events: {health['counts']['stock_events']}</p>
-    <h3>Endpoints</h3><ul><li><code>/healthz</code></li><li><code>/api/orders</code></li><li><code>/api/products</code></li><li><code>/api/reports/daily</code></li></ul>
-    <p>n8n runs on <code>:5678</code>. Marketplace webhooks: <code>/webhook/shopee/orders</code>, <code>/webhook/lazada/orders</code>, <code>/webhook/tiktok/orders</code>, <code>/webhook/facebook/orders</code>.</p>
-    </div></body></html>"""
+    line_url = os.getenv("LINE_OA_URL", "https://line.me/R/ti/p/@successcasting")
+    telegram_url = os.getenv("TELEGRAM_BOT_URL", "https://t.me/successcasting_bot")
+    instagram_url = os.getenv("INSTAGRAM_DM_URL", "https://www.instagram.com/successcasting/")
+    email = os.getenv("CUSTOMER_SUPPORT_EMAIL", "hello@successcasting.com")
+    return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
+    <title>SuccessCasting Customer Connect Center</title>
+    <style>
+    body{{font-family:Inter,system-ui;margin:0;background:#0b1020;color:#eaf0ff}}main{{max-width:1050px;margin:0 auto;padding:34px 18px}}
+    .card{{background:#141b34;border:1px solid #263256;padding:24px;border-radius:18px;margin:16px 0;box-shadow:0 12px 40px #0005}}
+    .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}}a.btn,button{{display:block;text-decoration:none;text-align:center;background:#39d98a;color:#07131f;font-weight:800;border:0;border-radius:14px;padding:14px 16px;cursor:pointer}}
+    a.btn.alt{{background:#63b3ff}}a.btn.warn{{background:#ffd166}}a.btn.pink{{background:#ff7ab6}}input,select,textarea{{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border-radius:10px;border:1px solid #40507a;background:#0e1530;color:#eaf0ff}}label{{font-size:13px;color:#aab7df}}code{{color:#7ee787}}.muted{{color:#aab7df}}#result{{white-space:pre-wrap;background:#0e1530;border-radius:12px;padding:12px;display:none}}
+    </style></head><body><main>
+    <h1>Customer Connect Center</h1><p class='muted'>ให้ลูกค้าเลือกช่องทางติดต่อ และรับเลขอ้างอิงทันทีหลังบันทึกข้อมูล</p>
+    <div class='grid'>
+      <a class='btn' href='{line_url}' target='_blank' rel='noopener'>Add LINE OA</a>
+      <a class='btn alt' href='{telegram_url}' target='_blank' rel='noopener'>Start Telegram Bot</a>
+      <a class='btn warn' href='mailto:{email}?subject=Confirm%20SuccessCasting%20request'>Email confirmation</a>
+      <a class='btn pink' href='{instagram_url}' target='_blank' rel='noopener'>Instagram DM</a>
+    </div>
+    <div class='card'><h2>ขอใบรับเรื่อง / Status receipt</h2>
+    <form id='connectForm'>
+      <div class='grid'><div><label>Name</label><input name='name' required></div><div><label>Company</label><input name='company'></div></div>
+      <div class='grid'><div><label>Email</label><input name='email' type='email'></div><div><label>Phone</label><input name='phone'></div></div>
+      <div class='grid'><div><label>LINE ID</label><input name='line_id'></div><div><label>Telegram username</label><input name='telegram_username'></div><div><label>Instagram</label><input name='instagram'></div></div>
+      <label>Preferred contact</label><select name='preferred_contact'><option>email</option><option>line</option><option>telegram</option><option>instagram</option><option>phone</option></select>
+      <label>Message</label><textarea name='message' rows='4' placeholder='อยากให้โรงงานช่วยเรื่องอะไร'></textarea>
+      <button type='submit'>Create receipt/status</button>
+    </form><div id='result'></div></div>
+    <div class='card'><p>Status: <b>{health['status']}</b> | Connector mode: <b>{health['mode']}</b></p>
+    <p>Orders: {health['counts']['orders']} | Products: {health['counts']['products']} | Stock events: {health['counts']['stock_events']} | Customers: {health['counts']['customers']} | Interactions: {health['counts']['interactions']}</p>
+    <p><code>/api/customers/status</code> returns aggregate counts only; customer receipt pages use <code>/customers/{{customer_id}}</code>.</p></div>
+    <script>
+    document.getElementById('connectForm').addEventListener('submit', async (e)=>{{
+      e.preventDefault(); const data=Object.fromEntries(new FormData(e.target).entries());
+      const res=await fetch('/api/customers/connect',{{method:'POST',headers:{{'content-type':'application/json'}},body:JSON.stringify(data)}});
+      const json=await res.json(); const box=document.getElementById('result'); box.style.display='block';
+      box.innerHTML = `${{json.user_feedback || JSON.stringify(json,null,2)}}\n\nStatus page: <a href="${{json.status_url}}">${{json.status_url}}</a>`;
+    }});
+    </script></main></body></html>"""
+
+
+class CustomerConnect(BaseModel):
+    name: str = ""
+    company: str = ""
+    email: str = ""
+    phone: str = ""
+    line_id: str = ""
+    instagram: str = ""
+    telegram_username: str = ""
+    preferred_contact: str = "email"
+    message: str = ""
+    source: str = "web"
+
+
+@app.post("/api/customers/connect")
+def connect_customer(payload: CustomerConnect) -> dict[str, Any]:
+    data = payload.model_dump()
+    rows = contact_rows(data)
+    if not rows and not data.get("name"):
+        raise HTTPException(422, "name or at least one contact method is required")
+    seen = now_iso()
+    with db() as conn:
+        existing = None
+        for kind, value in rows:
+            existing = conn.execute("SELECT customer_id FROM contact_methods WHERE type=? AND value=?", (kind, value)).fetchone()
+            if existing:
+                break
+        returning = bool(existing)
+        cid = existing["customer_id"] if existing else public_customer_id()
+        if returning:
+            conn.execute(
+                "UPDATE customers SET name=COALESCE(NULLIF(?,''),name), company=COALESCE(NULLIF(?,''),company), email=COALESCE(NULLIF(?,''),email), phone=COALESCE(NULLIF(?,''),phone), line_id=COALESCE(NULLIF(?,''),line_id), instagram=COALESCE(NULLIF(?,''),instagram), telegram_username=COALESCE(NULLIF(?,''),telegram_username), preferred_contact=?, last_seen_at=? WHERE customer_id=?",
+                (data["name"].strip(), data["company"].strip(), normalize_contact("email", data["email"]), normalize_contact("phone", data["phone"]), normalize_contact("line_id", data["line_id"]), normalize_contact("instagram", data["instagram"]), normalize_contact("telegram", data["telegram_username"]), data["preferred_contact"], seen, cid),
+            )
+        else:
+            conn.execute(
+                "INSERT INTO customers(customer_id,name,company,email,phone,line_id,instagram,telegram_username,preferred_contact,first_seen_at,last_seen_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                (cid, data["name"].strip(), data["company"].strip(), normalize_contact("email", data["email"]), normalize_contact("phone", data["phone"]), normalize_contact("line_id", data["line_id"]), normalize_contact("instagram", data["instagram"]), normalize_contact("telegram", data["telegram_username"]), data["preferred_contact"], seen, seen),
+            )
+        for kind, value in rows:
+            conn.execute("INSERT OR IGNORE INTO contact_methods(customer_id,type,value,created_at) VALUES(?,?,?,?)", (cid, kind, value, seen))
+        conn.execute(
+            "INSERT INTO interactions(customer_id,source,direction,subject,body,payload_json,created_at) VALUES(?,?,?,?,?,?,?)",
+            (cid, data["source"], "inbound", "Customer Connect Center", data["message"].strip(), jdump({k: v for k, v in data.items() if k != "message"}), seen),
+        )
+        if normalize_contact("email", data.get("email")):
+            status = "queued" if os.getenv("SMTP_HOST") else "not_configured"
+            error = "SMTP_HOST missing" if status == "not_configured" else ""
+            conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (cid, "email", normalize_contact("email", data.get("email")), status, error, seen))
+    feedback = ("ยินดีต้อนรับกลับ" if returning else "รับเรื่องแล้ว") + f" — ระบบบันทึกข้อมูลและประวัติการคุยไว้แล้ว เลขอ้างอิง {cid}"
+    if data.get("preferred_contact") in {"line", "telegram", "instagram"}:
+        feedback += " (ช่องทางโซเชียลต้องให้ลูกค้าเริ่มแชท/เพิ่ม OA ก่อน ระบบจึงจะผูก ID สำหรับตอบกลับอัตโนมัติได้)"
+    return {"status": "ok", "customer_id": cid, "returning_customer": returning, "user_feedback": feedback, "status_url": f"/customers/{cid}"}
+
+
+@app.get("/api/customers/status")
+def customers_public_status() -> dict[str, Any]:
+    with db() as conn:
+        counts = {name: conn.execute(f"SELECT COUNT(*) c FROM {name}").fetchone()["c"] for name in ["customers", "contact_methods", "interactions", "outbound_messages"]}
+    return {"status": "ready", "counts": counts, "matching_keys": ["email", "phone", "line_id", "instagram", "telegram"], "privacy_note": "public endpoint returns counts only; no customer PII"}
+
+
+@app.get("/customers/{customer_id}", response_class=HTMLResponse)
+def customer_receipt(customer_id: str) -> str:
+    with db() as conn:
+        customer = conn.execute("SELECT customer_id, name, company, preferred_contact, first_seen_at, last_seen_at FROM customers WHERE customer_id=?", (customer_id,)).fetchone()
+        if not customer:
+            raise HTTPException(404, "customer not found")
+        interactions = conn.execute("SELECT source, subject, created_at FROM interactions WHERE customer_id=? ORDER BY id DESC LIMIT 10", (customer_id,)).fetchall()
+        outbound = conn.execute("SELECT channel, status, error, created_at FROM outbound_messages WHERE customer_id=? ORDER BY id DESC LIMIT 10", (customer_id,)).fetchall()
+    items = "".join(f"<li>{r['created_at']} — {r['source']} — {r['subject']}</li>" for r in interactions)
+    outs = "".join(f"<li>{r['created_at']} — {r['channel']}: {r['status']} {r['error']}</li>" for r in outbound) or "<li>No outbound confirmation configured yet</li>"
+    return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Receipt {customer_id}</title><style>body{{font-family:system-ui;background:#0b1020;color:#eaf0ff;margin:0}}main{{max-width:760px;margin:0 auto;padding:34px 18px}}.card{{background:#141b34;border:1px solid #263256;padding:24px;border-radius:18px}}code{{color:#7ee787}}</style></head><body><main><div class='card'><h1>รับเรื่องแล้ว</h1><p>เลขอ้างอิง: <code>{customer['customer_id']}</code></p><p>ชื่อลูกค้า: {customer['name'] or '-'} | บริษัท: {customer['company'] or '-'}</p><p>ช่องทางที่เลือก: {customer['preferred_contact']}</p><h3>Interactions</h3><ul>{items}</ul><h3>Confirmations</h3><ul>{outs}</ul><p><a href='/'>กลับ Customer Connect Center</a></p></div></main></body></html>"""
 
 
 @app.post("/api/orders")
