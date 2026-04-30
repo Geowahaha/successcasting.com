@@ -30,7 +30,9 @@ The public dashboard at `/` is also the Customer Connect Center. It provides:
 - `GET /customers/{customer_id}`: customer receipt/status page
 - `GET /api/customers/status`: aggregate public status only; no PII
 
-Social-platform direct replies require captured platform IDs from real user interactions. Email is queued/not-configured unless SMTP env is present.
+Social-platform direct replies require captured platform IDs from real user interactions. Buttons never point to known-bad fake URLs: if a channel URL is missing, `/connect/{channel}` shows a setup-safe fallback page. Email is sent only when SMTP env exists; otherwise the attempted receipt is logged as `not_configured`.
+
+`GET /api/channels/status` exposes non-secret channel readiness for LINE, Telegram, email, and Instagram.
 
 ## Modes
 

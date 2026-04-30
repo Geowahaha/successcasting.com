@@ -6,6 +6,17 @@ services:
     environment:
       - FACTORY_DB=/data/factory.sqlite
       - FACTORY_CONNECTORS_MODE=${FACTORY_CONNECTORS_MODE:-mock}
+      - LINE_OA_URL=${LINE_OA_URL:-}
+      - TELEGRAM_BOT_URL=${TELEGRAM_BOT_URL:-}
+      - TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME:-}
+      - INSTAGRAM_DM_URL=${INSTAGRAM_DM_URL:-}
+      - CUSTOMER_SUPPORT_EMAIL=${CUSTOMER_SUPPORT_EMAIL:-hello@successcasting.com}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:-hello@successcasting.com}
+      - SMTP_USE_TLS=${SMTP_USE_TLS:-true}
       - TZ=Asia/Bangkok
     volumes:
       - factory_api_data:/data

@@ -1,6 +1,8 @@
 import json
 import os
 import re
+import smtplib
+from email.message import EmailMessage
 import sqlite3
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -8,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
 DB_PATH = Path(os.getenv("FACTORY_DB", "/data/factory.sqlite"))
@@ -73,6 +75,50 @@ def contact_rows(payload: dict[str, Any]) -> list[tuple[str, str]]:
         if normalized:
             rows.append((kind, normalized))
     return rows
+
+
+def configured_url(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if value and value.lower() not in {"none", "todo", "tbd", "changeme"}:
+        return value
+    return ""
+
+
+def channel_status() -> dict[str, Any]:
+    telegram_url = configured_url("TELEGRAM_BOT_URL")
+    if not telegram_url and os.getenv("TELEGRAM_BOT_USERNAME"):
+        telegram_url = f"https://t.me/{os.getenv('TELEGRAM_BOT_USERNAME').lstrip('@')}"
+    email = os.getenv("CUSTOMER_SUPPORT_EMAIL", "hello@successcasting.com").strip()
+    return {
+        "line": {"configured": bool(configured_url("LINE_OA_URL")), "url": configured_url("LINE_OA_URL") or "/connect/line", "requires_user_action": "add OA / send first message"},
+        "telegram": {"configured": bool(telegram_url), "url": telegram_url or "/connect/telegram", "requires_user_action": "start bot first"},
+        "email": {"configured": bool(os.getenv("SMTP_HOST")), "url": f"mailto:{email}?subject=Confirm%20SuccessCasting%20request", "address": email, "smtp": bool(os.getenv("SMTP_HOST"))},
+        "instagram": {"configured": bool(configured_url("INSTAGRAM_DM_URL")), "url": configured_url("INSTAGRAM_DM_URL") or "/connect/instagram", "requires_user_action": "open DM / allow messaging"},
+    }
+
+
+def send_email_receipt(to_email: str, subject: str, body: str) -> tuple[str, str]:
+    host = os.getenv("SMTP_HOST", "").strip()
+    if not host:
+        return "not_configured", "SMTP_HOST missing"
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = os.getenv("SMTP_FROM") or os.getenv("CUSTOMER_SUPPORT_EMAIL") or "hello@successcasting.com"
+    msg["To"] = to_email
+    msg.set_content(body)
+    try:
+        port = int(os.getenv("SMTP_PORT", "587"))
+        username = os.getenv("SMTP_USERNAME", "")
+        password = os.getenv("SMTP_PASSWORD", "")
+        with smtplib.SMTP(host, port, timeout=10) as smtp:
+            if os.getenv("SMTP_USE_TLS", "true").lower() not in {"0", "false", "no"}:
+                smtp.starttls()
+            if username:
+                smtp.login(username, password)
+            smtp.send_message(msg)
+        return "sent", ""
+    except Exception as exc:
+        return "failed", f"{type(exc).__name__}: {str(exc)[:180]}"
 
 
 def init_db() -> None:
@@ -232,10 +278,11 @@ def healthz() -> dict[str, Any]:
 @app.get("/", response_class=HTMLResponse)
 def dashboard() -> str:
     health = healthz()
-    line_url = os.getenv("LINE_OA_URL", "https://line.me/R/ti/p/@successcasting")
-    telegram_url = os.getenv("TELEGRAM_BOT_URL", "https://t.me/successcasting_bot")
-    instagram_url = os.getenv("INSTAGRAM_DM_URL", "https://www.instagram.com/successcasting/")
-    email = os.getenv("CUSTOMER_SUPPORT_EMAIL", "hello@successcasting.com")
+    channels = channel_status()
+    line_url = channels["line"]["url"]
+    telegram_url = channels["telegram"]["url"]
+    instagram_url = channels["instagram"]["url"]
+    email_url = channels["email"]["url"]
     return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
     <title>SuccessCasting Customer Connect Center</title>
     <style>
@@ -248,7 +295,7 @@ def dashboard() -> str:
     <div class='grid'>
       <a class='btn' href='{line_url}' target='_blank' rel='noopener'>Add LINE OA</a>
       <a class='btn alt' href='{telegram_url}' target='_blank' rel='noopener'>Start Telegram Bot</a>
-      <a class='btn warn' href='mailto:{email}?subject=Confirm%20SuccessCasting%20request'>Email confirmation</a>
+      <a class='btn warn' href='{email_url}'>Email confirmation</a>
       <a class='btn pink' href='{instagram_url}' target='_blank' rel='noopener'>Instagram DM</a>
     </div>
     <div class='card'><h2>ขอใบรับเรื่อง / Status receipt</h2>
@@ -262,7 +309,8 @@ def dashboard() -> str:
     </form><div id='result'></div></div>
     <div class='card'><p>Status: <b>{health['status']}</b> | Connector mode: <b>{health['mode']}</b></p>
     <p>Orders: {health['counts']['orders']} | Products: {health['counts']['products']} | Stock events: {health['counts']['stock_events']} | Customers: {health['counts']['customers']} | Interactions: {health['counts']['interactions']}</p>
-    <p><code>/api/customers/status</code> returns aggregate counts only; customer receipt pages use <code>/customers/{{customer_id}}</code>.</p></div>
+    <p><code>/api/customers/status</code> returns aggregate counts only; customer receipt pages use <code>/customers/{{customer_id}}</code>.</p>
+    <p><code>/api/channels/status</code> shows which reply channels are fully configured.</p></div>
     <script>
     document.getElementById('connectForm').addEventListener('submit', async (e)=>{{
       e.preventDefault(); const data=Object.fromEntries(new FormData(e.target).entries());
@@ -318,13 +366,45 @@ def connect_customer(payload: CustomerConnect) -> dict[str, Any]:
             (cid, data["source"], "inbound", "Customer Connect Center", data["message"].strip(), jdump({k: v for k, v in data.items() if k != "message"}), seen),
         )
         if normalize_contact("email", data.get("email")):
-            status = "queued" if os.getenv("SMTP_HOST") else "not_configured"
-            error = "SMTP_HOST missing" if status == "not_configured" else ""
-            conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (cid, "email", normalize_contact("email", data.get("email")), status, error, seen))
+            email_to = normalize_contact("email", data.get("email"))
+            receipt_url = f"/customers/{cid}"
+            status, error = send_email_receipt(
+                email_to,
+                f"SuccessCasting receipt {cid}",
+                f"รับเรื่องแล้ว เลขอ้างอิง {cid}\nStatus: {receipt_url}\n\n{data['message'].strip()}",
+            )
+            conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (cid, "email", email_to, status, error, seen))
     feedback = ("ยินดีต้อนรับกลับ" if returning else "รับเรื่องแล้ว") + f" — ระบบบันทึกข้อมูลและประวัติการคุยไว้แล้ว เลขอ้างอิง {cid}"
     if data.get("preferred_contact") in {"line", "telegram", "instagram"}:
         feedback += " (ช่องทางโซเชียลต้องให้ลูกค้าเริ่มแชท/เพิ่ม OA ก่อน ระบบจึงจะผูก ID สำหรับตอบกลับอัตโนมัติได้)"
     return {"status": "ok", "customer_id": cid, "returning_customer": returning, "user_feedback": feedback, "status_url": f"/customers/{cid}"}
+
+
+@app.get("/api/channels/status")
+def channels_public_status() -> dict[str, Any]:
+    status = channel_status()
+    return {
+        "status": "ready",
+        "channels": {k: {kk: vv for kk, vv in v.items() if kk != "address"} for k, v in status.items()},
+        "privacy_note": "no tokens or secrets are exposed",
+    }
+
+
+@app.get("/connect/{channel}", response_class=HTMLResponse)
+def connect_channel(channel: str):
+    channels = channel_status()
+    if channel not in channels:
+        raise HTTPException(404, "unknown channel")
+    url = channels[channel].get("url", "")
+    if channels[channel].get("configured") and isinstance(url, str) and url.startswith("http"):
+        return RedirectResponse(url)
+    notes = {
+        "line": "LINE OA ยังไม่มี URL/Basic ID จริงใน server env. ตั้ง LINE_OA_URL หลังสร้าง/ยืนยัน OA แล้วปุ่มนี้จะ redirect อัตโนมัติ",
+        "telegram": "Telegram bot URL ยังไม่ถูกตั้งใน server env. ตั้ง TELEGRAM_BOT_URL หรือ TELEGRAM_BOT_USERNAME แล้วปุ่มนี้จะ redirect อัตโนมัติ",
+        "instagram": "Instagram DM URL ยังไม่ถูกตั้งใน server env. ตั้ง INSTAGRAM_DM_URL แล้วปุ่มนี้จะ redirect อัตโนมัติ",
+        "email": "Email ใช้ mailto ได้ทันที; SMTP ต้องตั้ง SMTP_HOST/SMTP_USERNAME/SMTP_PASSWORD เพื่อส่งอัตโนมัติ",
+    }
+    return f"""<!doctype html><html><head><meta charset='utf-8'><title>{channel} setup</title><style>body{{font-family:system-ui;background:#0b1020;color:#eaf0ff;margin:0}}main{{max-width:720px;margin:0 auto;padding:34px 18px}}.card{{background:#141b34;border:1px solid #263256;padding:24px;border-radius:18px}}code{{color:#7ee787}}</style></head><body><main><div class='card'><h1>{channel.upper()} connection</h1><p>{notes[channel]}</p><p>Customer receipt ยังใช้งานได้บนเว็บทันทีโดยไม่รอ social credential.</p><p><a href='/'>กลับ Customer Connect Center</a></p></div></main></body></html>"""
 
 
 @app.get("/api/customers/status")
