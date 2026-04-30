@@ -289,42 +289,113 @@ def dashboard() -> str:
     telegram_url = channels["telegram"]["url"]
     instagram_url = channels["instagram"]["url"]
     email_url = channels["email"]["url"]
-    return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
-    <title>SuccessCasting Customer Connect Center</title>
-    <style>
-    body{{font-family:Inter,system-ui;margin:0;background:#0b1020;color:#eaf0ff}}main{{max-width:1050px;margin:0 auto;padding:34px 18px}}
-    .card{{background:#141b34;border:1px solid #263256;padding:24px;border-radius:18px;margin:16px 0;box-shadow:0 12px 40px #0005}}
-    .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}}a.btn,button{{display:block;text-decoration:none;text-align:center;background:#39d98a;color:#07131f;font-weight:800;border:0;border-radius:14px;padding:14px 16px;cursor:pointer}}
-    a.btn.alt{{background:#63b3ff}}a.btn.warn{{background:#ffd166}}a.btn.pink{{background:#ff7ab6}}input,select,textarea{{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border-radius:10px;border:1px solid #40507a;background:#0e1530;color:#eaf0ff}}label{{font-size:13px;color:#aab7df}}code{{color:#7ee787}}.muted{{color:#aab7df}}#result{{white-space:pre-wrap;background:#0e1530;border-radius:12px;padding:12px;display:none}}
-    </style></head><body><main>
-    <h1>Customer Connect Center</h1><p class='muted'>ให้ลูกค้าเลือกช่องทางติดต่อ และรับเลขอ้างอิงทันทีหลังบันทึกข้อมูล</p>
-    <div class='grid'>
-      <a class='btn' href='{line_url}' target='_blank' rel='noopener'>Add LINE OA</a>
-      <a class='btn alt' href='{telegram_url}' target='_blank' rel='noopener'>Start Telegram Bot</a>
-      <a class='btn warn' href='{email_url}'>Email confirmation</a>
-      <a class='btn pink' href='{instagram_url}' target='_blank' rel='noopener'>Instagram DM</a>
-    </div>
-    <div class='card'><h2>ขอใบรับเรื่อง / Status receipt</h2>
-    <form id='connectForm'>
-      <div class='grid'><div><label>Name</label><input name='name' required></div><div><label>Company</label><input name='company'></div></div>
-      <div class='grid'><div><label>Email</label><input name='email' type='email'></div><div><label>Phone</label><input name='phone'></div></div>
-      <div class='grid'><div><label>LINE ID</label><input name='line_id'></div><div><label>Telegram username</label><input name='telegram_username'></div><div><label>Instagram</label><input name='instagram'></div></div>
-      <label>Preferred contact</label><select name='preferred_contact'><option>email</option><option>line</option><option>telegram</option><option>instagram</option><option>phone</option></select>
-      <label>Message</label><textarea name='message' rows='4' placeholder='อยากให้โรงงานช่วยเรื่องอะไร'></textarea>
-      <button type='submit'>Create receipt/status</button>
-    </form><div id='result'></div></div>
-    <div class='card'><p>Status: <b>{health['status']}</b> | Connector mode: <b>{health['mode']}</b></p>
-    <p>Orders: {health['counts']['orders']} | Products: {health['counts']['products']} | Stock events: {health['counts']['stock_events']} | Customers: {health['counts']['customers']} | Interactions: {health['counts']['interactions']}</p>
-    <p><code>/api/customers/status</code> returns aggregate counts only; customer receipt pages use <code>/customers/{{customer_id}}</code>.</p>
-    <p><code>/api/channels/status</code> shows which reply channels are fully configured.</p></div>
-    <script>
-    document.getElementById('connectForm').addEventListener('submit', async (e)=>{{
-      e.preventDefault(); const data=Object.fromEntries(new FormData(e.target).entries());
-      const res=await fetch('/api/customers/connect',{{method:'POST',headers:{{'content-type':'application/json'}},body:JSON.stringify(data)}});
-      const json=await res.json(); const box=document.getElementById('result'); box.style.display='block';
-      box.innerHTML = `${{json.user_feedback || JSON.stringify(json,null,2)}}\n\nStatus page: <a href="${{json.status_url}}">${{json.status_url}}</a>`;
-    }});
-    </script></main></body></html>"""
+    return f"""<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SuccessCasting — Factory Automation Control Room</title>
+  <style>
+  :root{{
+    --bg:#07080b;--panel:#0e1016;--panel2:#151824;--line:rgba(255,255,255,.08);
+    --text:#f7f8f8;--muted:#c3c9d6;--soft:#8e96a7;--brand:#5e6ad2;--brand2:#828fff;
+    --green:#34d399;--amber:#fbbf24;--pink:#f472b6;--cyan:#67e8f9;
+  }}
+  *{{box-sizing:border-box}} html{{scroll-behavior:smooth}} body{{margin:0;background:radial-gradient(circle at 20% 0%,rgba(94,106,210,.22),transparent 32rem),radial-gradient(circle at 85% 10%,rgba(52,211,153,.14),transparent 26rem),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;font-feature-settings:"cv01","ss03";}}
+  a{{color:inherit}} .wrap{{max-width:1180px;margin:0 auto;padding:0 22px}} .nav{{position:sticky;top:0;z-index:10;background:rgba(7,8,11,.76);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}}
+  .navin{{height:68px;display:flex;align-items:center;justify-content:space-between;gap:18px}} .brand{{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.02em}} .logo{{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--green));box-shadow:0 0 32px rgba(94,106,210,.4)}}
+  .links{{display:flex;gap:18px;color:var(--muted);font-size:13px}} .links a{{text-decoration:none}} .links a:hover{{color:var(--text)}} .pill{{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(255,255,255,.035);border-radius:999px;padding:7px 11px;color:#d7dbe5;font-size:12px}} .dot{{width:8px;height:8px;border-radius:99px;background:var(--green);box-shadow:0 0 18px var(--green)}}
+  .hero{{padding:88px 0 50px}} .hero-grid{{display:grid;grid-template-columns:1.05fr .95fr;gap:38px;align-items:center}} h1{{font-size:clamp(42px,7vw,82px);line-height:.96;letter-spacing:-.06em;margin:18px 0 18px;font-weight:650}} .lead{{font-size:clamp(17px,2.1vw,22px);line-height:1.62;color:var(--muted);max-width:720px;margin:0 0 28px}}
+  .actions{{display:flex;gap:12px;flex-wrap:wrap;align-items:center}} .btn,button{{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:13px 16px;font-weight:650;letter-spacing:-.01em;cursor:pointer;color:var(--text);background:rgba(255,255,255,.045)}} .btn.primary,button{{background:linear-gradient(135deg,var(--brand),#746cff);border-color:rgba(130,143,255,.55);box-shadow:0 16px 48px rgba(94,106,210,.24)}} .btn.line{{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.35)}} .btn.telegram{{background:rgba(103,232,249,.11);border-color:rgba(103,232,249,.32)}} .btn.email{{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.32)}} .btn.instagram{{background:rgba(244,114,182,.12);border-color:rgba(244,114,182,.35)}}
+  .console{{border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));border-radius:24px;overflow:hidden;box-shadow:0 24px 90px rgba(0,0,0,.42)}} .bar{{display:flex;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.2)}} .b{{width:10px;height:10px;border-radius:99px;background:#ff5f57}} .b:nth-child(2){{background:#febc2e}} .b:nth-child(3){{background:#28c840}} .screen{{padding:20px}} .metric{{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}} .m{{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:16px;padding:15px}} .m strong{{display:block;font-size:28px;letter-spacing:-.04em}} .m span{{color:var(--muted);font-size:12px}} code,.mono{{font-family:"JetBrains Mono",ui-monospace,monospace;color:#b7c0ff}}
+  section{{padding:56px 0}} h2{{font-size:clamp(30px,4vw,48px);line-height:1.04;letter-spacing:-.045em;margin:0 0 14px}} .sub{{color:var(--muted);line-height:1.7;max-width:760px}} .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}} .card{{background:rgba(255,255,255,.035);border:1px solid var(--line);padding:22px;border-radius:20px;box-shadow:0 18px 70px rgba(0,0,0,.2)}} .card h3{{margin:0 0 8px;font-size:19px;letter-spacing:-.02em}} .card p{{margin:0;color:var(--muted);line-height:1.6}} .flow{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:22px}} .step{{padding:16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}} .step b{{display:block;margin-bottom:6px}} .step small{{color:var(--soft)}}
+  form{{margin-top:20px}} label{{display:block;font-size:12px;color:var(--muted);margin:0 0 7px}} input,select,textarea{{width:100%;background:#0b0d13;border:1px solid rgba(255,255,255,.1);border-radius:12px;color:var(--text);padding:13px 14px;margin:0 0 14px;outline:none}} input:focus,textarea:focus,select:focus{{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(130,143,255,.13)}} #result{{display:none;white-space:pre-wrap;margin-top:14px;background:#0b0d13;border:1px solid var(--line);border-radius:14px;padding:14px;color:#dfe3ff}} .footer{{padding:36px 0 50px;color:var(--soft);font-size:13px;border-top:1px solid var(--line)}}
+  @media(max-width:820px){{.hero-grid{{grid-template-columns:1fr}}.links{{display:none}}.metric{{grid-template-columns:1fr}}.hero{{padding-top:54px}}.actions .btn,.actions button{{width:100%}}h1{{letter-spacing:-.045em;line-height:1.05}}section{{padding:44px 0}}}}
+  </style>
+</head>
+<body>
+  <header class="nav"><div class="wrap navin"><div class="brand"><div class="logo"></div>SuccessCasting OS</div><nav class="links"><a href="#platform">Platform</a><a href="#connect">Connect</a><a href="#receipt">Receipt/Status</a><a href="/api/channels/status">API status</a></nav><span class="pill"><span class="dot"></span>{health['status']} · {health['mode']}</span></div></header>
+  <main>
+    <section class="hero wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="pill"><span class="dot"></span>Marketplace-to-Factory Automation is live</span>
+          <h1>เปลี่ยน order chaos ให้เป็น factory control room</h1>
+          <p class="lead">SuccessCasting รวมออเดอร์, ตัดสต๊อก, สร้างหลักฐาน, แจ้งเตือนทีม และเปิด Customer Connect Center สำหรับลูกค้าทุกช่องทางในหน้าเดียว</p>
+          <div class="actions">
+            <a class="btn primary" href="#receipt">สร้างใบรับเรื่อง / Create receipt</a>
+            <a class="btn line" href="{line_url}" target="_blank" rel="noopener">Add LINE OA</a>
+            <a class="btn telegram" href="{telegram_url}" target="_blank" rel="noopener">Start Telegram Bot</a>
+          </div>
+        </div>
+        <div class="console" aria-label="Factory dashboard preview">
+          <div class="bar"><span class="b"></span><span class="b"></span><span class="b"></span></div>
+          <div class="screen">
+            <p class="mono">factory-api / live counters</p>
+            <div class="metric">
+              <div class="m"><strong>{health['counts']['orders']}</strong><span>Orders ingested</span></div>
+              <div class="m"><strong>{health['counts']['products']}</strong><span>Products tracked</span></div>
+              <div class="m"><strong>{health['counts']['stock_events']}</strong><span>Stock ledger events</span></div>
+              <div class="m"><strong>{health['counts']['customers']}</strong><span>Customer receipts</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="platform" class="wrap">
+      <h2>Automation backbone ที่ออกแบบให้เจ้าของเห็น truth</h2>
+      <p class="sub">ไม่ใช่ dashboard สวยเฉย ๆ — ทุก order ต้องกลายเป็น record, ทุก stock move ต้องมี ledger, ทุกช่องทางลูกค้าต้องมี receipt/status กลับไปตรวจได้</p>
+      <div class="flow">
+        <div class="step"><b>01 Webhook Verify</b><small>Shopee/Lazada/TikTok payload เข้าระบบแบบ signed เท่านั้น</small></div>
+        <div class="step"><b>02 Normalize Order</b><small>แปลงข้อมูล marketplace ให้เป็น schema เดียว</small></div>
+        <div class="step"><b>03 Deduct Stock</b><small>ตัดสต๊อกพร้อมเขียน stock ledger ทุกครั้ง</small></div>
+        <div class="step"><b>04 Notify Owner</b><small>ส่ง alert ผ่าน LINE/Telegram และ customer channels</small></div>
+      </div>
+    </section>
+
+    <section id="connect" class="wrap">
+      <h2>Customer Connect Center</h2>
+      <p class="sub">ปุ่มใช้งานจริงสำหรับให้ลูกค้าเริ่มคุย และให้ระบบเริ่มจับ source ID สำหรับ automation รอบต่อไป</p>
+      <div class="grid">
+        <a class="card btn line" href="{line_url}" target="_blank" rel="noopener"><span><b>Add LINE OA</b><br><small>เพิ่ม OA / ส่งข้อความแรก</small></span></a>
+        <a class="card btn telegram" href="{telegram_url}" target="_blank" rel="noopener"><span><b>Start Telegram Bot</b><br><small>เปิด chat_id สำหรับ automation</small></span></a>
+        <a class="card btn email" href="{email_url}"><span><b>Email confirmation</b><br><small>fallback พื้นฐานเมื่อ SMTP ยังไม่เปิด</small></span></a>
+        <a class="card btn instagram" href="{instagram_url}" target="_blank" rel="noopener"><span><b>Instagram DM</b><br><small>เปิด DM สำหรับ onboarding</small></span></a>
+      </div>
+    </section>
+
+    <section id="receipt" class="wrap">
+      <div class="card">
+        <h2>สร้างใบรับเรื่อง / Customer receipt</h2>
+        <p class="sub">กรอกข้อมูลแล้วระบบจะออก <span class="mono">customer_id</span> และ status page ทันที เช่น <span class="mono">/customers/cust_xxx</span></p>
+        <form id="connectForm">
+          <div class="grid"><div><label>Name</label><input name="name" required placeholder="ชื่อลูกค้า"></div><div><label>Company</label><input name="company" placeholder="บริษัท / ร้าน / โรงงาน"></div></div>
+          <div class="grid"><div><label>Email</label><input name="email" type="email" placeholder="name@example.com"></div><div><label>Phone</label><input name="phone" placeholder="08x-xxx-xxxx"></div></div>
+          <div class="grid"><div><label>LINE ID</label><input name="line_id"></div><div><label>Telegram username</label><input name="telegram_username"></div><div><label>Instagram</label><input name="instagram"></div></div>
+          <label>Preferred contact</label><select name="preferred_contact"><option>email</option><option>line</option><option>telegram</option><option>instagram</option><option>phone</option></select>
+          <label>Message</label><textarea name="message" rows="4" placeholder="อยากให้ช่วยเรื่องอะไร เช่น สต๊อกไม่ตรง, oversell, report ช้า"></textarea>
+          <button type="submit">Create receipt/status</button>
+        </form>
+        <div id="result"></div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><div class="wrap">Status: <b>{health['status']}</b> · Connector mode: <b>{health['mode']}</b> · API: <span class="mono">/api/customers/status</span> · <span class="mono">/api/channels/status</span></div></footer>
+  <script>
+  document.getElementById('connectForm').addEventListener('submit', async function(e){{
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    const res = await fetch('/api/customers/connect', {{method:'POST', headers:{{'content-type':'application/json'}}, body:JSON.stringify(data)}});
+    const json = await res.json();
+    const box = document.getElementById('result');
+    box.style.display = 'block';
+    if(!res.ok) {{ box.textContent = JSON.stringify(json,null,2); return; }}
+    box.innerHTML = (json.user_feedback || 'รับเรื่องแล้ว') + '<br><br>Status page: <a href="' + json.status_url + '">' + json.status_url + '</a>';
+  }});
+  </script>
+</body>
+</html>"""
 
 
 class CustomerConnect(BaseModel):
