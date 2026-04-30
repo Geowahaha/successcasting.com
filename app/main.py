@@ -85,12 +85,18 @@ def configured_url(name: str) -> str:
 
 
 def channel_status() -> dict[str, Any]:
+    line_url = configured_url("LINE_OA_URL")
+    line_basic_id = configured_url("_LINEBot_BASIC_ID") or configured_url("LINEBOT_BASIC_ID") or configured_url("LINE_BOT_BASIC_ID")
+    if not line_url and line_basic_id and len(line_basic_id) > 1:
+        if not line_basic_id.startswith("@"):
+            line_basic_id = "@" + line_basic_id
+        line_url = f"https://line.me/R/ti/p/{line_basic_id}"
     telegram_url = configured_url("TELEGRAM_BOT_URL")
     if not telegram_url and os.getenv("TELEGRAM_BOT_USERNAME"):
         telegram_url = f"https://t.me/{os.getenv('TELEGRAM_BOT_USERNAME').lstrip('@')}"
     email = os.getenv("CUSTOMER_SUPPORT_EMAIL", "hello@successcasting.com").strip()
     return {
-        "line": {"configured": bool(configured_url("LINE_OA_URL")), "url": configured_url("LINE_OA_URL") or "/connect/line", "requires_user_action": "add OA / send first message"},
+        "line": {"configured": bool(line_url), "url": line_url or "/connect/line", "requires_user_action": "add OA / send first message"},
         "telegram": {"configured": bool(telegram_url), "url": telegram_url or "/connect/telegram", "requires_user_action": "start bot first"},
         "email": {"configured": bool(os.getenv("SMTP_HOST")), "url": f"mailto:{email}?subject=Confirm%20SuccessCasting%20request", "address": email, "smtp": bool(os.getenv("SMTP_HOST"))},
         "instagram": {"configured": bool(configured_url("INSTAGRAM_DM_URL")), "url": configured_url("INSTAGRAM_DM_URL") or "/connect/instagram", "requires_user_action": "open DM / allow messaging"},
