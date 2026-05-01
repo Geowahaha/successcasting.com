@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 DB_PATH = Path(os.getenv("FACTORY_DB", "/data/factory.sqlite"))
@@ -18,6 +19,8 @@ CONNECTORS_MODE = os.getenv("FACTORY_CONNECTORS_MODE", "mock").lower()
 PLATFORMS = {"shopee", "lazada", "tiktok", "facebook"}
 
 app = FastAPI(title="SuccessCasting Automation Factory", version="1.0.0")
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+HOME_TEMPLATE = Path(__file__).parent / "home_template.html"
 
 
 def now_iso() -> str:
@@ -285,117 +288,59 @@ def healthz() -> dict[str, Any]:
 def dashboard() -> str:
     health = healthz()
     channels = channel_status()
-    line_url = channels["line"]["url"]
-    telegram_url = channels["telegram"]["url"]
-    instagram_url = channels["instagram"]["url"]
-    email_url = channels["email"]["url"]
-    return f"""<!doctype html>
-<html lang="th">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SuccessCasting — Factory Automation Control Room</title>
-  <style>
-  :root{{
-    --bg:#07080b;--panel:#0e1016;--panel2:#151824;--line:rgba(255,255,255,.08);
-    --text:#f7f8f8;--muted:#c3c9d6;--soft:#8e96a7;--brand:#5e6ad2;--brand2:#828fff;
-    --green:#34d399;--amber:#fbbf24;--pink:#f472b6;--cyan:#67e8f9;
-  }}
-  *{{box-sizing:border-box}} html{{scroll-behavior:smooth}} body{{margin:0;background:radial-gradient(circle at 20% 0%,rgba(94,106,210,.22),transparent 32rem),radial-gradient(circle at 85% 10%,rgba(52,211,153,.14),transparent 26rem),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;font-feature-settings:"cv01","ss03";}}
-  a{{color:inherit}} .wrap{{max-width:1180px;margin:0 auto;padding:0 22px}} .nav{{position:sticky;top:0;z-index:10;background:rgba(7,8,11,.76);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}}
-  .navin{{height:68px;display:flex;align-items:center;justify-content:space-between;gap:18px}} .brand{{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.02em}} .logo{{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--green));box-shadow:0 0 32px rgba(94,106,210,.4)}}
-  .links{{display:flex;gap:18px;color:var(--muted);font-size:13px}} .links a{{text-decoration:none}} .links a:hover{{color:var(--text)}} .pill{{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(255,255,255,.035);border-radius:999px;padding:7px 11px;color:#d7dbe5;font-size:12px}} .dot{{width:8px;height:8px;border-radius:99px;background:var(--green);box-shadow:0 0 18px var(--green)}}
-  .hero{{padding:88px 0 50px}} .hero-grid{{display:grid;grid-template-columns:1.05fr .95fr;gap:38px;align-items:center}} h1{{font-size:clamp(42px,7vw,82px);line-height:.96;letter-spacing:-.06em;margin:18px 0 18px;font-weight:650}} .lead{{font-size:clamp(17px,2.1vw,22px);line-height:1.62;color:var(--muted);max-width:720px;margin:0 0 28px}}
-  .actions{{display:flex;gap:12px;flex-wrap:wrap;align-items:center}} .btn,button{{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:13px 16px;font-weight:650;letter-spacing:-.01em;cursor:pointer;color:var(--text);background:rgba(255,255,255,.045)}} .btn.primary,button{{background:linear-gradient(135deg,var(--brand),#746cff);border-color:rgba(130,143,255,.55);box-shadow:0 16px 48px rgba(94,106,210,.24)}} .btn.line{{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.35)}} .btn.telegram{{background:rgba(103,232,249,.11);border-color:rgba(103,232,249,.32)}} .btn.email{{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.32)}} .btn.instagram{{background:rgba(244,114,182,.12);border-color:rgba(244,114,182,.35)}}
-  .console{{border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));border-radius:24px;overflow:hidden;box-shadow:0 24px 90px rgba(0,0,0,.42)}} .bar{{display:flex;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.2)}} .b{{width:10px;height:10px;border-radius:99px;background:#ff5f57}} .b:nth-child(2){{background:#febc2e}} .b:nth-child(3){{background:#28c840}} .screen{{padding:20px}} .metric{{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}} .m{{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:16px;padding:15px}} .m strong{{display:block;font-size:28px;letter-spacing:-.04em}} .m span{{color:var(--muted);font-size:12px}} code,.mono{{font-family:"JetBrains Mono",ui-monospace,monospace;color:#b7c0ff}}
-  section{{padding:56px 0}} h2{{font-size:clamp(30px,4vw,48px);line-height:1.04;letter-spacing:-.045em;margin:0 0 14px}} .sub{{color:var(--muted);line-height:1.7;max-width:760px}} .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}} .card{{background:rgba(255,255,255,.035);border:1px solid var(--line);padding:22px;border-radius:20px;box-shadow:0 18px 70px rgba(0,0,0,.2)}} .card h3{{margin:0 0 8px;font-size:19px;letter-spacing:-.02em}} .card p{{margin:0;color:var(--muted);line-height:1.6}} .flow{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:22px}} .step{{padding:16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}} .step b{{display:block;margin-bottom:6px}} .step small{{color:var(--soft)}}
-  form{{margin-top:20px}} label{{display:block;font-size:12px;color:var(--muted);margin:0 0 7px}} input,select,textarea{{width:100%;background:#0b0d13;border:1px solid rgba(255,255,255,.1);border-radius:12px;color:var(--text);padding:13px 14px;margin:0 0 14px;outline:none}} input:focus,textarea:focus,select:focus{{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(130,143,255,.13)}} #result{{display:none;white-space:pre-wrap;margin-top:14px;background:#0b0d13;border:1px solid var(--line);border-radius:14px;padding:14px;color:#dfe3ff}} .footer{{padding:36px 0 50px;color:var(--soft);font-size:13px;border-top:1px solid var(--line)}}
-  @media(max-width:820px){{.hero-grid{{grid-template-columns:1fr}}.links{{display:none}}.metric{{grid-template-columns:1fr}}.hero{{padding-top:54px}}.actions .btn,.actions button{{width:100%}}h1{{letter-spacing:-.045em;line-height:1.05}}section{{padding:44px 0}}}}
-  </style>
-</head>
-<body>
-  <header class="nav"><div class="wrap navin"><div class="brand"><div class="logo"></div>SuccessCasting OS</div><nav class="links"><a href="#platform">Platform</a><a href="#connect">Connect</a><a href="#receipt">Receipt/Status</a><a href="/api/channels/status">API status</a></nav><span class="pill"><span class="dot"></span>{health['status']} · {health['mode']}</span></div></header>
-  <main>
-    <section class="hero wrap">
-      <div class="hero-grid">
-        <div>
-          <span class="pill"><span class="dot"></span>Marketplace-to-Factory Automation is live</span>
-          <h1>เปลี่ยน order chaos ให้เป็น factory control room</h1>
-          <p class="lead">SuccessCasting รวมออเดอร์, ตัดสต๊อก, สร้างหลักฐาน, แจ้งเตือนทีม และเปิด Customer Connect Center สำหรับลูกค้าทุกช่องทางในหน้าเดียว</p>
-          <div class="actions">
-            <a class="btn primary" href="#receipt">สร้างใบรับเรื่อง / Create receipt</a>
-            <a class="btn line" href="{line_url}" target="_blank" rel="noopener">Add LINE OA</a>
-            <a class="btn telegram" href="{telegram_url}" target="_blank" rel="noopener">Start Telegram Bot</a>
-          </div>
-        </div>
-        <div class="console" aria-label="Factory dashboard preview">
-          <div class="bar"><span class="b"></span><span class="b"></span><span class="b"></span></div>
-          <div class="screen">
-            <p class="mono">factory-api / live counters</p>
-            <div class="metric">
-              <div class="m"><strong>{health['counts']['orders']}</strong><span>Orders ingested</span></div>
-              <div class="m"><strong>{health['counts']['products']}</strong><span>Products tracked</span></div>
-              <div class="m"><strong>{health['counts']['stock_events']}</strong><span>Stock ledger events</span></div>
-              <div class="m"><strong>{health['counts']['customers']}</strong><span>Customer receipts</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    html = HOME_TEMPLATE.read_text(encoding="utf-8")
+    replacements = {
+        "__STATUS__": str(health["status"]),
+        "__MODE__": str(health["mode"]),
+        "__ORDERS__": str(health["counts"].get("orders", 0)),
+        "__PRODUCTS__": str(health["counts"].get("products", 0)),
+        "__STOCK_EVENTS__": str(health["counts"].get("stock_events", 0)),
+        "__CUSTOMERS__": str(health["counts"].get("customers", 0)),
+        "__LINE_URL__": str(channels["line"].get("url", "/connect/line")),
+        "__TELEGRAM_URL__": str(channels["telegram"].get("url", "/connect/telegram")),
+        "__INSTAGRAM_URL__": str(channels["instagram"].get("url", "/connect/instagram")),
+        "__EMAIL_URL__": str(channels["email"].get("url", "mailto:jack0841117211@gmail.com")),
+    }
+    for key, value in replacements.items():
+        html = html.replace(key, value)
+    return html
 
-    <section id="platform" class="wrap">
-      <h2>Automation backbone ที่ออกแบบให้เจ้าของเห็น truth</h2>
-      <p class="sub">ไม่ใช่ dashboard สวยเฉย ๆ — ทุก order ต้องกลายเป็น record, ทุก stock move ต้องมี ledger, ทุกช่องทางลูกค้าต้องมี receipt/status กลับไปตรวจได้</p>
-      <div class="flow">
-        <div class="step"><b>01 Webhook Verify</b><small>Shopee/Lazada/TikTok payload เข้าระบบแบบ signed เท่านั้น</small></div>
-        <div class="step"><b>02 Normalize Order</b><small>แปลงข้อมูล marketplace ให้เป็น schema เดียว</small></div>
-        <div class="step"><b>03 Deduct Stock</b><small>ตัดสต๊อกพร้อมเขียน stock ledger ทุกครั้ง</small></div>
-        <div class="step"><b>04 Notify Owner</b><small>ส่ง alert ผ่าน LINE/Telegram และ customer channels</small></div>
-      </div>
-    </section>
 
-    <section id="connect" class="wrap">
-      <h2>Customer Connect Center</h2>
-      <p class="sub">ปุ่มใช้งานจริงสำหรับให้ลูกค้าเริ่มคุย และให้ระบบเริ่มจับ source ID สำหรับ automation รอบต่อไป</p>
-      <div class="grid">
-        <a class="card btn line" href="{line_url}" target="_blank" rel="noopener"><span><b>Add LINE OA</b><br><small>เพิ่ม OA / ส่งข้อความแรก</small></span></a>
-        <a class="card btn telegram" href="{telegram_url}" target="_blank" rel="noopener"><span><b>Start Telegram Bot</b><br><small>เปิด chat_id สำหรับ automation</small></span></a>
-        <a class="card btn email" href="{email_url}"><span><b>Email confirmation</b><br><small>fallback พื้นฐานเมื่อ SMTP ยังไม่เปิด</small></span></a>
-        <a class="card btn instagram" href="{instagram_url}" target="_blank" rel="noopener"><span><b>Instagram DM</b><br><small>เปิด DM สำหรับ onboarding</small></span></a>
-      </div>
-    </section>
+@app.get("/robots.txt", response_class=PlainTextResponse)
+def robots_txt() -> str:
+    return "User-agent: *\nAllow: /\nSitemap: https://www.successcasting.com/sitemap.xml\n"
 
-    <section id="receipt" class="wrap">
-      <div class="card">
-        <h2>สร้างใบรับเรื่อง / Customer receipt</h2>
-        <p class="sub">กรอกข้อมูลแล้วระบบจะออก <span class="mono">customer_id</span> และ status page ทันที เช่น <span class="mono">/customers/cust_xxx</span></p>
-        <form id="connectForm">
-          <div class="grid"><div><label>Name</label><input name="name" required placeholder="ชื่อลูกค้า"></div><div><label>Company</label><input name="company" placeholder="บริษัท / ร้าน / โรงงาน"></div></div>
-          <div class="grid"><div><label>Email</label><input name="email" type="email" placeholder="name@example.com"></div><div><label>Phone</label><input name="phone" placeholder="08x-xxx-xxxx"></div></div>
-          <div class="grid"><div><label>LINE ID</label><input name="line_id"></div><div><label>Telegram username</label><input name="telegram_username"></div><div><label>Instagram</label><input name="instagram"></div></div>
-          <label>Preferred contact</label><select name="preferred_contact"><option>email</option><option>line</option><option>telegram</option><option>instagram</option><option>phone</option></select>
-          <label>Message</label><textarea name="message" rows="4" placeholder="อยากให้ช่วยเรื่องอะไร เช่น สต๊อกไม่ตรง, oversell, report ช้า"></textarea>
-          <button type="submit">Create receipt/status</button>
-        </form>
-        <div id="result"></div>
-      </div>
-    </section>
-  </main>
-  <footer class="footer"><div class="wrap">Status: <b>{health['status']}</b> · Connector mode: <b>{health['mode']}</b> · API: <span class="mono">/api/customers/status</span> · <span class="mono">/api/channels/status</span></div></footer>
-  <script>
-  document.getElementById('connectForm').addEventListener('submit', async function(e){{
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    const res = await fetch('/api/customers/connect', {{method:'POST', headers:{{'content-type':'application/json'}}, body:JSON.stringify(data)}});
-    const json = await res.json();
-    const box = document.getElementById('result');
-    box.style.display = 'block';
-    if(!res.ok) {{ box.textContent = JSON.stringify(json,null,2); return; }}
-    box.innerHTML = (json.user_feedback || 'รับเรื่องแล้ว') + '<br><br>Status page: <a href="' + json.status_url + '">' + json.status_url + '</a>';
-  }});
-  </script>
-</body>
-</html>"""
+
+@app.get("/sitemap.xml")
+def sitemap_xml() -> Response:
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.successcasting.com/</loc><priority>1.0</priority></url>
+  <url><loc>https://www.successcasting.com/about</loc><priority>0.8</priority></url>
+  <url><loc>https://www.successcasting.com/products-services</loc><priority>0.9</priority></url>
+  <url><loc>https://www.successcasting.com/contact</loc><priority>0.8</priority></url>
+</urlset>"""
+    return Response(content=xml, media_type="application/xml")
+
+
+@app.get("/about")
+def old_about_redirect():
+    return RedirectResponse("/#about", status_code=301)
+
+
+@app.get("/contact")
+def old_contact_redirect():
+    return RedirectResponse("/#contact", status_code=301)
+
+
+@app.get("/products-services")
+def old_products_redirect():
+    return RedirectResponse("/#materials", status_code=301)
+
+
+@app.get("/services")
+def old_services_redirect():
+    return RedirectResponse("/#services", status_code=301)
 
 
 class CustomerConnect(BaseModel):
