@@ -440,17 +440,72 @@ def classify_sales_intent(text: str) -> tuple[str, int]:
     t = text.lower()
     score = 12
     intent = "general"
-    hot_words = ["ราคา", "quote", "ใบเสนอ", "เสนอราคา", "ด่วน", "สั่ง", "ผลิต", "หล่อ", "จำนวน", "กี่บาท", "delivery", "ส่งของ", "ติดต่อ", "โทร", "line"]
-    tech_words = ["วัสดุ", "เกรด", "fc", "fcd", "sus", "บรอนซ์", "ทองเหลือง", "อลู", "เหล็ก", "ทนสึก", "แบบ", "drawing", "ขนาด"]
-    if any(w in t for w in hot_words):
+    hot_words = ["ราคา", "quote", "ใบเสนอ", "เสนอราคา", "ด่วน", "สั่ง", "ผลิต", "หล่อ", "จำนวน", "กี่บาท", "delivery", "ส่งของ", "ติดต่อ", "โทร", "line", "ไลน์"]
+    casting_parts = ["มู่เลย์", "pulley", "เฟือง", "gear", "ใบพัด", "impeller", "เพลา", "bushing", "ปลอก", "ลูกล้อ", "ฝาครอบ", "housing", "bracket"]
+    tech_words = ["วัสดุ", "เกรด", "fc", "fcd", "sus", "บรอนซ์", "ทองเหลือง", "อลู", "เหล็ก", "ทนสึก", "แบบ", "drawing", "ขนาด", "mm", "cm", "kg"] + casting_parts
+    if any(w in t for w in hot_words) or any(w in t for w in casting_parts):
         intent, score = "quote_or_sales", 72
     if any(w in t for w in tech_words):
-        intent, score = ("technical_quote" if score >= 70 else "technical_question"), max(score, 58)
+        intent, score = ("technical_quote" if score >= 70 else "technical_question"), max(score, 68 if any(w in t for w in casting_parts) else 58)
     if any(w in t for w in ["เสีย", "ซ่อม", "แตก", "สึก", "หยุดไลน์", "หยุดเครื่อง"]):
         intent, score = "urgent_repair", 88
-    if any(w in t for w in ["เบอร์", "โทร", "ติดต่อ", "line", "ไลน์"]):
+    if any(w in t for w in ["เบอร์", "โทร", "ติดต่อ", "line", "ไลน์"]) or re.search(r"0[689]\d[\d\- ]{6,10}", t):
         intent, score = "contact_request", max(score, 82)
     return intent, score
+
+
+def extract_contact_from_text(text: str) -> dict[str, str]:
+    raw = (text or "").strip()
+    found: dict[str, str] = {}
+    email = re.search(r"[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}", raw, re.I)
+    if email:
+        found["email"] = normalize_contact("email", email.group(0))
+    phone = re.search(r"(?:\+66|0)[689]\d[\d\- ]{6,10}\d", raw)
+    if phone:
+        found["phone"] = normalize_contact("phone", phone.group(0))
+    line_label = re.search(r"(?:line|ไลน์)\s*[:=]?\s*@?([A-Za-z0-9._\-]{3,40})", raw, re.I)
+    if line_label:
+        found["line_id"] = normalize_contact("line_id", line_label.group(1))
+    cleaned = raw
+    for value in [email.group(0) if email else "", phone.group(0) if phone else ""]:
+        if value:
+            cleaned = cleaned.replace(value, " ")
+    cleaned = re.sub(r"(?:line|ไลน์)\s*[:=]?\s*@?[A-Za-z0-9._\-]{3,40}", " ", cleaned, flags=re.I)
+    tokens = [t for t in re.split(r"\s+", cleaned.strip()) if t]
+    stop = {"ต้องการ", "ขอ", "ราคา", "ใบเสนอราคา", "งาน", "หล่อ", "มู่เลย์", "pulley", "เหล็ก", "จำนวน", "ชิ้น", "mm", "cm", "หรือ", "และ", "ครับ", "ค่ะ"}
+    if not found.get("name") and (found.get("phone") or found.get("email") or found.get("line_id")) and tokens:
+        # First short Thai/Latin token before contact is usually the customer's name/nickname.
+        first = tokens[0].strip(" ,.;:()[]{}")
+        if first and first.lower() not in stop and not re.search(r"\d", first) and len(first) <= 40:
+            found["name"] = first
+    if not found.get("line_id") and (found.get("phone") or found.get("email")):
+        for tok in tokens[1:4]:
+            cand = tok.strip("@,.;:()[]{}")
+            if re.fullmatch(r"[A-Za-z][A-Za-z0-9._\-]{2,39}", cand) and cand.lower() not in stop:
+                found["line_id"] = normalize_contact("line_id", cand)
+                break
+    return found
+
+
+def enrich_payload_from_message(payload: AISalesChat, session_memory: dict[str, Any] | None = None) -> AISalesChat:
+    parsed = extract_contact_from_text(payload.message)
+    data = payload.model_dump()
+    msg = payload.message.strip()
+    for key in ["name", "phone", "email", "line_id"]:
+        if not str(data.get(key) or "").strip() and parsed.get(key):
+            data[key] = parsed[key]
+    previous_slots = (session_memory or {}).get("quote_slots", {}) if session_memory else {}
+    if previous_slots:
+        previous_readiness = readiness_from_slots(previous_slots, "session", 0)
+        first_missing = (previous_readiness.get("missing") or [""])[0]
+        bare = re.sub(r"[\s,.;:()\[\]{}]+", " ", msg).strip()
+        has_contact_pattern = bool(extract_contact_from_text(msg).get("phone") or extract_contact_from_text(msg).get("email") or re.search(r"(?:line|ไลน์)", msg, re.I))
+        looks_like_job = any(w in msg.lower() for w in ["หล่อ", "มู่เลย์", "pulley", "เฟือง", "ขนาด", "mm", "cm", "ราคา", "วัสดุ", "ชิ้น"])
+        if first_missing == "name" and not data.get("name") and bare and len(bare) <= 40 and not has_contact_pattern and not looks_like_job and not re.search(r"\d", bare):
+            data["name"] = bare
+        elif first_missing == "line_or_email" and not data.get("line_id") and not data.get("email") and re.fullmatch(r"@?[A-Za-z][A-Za-z0-9._\-]{2,39}", bare):
+            data["line_id"] = bare.lstrip("@")
+    return AISalesChat(**data)
 
 
 def quote_readiness(payload: AISalesChat, intent: str, score: int) -> dict[str, Any]:
@@ -499,7 +554,7 @@ def ai_sales_llm_config() -> dict[str, Any]:
     return {"provider": "local-brain", "api_key": "", "url": "", "model": "", "gateway": "cloudflare-ai-gateway-ready" if gateway_url else ""}
 
 
-def llm_sales_reply(payload: AISalesChat, intent: str, score: int, readiness: dict[str, Any], brain: dict[str, Any]) -> str | None:
+def llm_sales_reply(payload: AISalesChat, intent: str, score: int, readiness: dict[str, Any], brain: dict[str, Any], memory: dict[str, Any] | None = None) -> str | None:
     cfg = ai_sales_llm_config()
     api_key = cfg.get("api_key")
     if not api_key:
@@ -507,28 +562,52 @@ def llm_sales_reply(payload: AISalesChat, intent: str, score: int, readiness: di
     url = cfg["url"]
     model = cfg["model"]
     system = (
-        "You are Success Casting AI Sales Concierge. Reply in Thai unless user uses English. "
-        "Be consultative and concise. Never invent prices or delivery promises. "
-        "Drive the customer toward sending drawing/photo/size/material/quantity/deadline/contact. "
-        "Do not expose secrets."
+        "You are Success Casting AI Sales Concierge for a real Thai metal casting foundry. Reply in Thai unless user uses English. "
+        "Use reasoning and the provided business brain; do not repeat generic boilerplate. Answer the customer's exact work item first. "
+        "For casting quotes, collect lead data in this strict order, asking only ONE short next question at the end: 1) name, 2) phone, 3) LINE or email, then job details. "
+        "If contact data is already present in quote_readiness.slots.contact, acknowledge it briefly and do not ask again. "
+        "Never invent prices or delivery promises. Mention that drawing/photo, material, quantity and deadline improve quotation accuracy. "
+        "Do not expose secrets or internal JSON."
     )
-    user = json.dumps({"customer_message": payload.message, "intent": intent, "lead_score": score, "quote_readiness": readiness, "business_brain": brain}, ensure_ascii=False)[:6000]
+    user = json.dumps({"customer_message": payload.message, "intent": intent, "lead_score": score, "quote_readiness": readiness, "session_memory": memory or {}, "business_brain": brain}, ensure_ascii=False)[:7000]
     body = json.dumps({"model": model, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.25, "max_tokens": 420}).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=body,
-        headers={
-            "content-type": "application/json",
-            "authorization": f"Bearer {api_key}",
-            "user-agent": "SuccessCastingAI/1.0",
-        },
-        method="POST",
-    )
-    try:
+    def post_chat(target_url: str, target_body: bytes) -> str | None:
+        req = urllib.request.Request(
+            target_url,
+            data=target_body,
+            headers={
+                "content-type": "application/json",
+                "authorization": f"Bearer {api_key}",
+                "user-agent": "SuccessCastingAI/1.0",
+            },
+            method="POST",
+        )
         with urllib.request.urlopen(req, timeout=12) as resp:
             data = json.loads(resp.read().decode("utf-8"))
         return data.get("choices", [{}])[0].get("message", {}).get("content") or None
-    except Exception:
+    try:
+        return post_chat(url, body)
+    except urllib.error.HTTPError as exc:
+        # If Cloudflare AI Gateway is rate-limited, try direct Gemini OpenAI-compatible endpoint once.
+        if exc.code == 429 and cfg.get("provider") == "gemini" and cfg.get("gateway") == "cloudflare-ai-gateway":
+            try:
+                direct_model = str(model).split("/")[-1]
+                direct_body = json.dumps({"model": direct_model, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.25, "max_tokens": 420}).encode("utf-8")
+                return post_chat("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", direct_body)
+            except Exception as direct_exc:
+                exc = direct_exc
+        try:
+            with db() as conn:
+                conn.execute("INSERT INTO error_log(source,message,payload_json,created_at) VALUES(?,?,?,?)", ("ai-sales-llm", f"{type(exc).__name__}: {str(exc)[:180]}", jdump({"provider": cfg.get("provider"), "gateway": cfg.get("gateway")}), now_iso()))
+        except Exception:
+            pass
+        return None
+    except Exception as exc:
+        try:
+            with db() as conn:
+                conn.execute("INSERT INTO error_log(source,message,payload_json,created_at) VALUES(?,?,?,?)", ("ai-sales-llm", f"{type(exc).__name__}: {str(exc)[:180]}", jdump({"provider": cfg.get("provider"), "gateway": cfg.get("gateway")}), now_iso()))
+        except Exception:
+            pass
         return None
 
 
@@ -591,12 +670,27 @@ def extract_quote_slots(payload: AISalesChat) -> dict[str, Any]:
     lower = text.lower()
     slots: dict[str, Any] = {}
     contact = {}
-    if payload.name.strip(): contact["name"] = payload.name.strip()
+    parsed_contact = extract_contact_from_text(payload.message)
+    name = payload.name.strip() or parsed_contact.get("name", "")
+    phone = normalize_contact("phone", payload.phone) or parsed_contact.get("phone", "")
+    email = normalize_contact("email", payload.email) or parsed_contact.get("email", "")
+    line_id = normalize_contact("line_id", payload.line_id) or parsed_contact.get("line_id", "")
+    if name: contact["name"] = name
     if payload.company.strip(): contact["company"] = payload.company.strip()
-    if normalize_contact("phone", payload.phone): contact["phone"] = normalize_contact("phone", payload.phone)
-    if normalize_contact("email", payload.email): contact["email"] = normalize_contact("email", payload.email)
-    if normalize_contact("line_id", payload.line_id): contact["line_id"] = normalize_contact("line_id", payload.line_id)
+    if phone: contact["phone"] = phone
+    if email: contact["email"] = email
+    if line_id: contact["line_id"] = line_id
     if contact: slots["contact"] = contact
+    part_words = ["มู่เลย์", "pulley", "เฟือง", "gear", "ใบพัด", "impeller", "เพลา", "bushing", "ปลอก", "ลูกล้อ", "housing", "bracket"]
+    for w in part_words:
+        if w in lower:
+            slots["work_item"] = w
+            break
+    # capture a short customer-facing job context, not just boolean slots
+    context = re.sub(r"[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}", " ", payload.message.strip(), flags=re.I)
+    context = re.sub(r"(?:\+66|0)[689]\d[\d\- ]{6,10}\d", " ", context)
+    if context and any(w in context.lower() for w in part_words + ["หล่อ", "ผลิต", "ซ่อม", "ขนาด", "mm", "cm"]):
+        slots["job_context"] = re.sub(r"\s+", " ", context).strip()[:180]
     material_words = ["fc", "fcd", "sus", "เหล็ก", "บรอนซ์", "ทองเหลือง", "อลู", "สแตนเลส", "วัสดุ", "เกรด", "hi chrome", "แมงกานีส"]
     if any(w in lower for w in material_words): slots["material"] = True
     qty = re.search(r"(\d+)\s*(ชิ้น|pcs|pc|piece|ตัว|ชุด)", lower)
@@ -624,19 +718,27 @@ def merge_slots(old_slots: dict[str, Any], new_slots: dict[str, Any]) -> dict[st
 
 
 def readiness_from_slots(slots: dict[str, Any], intent: str, score: int) -> dict[str, Any]:
+    contact = slots.get("contact") or {}
     checks = {
-        "contact": bool((slots.get("contact") or {})),
+        "name": bool(contact.get("name")),
+        "phone": bool(contact.get("phone")),
+        "line_or_email": bool(contact.get("line_id") or contact.get("email")),
+        "work_item": bool(slots.get("work_item") or slots.get("job_context")),
         "material": bool(slots.get("material")),
         "quantity": bool(slots.get("quantity")),
         "drawing_or_photo": bool(slots.get("drawing_or_photo")),
         "size_or_weight": bool(slots.get("size_or_weight")),
         "deadline": bool(slots.get("deadline")),
     }
-    missing = [k for k, ok in checks.items() if not ok]
+    priority = ["name", "phone", "line_or_email", "work_item", "material", "quantity", "drawing_or_photo", "size_or_weight", "deadline"]
+    missing = [k for k in priority if not checks[k]]
     readiness = int(round((sum(1 for ok in checks.values() if ok) / len(checks)) * 100))
-    stage = "quote_ready" if readiness >= 84 else "hot_lead" if score >= 80 or readiness >= 60 else "nurture"
+    stage = "quote_ready" if readiness >= 84 else "hot_lead" if score >= 80 or readiness >= 55 else "nurture"
     labels = {
-        "contact": "ชื่อ/เบอร์/LINE หรืออีเมล",
+        "name": "ชื่อผู้ติดต่อ",
+        "phone": "เบอร์โทร",
+        "line_or_email": "LINE หรืออีเมล",
+        "work_item": "ชิ้นงานที่ต้องการหล่อ",
         "material": "วัสดุหรือเกรดที่ต้องการ",
         "quantity": "จำนวนชิ้น",
         "drawing_or_photo": "รูป/แบบ/drawing/ตัวอย่าง",
@@ -644,6 +746,28 @@ def readiness_from_slots(slots: dict[str, Any], intent: str, score: int) -> dict
         "deadline": "วันต้องการใช้งาน/ความด่วน",
     }
     return {"score": readiness, "stage": stage, "checks": checks, "missing": missing, "missing_labels": [labels[m] for m in missing], "slots": slots}
+
+
+def load_session_memory(session_id: str) -> dict[str, Any] | None:
+    sid = (session_id or "").strip()
+    if not sid:
+        return None
+    with db() as conn:
+        sess = conn.execute("SELECT * FROM ai_sales_sessions WHERE session_id=?", (sid,)).fetchone()
+        events = conn.execute("SELECT role,message,payload_json FROM ai_sales_events WHERE session_id=? ORDER BY id DESC LIMIT 12", (sid,)).fetchall()
+    merged_slots: dict[str, Any] = {}
+    lines = []
+    customer_id = sess["customer_id"] if sess and sess["customer_id"] else ""
+    for row in reversed(events):
+        if row["role"] == "user":
+            lines.append("ลูกค้า: " + row["message"][:180])
+            payload = load_json_safe(row["payload_json"], {})
+            merged_slots = merge_slots(merged_slots, payload.get("slots", {}))
+        elif row["role"] == "assistant":
+            lines.append("AI: " + row["message"][:180])
+    if not events and not sess:
+        return None
+    return {"customer_id": customer_id, "summary": "\n".join(lines[-6:]), "quote_slots": merged_slots, "tags": [], "last_intent": sess["last_intent"] if sess else "", "stage": sess["stage"] if sess else "nurture", "customer": {"customer_id": customer_id}}
 
 
 def load_customer_memory(customer_id: str) -> dict[str, Any] | None:
@@ -708,16 +832,37 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
     lower = msg.lower()
     customer_name = ((memory or {}).get("customer") or {}).get("name") or payload.name.strip()
     memory_cue = ""
-    if memory and (memory.get("summary") or customer_name):
-        who = f"คุณ{customer_name}" if customer_name else "ลูกค้าเดิม"
-        memory_cue = f"ยินดีต้อนรับกลับครับ {who} — ผมจำบริบทเดิมไว้แล้ว: {memory.get('summary') or 'มีประวัติการติดต่อกับ Success Casting'}"
-    llm_answer = llm_sales_reply(payload, intent, score, readiness, brain)
+    if memory and customer_name:
+        memory_cue = f"ยินดีต้อนรับกลับครับ คุณ{customer_name}"
+    llm_answer = llm_sales_reply(payload, intent, score, readiness, brain, memory)
     if llm_answer:
         if memory_cue:
             llm_answer = memory_cue + "\n\n" + llm_answer
         return {"answer": llm_answer, "intent": intent, "lead_score": score, "quote_readiness": readiness, "next_questions": brain["questions"][:4], "cta": "ฝากชื่อ เบอร์ หรือ LINE เพื่อให้ทีมขายติดตามและออกเลขอ้างอิง", "brain_version": brain.get("version", "llm"), "mode": "llm", "memory_cue": memory_cue}
-    if any(w in lower for w in ["hello", "hi", "สวัสดี", "ดีครับ", "ดีค่ะ"]):
-        answer = "สวัสดีครับ ผมคือ AI Sales Concierge ของ Success Casting ช่วยคัดกรองงานหล่อและพาลูกค้าไปถึงขั้นขอใบเสนอราคาได้เร็วขึ้นครับ"
+    first_missing = (readiness.get("missing") or [""])[0]
+    contact = (readiness.get("slots") or {}).get("contact") or {}
+    job_context = (readiness.get("slots") or {}).get("job_context") or (readiness.get("slots") or {}).get("work_item") or "งานหล่อชิ้นนี้"
+    if not readiness.get("missing"):
+        item = (readiness.get("slots") or {}).get("job_context") or job_context
+        answer = f"ข้อมูลหลักครบสำหรับเปิด lead แล้วครับ: {item}"
+        details = []
+        if readiness["slots"].get("quantity"): details.append(f"จำนวน {readiness['slots']['quantity']}")
+        if readiness["slots"].get("size_or_weight"): details.append(f"ขนาด/น้ำหนัก {readiness['slots']['size_or_weight']}")
+        if readiness["slots"].get("material"): details.append("มีข้อมูลวัสดุ/การใช้งานเบื้องต้น")
+        if details:
+            answer += "\n" + " • ".join(details)
+        answer += "\n\nผมบันทึกข้อมูลไว้ในระบบแล้ว ฝ่ายขายใช้เลขอ้างอิงนี้ติดตามต่อได้ ถ้ามีรูปหรือ drawing ส่งทาง LINE @305idxid ได้เลยครับ"
+    elif first_missing in {"name", "phone", "line_or_email"}:
+        base = f"รับเรื่อง {job_context} ไว้ครับ ผมจะเก็บข้อมูลให้ฝ่ายขายประเมินต่อ ไม่ต้องพิมพ์ยาวครับ"
+        if first_missing == "name":
+            answer = base + "\n\nขอชื่อผู้ติดต่อก่อนครับ?"
+        elif first_missing == "phone":
+            who = f"คุณ{contact.get('name')}" if contact.get("name") else "ครับ"
+            answer = base + f"\n\nขอเบอร์โทรของ{who}ด้วยครับ?"
+        else:
+            answer = base + "\n\nขอ LINE ID หรืออีเมลสำหรับส่งรายละเอียดต่อครับ?"
+    elif any(w in lower for w in ["hello", "hi", "สวัสดี", "ดีครับ", "ดีค่ะ"]):
+        answer = "สวัสดีครับ ผมช่วยคุยเรื่องงานหล่อและเก็บข้อมูลให้ฝ่ายขายเสนอราคาได้ครับ ต้องการให้ช่วยเรื่องงานหล่ออะไรครับ?"
     elif intent == "urgent_repair":
         answer = "งานซ่อม/ชิ้นส่วนแตก/สึกถือเป็นงานเร่งครับ ส่งรูปชิ้นงาน ขนาดคร่าว ๆ จำนวน และวัสดุเดิมมาได้เลย ถ้ายังไม่รู้เกรดวัสดุ ทีมจะช่วยประเมินจากการใช้งานจริง เช่น รับแรงกระแทก ทนสึก หรือทนความร้อน"
     elif intent in {"quote_or_sales", "technical_quote"}:
@@ -727,17 +872,35 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
         answer = f"Success Casting รับงานหล่อหลายกลุ่ม เช่น {mats} การเลือกวัสดุควรดูโหลด, การสึก, ความร้อน, สารเคมี และชิ้นงานเดิม ถ้าส่งรูป/แบบมา AI จะช่วยจัดข้อมูลให้ทีมประเมินต่อได้"
     elif intent == "contact_request":
         c = brain["contacts"]
-        answer = f"ติดต่อทีมได้ทันที: โทร {c['phone']} หรือ LINE {c['line']} ถ้าฝากชื่อ/เบอร์/LINE ในช่องนี้ ระบบจะออกเลขอ้างอิงและบันทึกประวัติลูกค้าให้ครับ"
+        if first_missing and first_missing not in {"name", "phone", "line_or_email"}:
+            ask_map = {
+                "material": "รับช่องทางติดต่อแล้วครับ งานมู่เลย์ขนาด 120 mm ถ้ายังไม่รู้วัสดุ ให้บอกลักษณะการใช้งานแทนได้ เช่น รับแรง/ทนสึก/โดนน้ำ/โดนความร้อน ใช้งานกับเครื่องอะไรครับ?",
+                "quantity": "รับช่องทางติดต่อแล้วครับ ต้องการจำนวนกี่ชิ้นครับ?",
+                "drawing_or_photo": "รับช่องทางติดต่อแล้วครับ มีรูปชิ้นงานหรือ drawing ส่งทาง LINE ได้ไหมครับ?",
+                "deadline": "รับช่องทางติดต่อแล้วครับ ต้องการใช้งานเมื่อไร หรือเป็นงานด่วนไหมครับ?",
+            }
+            answer = ask_map.get(first_missing, "รับช่องทางติดต่อแล้วครับ ขอรายละเอียดงานเพิ่มอีกนิดเพื่อให้ประเมินราคาแม่นขึ้นครับ")
+        else:
+            answer = f"ติดต่อทีมได้ทันที: โทร {c['phone']} หรือ LINE {c['line']} ถ้าฝากชื่อ/เบอร์/LINE ในช่องนี้ ระบบจะออกเลขอ้างอิงและบันทึกประวัติลูกค้าให้ครับ"
     else:
-        answer = "ผมช่วยตอบเรื่องรับหล่อโลหะ, วัสดุที่เหมาะสม, ขั้นตอนส่งแบบ, งานด่วน, งาน 1 ชิ้นขึ้นไป และช่วยสร้าง lead ให้ฝ่ายขายปิดดีลต่อได้ครับ เล่าโจทย์งานหรือส่งรายละเอียดที่มีมาได้เลย"
+        if first_missing and first_missing not in {"name", "phone", "line_or_email"}:
+            ask_map = {
+                "material": f"รับข้อมูล {job_context} แล้วครับ ถ้ายังไม่รู้วัสดุ บอกการใช้งานแทนได้ เช่น รับแรง ทนสึก โดนน้ำ/ความร้อน หรือใช้กับเครื่องอะไรครับ?",
+                "quantity": f"รับข้อมูล {job_context} แล้วครับ ต้องการจำนวนกี่ชิ้นครับ?",
+                "drawing_or_photo": f"รับข้อมูล {job_context} แล้วครับ มีรูปชิ้นงานหรือ drawing ไหมครับ?",
+                "deadline": f"รับข้อมูล {job_context} แล้วครับ ต้องการใช้งานเมื่อไร หรือเป็นงานด่วนไหมครับ?",
+            }
+            answer = ask_map.get(first_missing, f"รับข้อมูล {job_context} แล้วครับ ขอรายละเอียดเพิ่มอีกนิดเพื่อให้ฝ่ายขายประเมินราคาแม่นขึ้นครับ")
+        else:
+            answer = "ผมช่วยตอบเรื่องรับหล่อโลหะ, วัสดุที่เหมาะสม, ขั้นตอนส่งแบบ, งานด่วน, งาน 1 ชิ้นขึ้นไป และช่วยสร้าง lead ให้ฝ่ายขายปิดดีลต่อได้ครับ เล่าโจทย์งานหรือส่งรายละเอียดที่มีมาได้เลย"
     if memory_cue:
         answer = memory_cue + "\n\n" + answer
     missing_labels = readiness.get("missing_labels") or []
     if readiness.get("stage") == "quote_ready" and not missing_labels:
         next_questions = ["ข้อมูลหลักครบสำหรับส่งฝ่ายขายประเมินแล้ว", "ถ้ามีรูป/แบบเพิ่มเติม ส่งผ่าน LINE หรือแนบในช่องทางที่สะดวก", "ทีมจะใช้เลขอ้างอิงนี้ติดตามงานต่อ"]
     else:
-        next_questions = missing_labels[:4] if missing_labels else (brain["questions"][:4] if score >= 55 else ["ต้องการหล่อชิ้นงานประเภทไหน", "มีรูปหรือแบบไหม", "ต้องการจำนวนกี่ชิ้น"])
-    cta = "ฝากชื่อ เบอร์ หรือ LINE ได้เลย ผมจะสร้างเลขอ้างอิงให้ทีมขายติดตามต่อ" if score >= 70 else "ถ้าพร้อมขอราคา ให้พิมพ์: ขอใบเสนอราคา + รายละเอียดงาน"
+        next_questions = missing_labels[:1] if missing_labels else (brain["questions"][:1] if score >= 55 else ["ต้องการหล่อชิ้นงานประเภทไหน"])
+    cta = "ตอบสั้น ๆ ตามคำถามเดียวได้เลย ระบบจะจำข้อมูลและบันทึกเป็น lead ให้ฝ่ายขาย" if readiness.get("missing") else "ข้อมูลหลักครบแล้ว ทีมฝ่ายขายสามารถติดตามต่อได้"
     smart_actions = ["ส่งรูป/แบบชิ้นงาน", "บันทึกเป็นงานด่วน", "โทรฝ่ายขาย 084-111-7211", "เปิด LINE @305idxid"]
     return {"answer": answer, "intent": intent, "lead_score": score, "quote_readiness": readiness, "next_questions": next_questions, "cta": cta, "brain_version": brain.get("version", "local"), "mode": "local-brain", "memory_cue": memory_cue, "smart_actions": smart_actions}
 
@@ -788,27 +951,61 @@ def connect_customer(payload: CustomerConnect) -> dict[str, Any]:
     return {"status": "ok", "customer_id": cid, "returning_customer": returning, "user_feedback": feedback, "status_url": f"/customers/{cid}"}
 
 
+def update_existing_customer_from_ai(customer_id: str, contact: dict[str, Any], payload: AISalesChat, intent: str, score: int, readiness: dict[str, Any]) -> dict[str, Any]:
+    seen = now_iso()
+    name = str(contact.get("name") or payload.name or "").strip()
+    phone = normalize_contact("phone", str(contact.get("phone") or payload.phone or ""))
+    email = normalize_contact("email", str(contact.get("email") or payload.email or ""))
+    line_id = normalize_contact("line_id", str(contact.get("line_id") or payload.line_id or ""))
+    with db() as conn:
+        conn.execute(
+            "UPDATE customers SET name=COALESCE(NULLIF(?,''),name), company=COALESCE(NULLIF(?,''),company), email=COALESCE(NULLIF(?,''),email), phone=COALESCE(NULLIF(?,''),phone), line_id=COALESCE(NULLIF(?,''),line_id), preferred_contact=?, last_seen_at=? WHERE customer_id=?",
+            (name, payload.company.strip(), email, phone, line_id, payload.preferred_contact or "line", seen, customer_id),
+        )
+        for kind, value in [("email", email), ("phone", phone), ("line_id", line_id)]:
+            if value:
+                conn.execute("INSERT OR IGNORE INTO contact_methods(customer_id,type,value,created_at) VALUES(?,?,?,?)", (customer_id, kind, value, seen))
+        conn.execute(
+            "INSERT INTO interactions(customer_id,source,direction,subject,body,payload_json,created_at) VALUES(?,?,?,?,?,?,?)",
+            (customer_id, "successcasting-ai-sales-concierge", "inbound", "AI Sales Concierge lead", f"AI lead ({intent}, score {score}, readiness {readiness.get('score')}%): {payload.message}", jdump({"contact": contact, "slots": readiness.get("slots", {})}), seen),
+        )
+    return {"status": "ok", "customer_id": customer_id, "returning_customer": True, "user_feedback": f"อัปเดตข้อมูลลูกค้าแล้ว — เลขอ้างอิง {customer_id}", "status_url": f"/customers/{customer_id}"}
+
+
 @app.post("/api/ai-sales/chat")
 def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
     session_id = payload.session_id.strip() or ("ai_" + uuid.uuid4().hex[:12])
+    session_memory = load_session_memory(session_id)
+    payload = enrich_payload_from_message(payload, session_memory)
     intent, score = classify_sales_intent(payload.message)
-    known_customer_id = find_customer_id_from_payload(payload)
-    memory_before = load_customer_memory(known_customer_id) if known_customer_id else None
+    session_customer_id = session_memory.get("customer_id", "") if session_memory else ""
+    known_customer_id = session_customer_id or find_customer_id_from_payload(payload)
+    memory_before = load_customer_memory(known_customer_id) if known_customer_id else session_memory
+    if memory_before and session_memory and session_memory.get("quote_slots"):
+        merged_session_slots = merge_slots(memory_before.get("quote_slots", {}), session_memory.get("quote_slots", {}))
+        memory_before = dict(memory_before)
+        memory_before["quote_slots"] = merged_session_slots
+        if not memory_before.get("summary"):
+            memory_before["summary"] = session_memory.get("summary", "")
     reply = build_sales_reply(payload, intent, score, memory_before)
     lead = None
-    has_contact = any([payload.name.strip(), normalize_contact("phone", payload.phone), normalize_contact("email", payload.email), normalize_contact("line_id", payload.line_id)])
+    contact = reply.get("quote_readiness", {}).get("slots", {}).get("contact", {})
+    has_contact = bool(contact.get("name") or contact.get("phone") or contact.get("email") or contact.get("line_id"))
     if has_contact:
-        lead_payload = CustomerConnect(
-            name=payload.name,
-            company=payload.company,
-            email=payload.email,
-            phone=payload.phone,
-            line_id=payload.line_id,
-            preferred_contact=payload.preferred_contact or "line",
-            message=f"AI Sales Concierge lead ({intent}, score {score}, readiness {reply['quote_readiness']['score']}%): {payload.message}",
-            source="successcasting-ai-sales-concierge",
-        )
-        lead = connect_customer(lead_payload)
+        if known_customer_id:
+            lead = update_existing_customer_from_ai(known_customer_id, contact, payload, intent, score, reply["quote_readiness"])
+        else:
+            lead_payload = CustomerConnect(
+                name=payload.name or contact.get("name", ""),
+                company=payload.company,
+                email=payload.email or contact.get("email", ""),
+                phone=payload.phone or contact.get("phone", ""),
+                line_id=payload.line_id or contact.get("line_id", ""),
+                preferred_contact=payload.preferred_contact or "line",
+                message=f"AI Sales Concierge lead ({intent}, score {score}, readiness {reply['quote_readiness']['score']}%): {payload.message}",
+                source="successcasting-ai-sales-concierge",
+            )
+            lead = connect_customer(lead_payload)
         known_customer_id = lead.get("customer_id") or known_customer_id
     memory_after = upsert_ai_session_and_memory(session_id, payload, known_customer_id, intent, reply["quote_readiness"])
     if memory_after.get("quote_readiness"):
