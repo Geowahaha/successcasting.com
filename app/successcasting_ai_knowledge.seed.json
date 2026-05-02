@@ -1,0 +1,49 @@
+{
+  "version": "successcasting-agentic-knowledge-v1",
+  "updated_at": "2026-05-02",
+  "private_note": "Backend knowledge only. Do not render this file as marketing copy on the public website.",
+  "documents": [
+    {
+      "slug": "sand-casting-process",
+      "title": "Sand casting process and practical limitations",
+      "category": "process",
+      "keywords": ["sand casting", "หล่อทราย", "แม่พิมพ์ทราย", "pattern", "core", "gating", "riser", "defect"],
+      "content": "Sand casting คือการทำแบบหล่อด้วยทราย ใส่ core ถ้าต้องมีโพรง เทโลหะหลอม รอแข็งตัว แกะแบบ ตัด gate/riser ทำความสะอาด ตรวจสอบ และ machining ตามจุดสำคัญ ขั้นตอนหลัก: รับแบบ/รูป/ตัวอย่าง, ตรวจวัสดุและขนาด, ทำ pattern เผื่อ shrinkage และ machining allowance, ทำ mold/core, ออกแบบ gating/riser, melting/pouring, shakeout/fettling, heat treatment ถ้าจำเป็น, machining, inspection. ข้อจำกัด: ผิวหล่อทรายหยาบกว่า die/investment casting, tolerance กว้างกว่างาน machining, ผนังบางมาก/มุมคม/รูเล็กยาว/ส่วนหนาบางต่างกันมากเสี่ยง defect. Defect ที่ควรอธิบายลูกค้า: porosity จาก gas/shrinkage, sand inclusion, cold shut/misrun, crack/hot tear, hard spot/chill, dimension variation. ถ้าไม่มี drawing ให้ขอรูปหลายมุมพร้อมขนาดหลัก น้ำหนัก วัสดุเดิม จุดเสียหาย และตัวอย่างจริงถ้ามี."
+    },
+    {
+      "slug": "cast-iron-fc-fcd",
+      "title": "FC gray cast iron vs FCD ductile iron",
+      "category": "material",
+      "keywords": ["FC", "FCD", "เหล็กหล่อ", "เหล็กหล่อเทา", "เหล็กหล่อเหนียว", "gray iron", "ductile iron"],
+      "content": "FC หรือเหล็กหล่อเทา เช่น FC150/FC200/FC250/FC300 มี graphite เป็นแผ่น กลึงง่าย ลดสั่นดี ทนแรงอัดดี เหมาะกับฐานเครื่องจักร housing pulley flywheel cover pump casing บางงาน แต่เปราะและรับแรงกระแทก/แรงดึงต่ำกว่า FCD. FCD หรือเหล็กหล่อเหนียว เช่น FCD400/FCD450/FCD500/FCD600/FCD700 มี graphite เป็นก้อนกลม เหนียวกว่า รับแรงดึงและแรงกระแทกดีกว่า เหมาะกับ gear, pulley รับโหลด, bracket, wheel, pipe fitting, valve body, arm/ชิ้นส่วนเครื่องจักรหนัก. เลือก FC เมื่องานทั่วไป กลึงง่าย ลดสั่น ไม่กระแทกหนัก. เลือก FCD เมื่องานเดิมแตกง่าย โหลดสูง ต้องการความเหนียวกว่า. ควรยืนยันมาตรฐาน JIS/ISO/ASTM ตามแบบลูกค้า เช่น JIS G5501/G5502, ISO 185/1083, ASTM A48/A536."
+    },
+    {
+      "slug": "cast-steel-high-chrome-stainless-bronze-aluminum",
+      "title": "Other casting materials selection guide",
+      "category": "material",
+      "keywords": ["cast steel", "high chrome", "สแตนเลส", "bronze", "บรอนซ์", "aluminum", "อลูมิเนียม", "ทนสึก"],
+      "content": "Cast steel เหมาะกับงานรับแรงกระแทก/โหลดสูง/ต้องการ toughness หรือเชื่อมซ่อมได้ดีกว่า cast iron แต่หล่อยากกว่า shrinkage สูงกว่า และควรมี heat treatment/NDT ในงาน critical. High chrome cast iron เหมาะกับงานทนสึกแบบ abrasion เช่น liner, slurry pump impeller, crusher/wear part, งานโดนทราย หิน ปูน แร่ แต่แข็งและเปราะ กลึงยาก ไม่เหมาะกับ impact สูงมาก. Stainless casting เช่น CF8/CF8M ใช้กับงานกัดกร่อน pump/valve/food/chemical/marine แต่ต้องถาม medium, chloride, pH, temperature; ห้ามบอกว่าสแตนเลสไม่เป็นสนิมทุกกรณี. Bronze ใช้กับ bushing/bearing/worm wheel/impeller/marine part ทนกัดกร่อนและลดเสียดสี ต้องถาม load, speed, lubrication, shaft material. Aluminum casting น้ำหนักเบา ใช้ housing/cover/impeller/fan/pulley น้ำหนักเบา แต่ต้องตรวจ strength, อุณหภูมิ, pressure-tight requirement."
+    },
+    {
+      "slug": "pulley-v-belt-a-b-groove",
+      "title": "Pulley V-belt groove A/B usage and quotation checklist",
+      "category": "pulley",
+      "keywords": ["มู่เลย์", "pulley", "ร่อง A", "ร่อง B", "สายพาน", "V-belt", "keyway", "bore"],
+      "content": "พูลเลย์ V-belt ต้องเลือกสายพานและร่องให้ตรงกัน. ร่อง A ใช้กับสายพาน A ขนาดเล็กกว่า โดยทั่วไป top width ประมาณ 13 mm สูงประมาณ 8 mm เหมาะงานเบาถึงปานกลาง เช่น motor เล็ก/กลาง fan blower pump small machine. ร่อง B ใช้กับสายพาน B top width ประมาณ 17 mm สูงประมาณ 11 mm ส่งกำลังได้มากกว่า เหมาะงานปานกลางถึงหนัก conveyor pump/blower โหลดสูง เครื่องจักรอุตสาหกรรม. ห้ามใช้สายพาน A กับร่อง B หรือ B กับร่อง A โดยไม่ตรวจ เพราะสายพานนั่งร่องผิด ลื่น กินสายพาน และส่งกำลังไม่ได้เต็มที่. มุมร่องมักอยู่ประมาณ 34-40 องศาขึ้นกับ section และเส้นผ่านศูนย์กลาง ต้องอ้างอิงตารางผู้ผลิต/มาตรฐานจริง. คำถามสำคัญ: ต้องการร่อง A หรือ B, จำนวนร่อง, OD, pitch/effective diameter ถ้ามี, bore รูเพลา, keyway, set screw/taper bush, ความกว้างรวม, RPM, motor kW/HP, ระยะศูนย์เพลา, ต้อง balance หรือไม่, วัสดุ FC/FCD/steel/aluminum, มีรูปหรือ pulley เดิมไหม. พูลเลย์รอบสูงควรพิจารณา balancing และวัสดุ; FC ใช้ทั่วไป แต่โหลดกระแทกหรือรอบสูงควรพิจารณา FCD/cast steel."
+    },
+    {
+      "slug": "quotation-rfq-checklist",
+      "title": "RFQ and quotation questions for casting jobs",
+      "category": "sales_workflow",
+      "keywords": ["RFQ", "quotation", "ใบเสนอราคา", "ขอราคา", "drawing", "รูป", "จำนวน", "deadline"],
+      "content": "ก่อนเสนอราคางานหล่อควรถามให้ครบ: 1) ชิ้นงานชื่ออะไร ใช้กับเครื่องจักรอะไร 2) มี drawing/3D/PDF/DWG/DXF/STEP หรือรูป/ตัวอย่างไหม 3) ขนาดหลัก OD/ID/หนา/กว้างยาวสูง/น้ำหนัก 4) วัสดุหรือเกรดที่ต้องการ เช่น FC200, FCD450, cast steel, high chrome, stainless, bronze, aluminum ถ้าไม่รู้ให้ถามลักษณะใช้งานและการเสียหาย 5) จำนวนต่อ lot และผลิตซ้ำไหม 6) จุด machining/tolerance/keyway/hole/thread/surface finish 7) heat treatment, coating, balancing, inspection/NDT/cert ต้องการไหม 8) ใช้งานรับแรงแบบใด แรงบิด/แรงกระแทก/สึก/กัดกร่อน/RPM/temperature/chemical 9) deadline และสถานที่ส่งของ 10) ชื่อ เบอร์ LINE/email. ห้ามเดาราคาโดยไม่มีข้อมูลหลัก แต่สามารถบอกได้ว่าข้อมูลใดทำให้ประเมินแม่นขึ้น."
+    },
+    {
+      "slug": "agentic-backoffice-principles",
+      "title": "Agentic back-office operating principles",
+      "category": "agentic_system",
+      "keywords": ["agentic", "digital workforce", "หลังบ้าน", "lead", "handoff", "PDPA", "workflow"],
+      "content": "เป้าหมายหลังบ้านไม่ใช่ chatbot ตอบคำถาม แต่เป็น digital sales/technical worker ที่ทำงานจริง: รับ lead, normalize contact, จำ session/customer, enrich RFQ, ดึง knowledge, ถาม missing info ทีละข้อ, สรุปให้ฝ่ายขาย, สร้าง handoff ticket, เก็บ audit trail และวัด conversion. Agent ต้องรู้ขอบเขต: ไม่เสนอราคาผูกพัน ไม่รับประกัน lead time/อายุใช้งาน/วัสดุถ้าไม่มีข้อมูล ไม่เปิดเผยข้อมูลลูกค้าคนอื่น ต้องเก็บ consent/PDPA และส่งต่อคนเมื่อ confidence ต่ำ งาน critical หรือลูกค้าขอราคาทางการ. Roadmap หลังบ้าน: customers/leads/RFQs/conversations/messages/knowledge_docs/agent_tasks/handoff_tickets/analytics_events, RAG knowledge retrieval, quotation readiness score, operator approval ก่อนส่ง quotation, dashboard RFQ backlog/follow-up/quote-ready."
+    }
+  ]
+}

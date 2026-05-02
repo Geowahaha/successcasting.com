@@ -267,6 +267,43 @@ def init_db() -> None:
                 stage TEXT NOT NULL DEFAULT 'nurture',
                 updated_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS ai_knowledge_documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug TEXT NOT NULL UNIQUE,
+                title TEXT NOT NULL,
+                category TEXT NOT NULL DEFAULT 'general',
+                keywords_json TEXT NOT NULL DEFAULT '[]',
+                content TEXT NOT NULL,
+                source TEXT NOT NULL DEFAULT 'private_seed',
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS agent_tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_type TEXT NOT NULL,
+                related_entity_type TEXT NOT NULL DEFAULT '',
+                related_entity_id TEXT NOT NULL DEFAULT '',
+                agent_name TEXT NOT NULL DEFAULT 'successcasting-ai-sales',
+                input_payload TEXT NOT NULL DEFAULT '{}',
+                output_payload TEXT NOT NULL DEFAULT '{}',
+                confidence_score INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'completed',
+                error_message TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                completed_at TEXT NOT NULL DEFAULT ''
+            );
+            CREATE TABLE IF NOT EXISTS handoff_tickets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ticket_id TEXT NOT NULL UNIQUE,
+                session_id TEXT NOT NULL DEFAULT '',
+                customer_id TEXT NOT NULL DEFAULT '',
+                reason TEXT NOT NULL DEFAULT '',
+                priority TEXT NOT NULL DEFAULT 'normal',
+                status TEXT NOT NULL DEFAULT 'open',
+                agent_summary TEXT NOT NULL DEFAULT '',
+                operator_notes TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                closed_at TEXT NOT NULL DEFAULT ''
+            );
             """
         )
         # Seed demo-safe inventory so the factory can run immediately.
@@ -282,6 +319,11 @@ def init_db() -> None:
 @app.on_event("startup")
 def startup() -> None:
     init_db()
+    try:
+        seed_ai_knowledge(force=os.getenv("AI_KNOWLEDGE_FORCE_SEED", "0") == "1")
+    except Exception as exc:
+        with db() as conn:
+            conn.execute("INSERT INTO error_log(source,message,payload_json,created_at) VALUES(?,?,?,?)", ("ai-knowledge-seed", f"{type(exc).__name__}: {str(exc)[:180]}", '{}', now_iso()))
 
 
 class Order(BaseModel):
@@ -411,6 +453,108 @@ def ai_sales_brain_path() -> Path:
     return Path(os.getenv("SUCCESSCASTING_AI_BRAIN", "/data/successcasting_ai_brain.json"))
 
 
+def ai_knowledge_seed_path() -> Path:
+    return Path(__file__).parent / "successcasting_ai_knowledge.seed.json"
+
+
+def seed_ai_knowledge(force: bool = False) -> dict[str, Any]:
+    """Load private technical foundry knowledge into SQLite for the AI agent.
+
+    This is backend-only knowledge. It must not be rendered as marketing copy.
+    """
+    seed_path = ai_knowledge_seed_path()
+    if not seed_path.exists():
+        return {"seeded": 0, "path": str(seed_path), "status": "missing"}
+    data = json.loads(seed_path.read_text(encoding="utf-8"))
+    docs = data.get("documents") or []
+    now = now_iso()
+    seeded = 0
+    with db() as conn:
+        existing_count = conn.execute("SELECT COUNT(*) c FROM ai_knowledge_documents").fetchone()["c"]
+        if existing_count and not force:
+            return {"seeded": 0, "existing": existing_count, "status": "already_present", "version": data.get("version")}
+        for doc in docs:
+            conn.execute(
+                """
+                INSERT INTO ai_knowledge_documents(slug,title,category,keywords_json,content,source,updated_at)
+                VALUES(?,?,?,?,?,?,?)
+                ON CONFLICT(slug) DO UPDATE SET title=excluded.title, category=excluded.category,
+                    keywords_json=excluded.keywords_json, content=excluded.content, source=excluded.source, updated_at=excluded.updated_at
+                """,
+                (
+                    str(doc.get("slug", "")).strip(),
+                    str(doc.get("title", "")).strip(),
+                    str(doc.get("category", "general")).strip(),
+                    jdump(doc.get("keywords") or []),
+                    str(doc.get("content", "")).strip(),
+                    "private_seed",
+                    now,
+                ),
+            )
+            seeded += 1
+    return {"seeded": seeded, "status": "ok", "version": data.get("version")}
+
+
+def tokenize_for_knowledge(text: str) -> list[str]:
+    base = (text or "").lower()
+    tokens = re.findall(r"[a-z0-9._+\-/]{2,}|[ก-๙]{2,}", base)
+    synonyms = {
+        "มู่เลย์": ["pulley", "ร่อง", "สายพาน", "v-belt", "belt", "bore", "keyway"],
+        "pulley": ["มู่เลย์", "ร่อง", "สายพาน", "v-belt", "bore", "keyway"],
+        "ร่อง": ["มู่เลย์", "pulley", "สายพาน", "a", "b"],
+        "เหล็กหล่อ": ["fc", "fcd", "gray", "ductile", "cast iron"],
+        "fc": ["เหล็กหล่อเทา", "gray", "cast iron"],
+        "fcd": ["เหล็กหล่อเหนียว", "ductile", "cast iron"],
+        "ทราย": ["sand", "casting", "หล่อทราย", "pattern", "core"],
+        "หล่อ": ["casting", "sand", "วัสดุ", "แบบ", "pattern"],
+        "สึก": ["high chrome", "ทนสึก", "abrasion"],
+        "สแตนเลส": ["stainless", "cf8", "cf8m", "sus"],
+        "บรอนซ์": ["bronze", "bushing", "bearing"],
+        "อลู": ["aluminum", "aluminium"],
+    }
+    expanded = set(tokens)
+    for t in list(tokens):
+        for add in synonyms.get(t, []):
+            expanded.add(add.lower())
+    if re.search(r"[ab]|ร่อง\s*[ab]|a\s*120|b\s*120", base):
+        expanded.update(["มู่เลย์", "pulley", "ร่อง", "สายพาน", "v-belt"])
+    return [t for t in expanded if len(t) >= 1]
+
+
+def retrieve_ai_knowledge(query: str, limit: int = 4) -> list[dict[str, Any]]:
+    tokens = tokenize_for_knowledge(query)
+    if not tokens:
+        return []
+    rows: list[dict[str, Any]] = []
+    with db() as conn:
+        for r in conn.execute("SELECT slug,title,category,keywords_json,content,updated_at FROM ai_knowledge_documents").fetchall():
+            hay = " ".join([r["title"], r["category"], r["keywords_json"], r["content"]]).lower()
+            score = 0
+            for t in tokens:
+                if t and t in hay:
+                    score += 5 if t in (r["keywords_json"] or "").lower() else 2
+            # strong routing boosts
+            q = (query or "").lower()
+            if any(x in q for x in ["มู่เลย์", "pulley", "ร่อง", "สายพาน"]) and r["category"] == "pulley":
+                score += 25
+            if any(x in q for x in ["fc", "fcd", "เหล็กหล่อ", "เหล็กหล่อเหนียว"]) and r["slug"] == "cast-iron-fc-fcd":
+                score += 18
+            if any(x in q for x in ["หล่อทราย", "sand", "pattern", "core"]) and r["category"] == "process":
+                score += 12
+            if score > 0:
+                content = r["content"]
+                rows.append({"slug": r["slug"], "title": r["title"], "category": r["category"], "score": score, "content": content[:1200]})
+    rows.sort(key=lambda x: x["score"], reverse=True)
+    return rows[:limit]
+
+
+def knowledge_context_for_llm(query: str) -> str:
+    docs = retrieve_ai_knowledge(query, limit=4)
+    if not docs:
+        return ""
+    return "\n\n".join([f"[{d['category']}] {d['title']}: {d['content']}" for d in docs])[:4200]
+
+
 def ai_sales_brain() -> dict[str, Any]:
     brain_path = ai_sales_brain_path()
     base = {
@@ -494,6 +638,8 @@ def enrich_payload_from_message(payload: AISalesChat, session_memory: dict[str, 
     for key in ["name", "phone", "email", "line_id"]:
         if not str(data.get(key) or "").strip() and parsed.get(key):
             data[key] = parsed[key]
+    if str(data.get("name") or "").strip():
+        data["name"] = re.sub(r"^(?:ผม|ดิฉัน|ฉัน|ชื่อ|คุณ|นาย|นางสาว|นาง)\s*", "", str(data["name"]).strip()).strip()
     previous_slots = (session_memory or {}).get("quote_slots", {}) if session_memory else {}
     if previous_slots:
         previous_readiness = readiness_from_slots(previous_slots, "session", 0)
@@ -502,7 +648,7 @@ def enrich_payload_from_message(payload: AISalesChat, session_memory: dict[str, 
         has_contact_pattern = bool(extract_contact_from_text(msg).get("phone") or extract_contact_from_text(msg).get("email") or re.search(r"(?:line|ไลน์)", msg, re.I))
         looks_like_job = any(w in msg.lower() for w in ["หล่อ", "มู่เลย์", "pulley", "เฟือง", "ขนาด", "mm", "cm", "ราคา", "วัสดุ", "ชิ้น"])
         if first_missing == "name" and not data.get("name") and bare and len(bare) <= 40 and not has_contact_pattern and not looks_like_job and not re.search(r"\d", bare):
-            data["name"] = bare
+            data["name"] = re.sub(r"^(?:ผม|ดิฉัน|ฉัน|ชื่อ|คุณ|นาย|นางสาว|นาง)\s*", "", bare).strip()
         elif first_missing == "line_or_email" and not data.get("line_id") and not data.get("email") and re.fullmatch(r"@?[A-Za-z][A-Za-z0-9._\-]{2,39}", bare):
             data["line_id"] = bare.lstrip("@")
     return AISalesChat(**data)
@@ -675,7 +821,9 @@ def extract_quote_slots(payload: AISalesChat) -> dict[str, Any]:
     phone = normalize_contact("phone", payload.phone) or parsed_contact.get("phone", "")
     email = normalize_contact("email", payload.email) or parsed_contact.get("email", "")
     line_id = normalize_contact("line_id", payload.line_id) or parsed_contact.get("line_id", "")
-    if name: contact["name"] = name
+    if name:
+        name = re.sub(r"^(?:ผม|ดิฉัน|ฉัน|ชื่อ|คุณ|นาย|นางสาว|นาง)\s*", "", name).strip()
+        contact["name"] = name
     if payload.company.strip(): contact["company"] = payload.company.strip()
     if phone: contact["phone"] = phone
     if email: contact["email"] = email
@@ -697,6 +845,13 @@ def extract_quote_slots(payload: AISalesChat) -> dict[str, Any]:
     if qty: slots["quantity"] = qty.group(0)
     elif any(w in lower for w in ["จำนวน", "กี่ชิ้น"]): slots["quantity"] = "mentioned"
     if any(w in lower for w in ["รูป", "แบบ", "drawing", "ไฟล์", "ตัวอย่าง", "sketch", "ถ่าย"]): slots["drawing_or_photo"] = True
+    groove = re.search(r"(?:ร่อง\s*)?([ab])(?:\s*ร่อง)?\b", lower)
+    if groove and any(w in lower for w in ["มู่เลย์", "pulley", "สายพาน", "ร่อง"]):
+        slots["pulley_groove"] = groove.group(1).upper()
+    if any(w in lower for w in ["keyway", "ลิ่ม", "รูเพลา", "bore", "set screw", "taper bush"]):
+        slots["pulley_mounting"] = True
+    if any(w in lower for w in ["rpm", "รอบ", "มอเตอร์", "motor", "kw", "hp", "แรงม้า", "โหลด", "สายพาน"]):
+        slots["use_case"] = slots.get("use_case") or "power_transmission"
     size = re.search(r"\d+(?:\.\d+)?\s*(mm|cm|เมตร|m|kg|กก|กิโล)", lower)
     if size: slots["size_or_weight"] = size.group(0)
     elif any(w in lower for w in ["ขนาด", "น้ำหนัก"]): slots["size_or_weight"] = "mentioned"
@@ -719,6 +874,7 @@ def merge_slots(old_slots: dict[str, Any], new_slots: dict[str, Any]) -> dict[st
 
 def readiness_from_slots(slots: dict[str, Any], intent: str, score: int) -> dict[str, Any]:
     contact = slots.get("contact") or {}
+    is_pulley = "มู่เลย์" in str(slots.get("job_context", "")).lower() or str(slots.get("work_item", "")).lower() == "มู่เลย์" or str(slots.get("work_item", "")).lower() == "pulley"
     checks = {
         "name": bool(contact.get("name")),
         "phone": bool(contact.get("phone")),
@@ -730,7 +886,10 @@ def readiness_from_slots(slots: dict[str, Any], intent: str, score: int) -> dict
         "size_or_weight": bool(slots.get("size_or_weight")),
         "deadline": bool(slots.get("deadline")),
     }
-    priority = ["name", "phone", "line_or_email", "work_item", "material", "quantity", "drawing_or_photo", "size_or_weight", "deadline"]
+    if is_pulley:
+        checks["pulley_groove"] = bool(slots.get("pulley_groove"))
+        checks["pulley_mounting"] = bool(slots.get("pulley_mounting"))
+    priority = ["name", "phone", "line_or_email", "work_item", "pulley_groove", "size_or_weight", "pulley_mounting", "material", "quantity", "drawing_or_photo", "deadline"] if is_pulley else ["name", "phone", "line_or_email", "work_item", "material", "quantity", "drawing_or_photo", "size_or_weight", "deadline"]
     missing = [k for k in priority if not checks[k]]
     readiness = int(round((sum(1 for ok in checks.values() if ok) / len(checks)) * 100))
     stage = "quote_ready" if readiness >= 84 else "hot_lead" if score >= 80 or readiness >= 55 else "nurture"
@@ -744,8 +903,10 @@ def readiness_from_slots(slots: dict[str, Any], intent: str, score: int) -> dict
         "drawing_or_photo": "รูป/แบบ/drawing/ตัวอย่าง",
         "size_or_weight": "ขนาดหรือน้ำหนักคร่าว ๆ",
         "deadline": "วันต้องการใช้งาน/ความด่วน",
+        "pulley_groove": "ชนิดร่องสายพาน A/B และจำนวนร่อง",
+        "pulley_mounting": "รูเพลา/ลิ่ม keyway หรือ taper bush",
     }
-    return {"score": readiness, "stage": stage, "checks": checks, "missing": missing, "missing_labels": [labels[m] for m in missing], "slots": slots}
+    return {"score": readiness, "stage": stage, "checks": checks, "missing": missing, "missing_labels": [labels.get(m, m) for m in missing], "slots": slots}
 
 
 def load_session_memory(session_id: str) -> dict[str, Any] | None:
@@ -831,6 +992,8 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
     msg = payload.message.strip()
     lower = msg.lower()
     customer_name = ((memory or {}).get("customer") or {}).get("name") or payload.name.strip()
+    if customer_name:
+        customer_name = re.sub(r"^(?:ผม|ดิฉัน|ฉัน|ชื่อ|คุณ|นาย|นางสาว|นาง)\s*", "", str(customer_name)).strip()
     memory_cue = ""
     if memory and customer_name:
         memory_cue = f"ยินดีต้อนรับกลับครับ คุณ{customer_name}"
@@ -853,7 +1016,15 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
             answer += "\n" + " • ".join(details)
         answer += "\n\nผมบันทึกข้อมูลไว้ในระบบแล้ว ฝ่ายขายใช้เลขอ้างอิงนี้ติดตามต่อได้ ถ้ามีรูปหรือ drawing ส่งทาง LINE @305idxid ได้เลยครับ"
     elif first_missing in {"name", "phone", "line_or_email"}:
-        base = f"รับเรื่อง {job_context} ไว้ครับ ผมจะเก็บข้อมูลให้ฝ่ายขายประเมินต่อ ไม่ต้องพิมพ์ยาวครับ"
+        is_pulley_contact = any(w in str(job_context).lower() for w in ["มู่เลย์", "pulley", "สายพาน", "ร่อง"])
+        if is_pulley_contact:
+            base = (
+                f"รับเรื่อง {job_context} ไว้ครับ มู่เลย์ต้องดูร่องสายพานให้ตรงกับงานจริง: "
+                "ร่อง A ใช้กับสายพาน A งานเบาถึงปานกลาง ส่วนร่อง B ใหญ่กว่าและส่งกำลังได้มากกว่า; "
+                "ควรเช็ก OD, รูเพลา bore, keyway/ลิ่ม, จำนวนร่อง, RPM/โหลด และวัสดุ FC/FCD ตามการใช้งาน"
+            )
+        else:
+            base = f"รับเรื่อง {job_context} ไว้ครับ ผมจะเก็บข้อมูลให้ฝ่ายขายประเมินต่อ ไม่ต้องพิมพ์ยาวครับ"
         if first_missing == "name":
             answer = base + "\n\nขอชื่อผู้ติดต่อก่อนครับ?"
         elif first_missing == "phone":
@@ -874,7 +1045,9 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
         c = brain["contacts"]
         if first_missing and first_missing not in {"name", "phone", "line_or_email"}:
             ask_map = {
-                "material": "รับช่องทางติดต่อแล้วครับ งานมู่เลย์ขนาด 120 mm ถ้ายังไม่รู้วัสดุ ให้บอกลักษณะการใช้งานแทนได้ เช่น รับแรง/ทนสึก/โดนน้ำ/โดนความร้อน ใช้งานกับเครื่องอะไรครับ?",
+                "pulley_mounting": "รับช่องทางติดต่อแล้วครับ ขอรูเพลา bore เท่าไร และมี keyway/ลิ่ม หรือ taper bush ไหมครับ?",
+                "pulley_groove": "รับช่องทางติดต่อแล้วครับ ต้องการร่อง A หรือ B และกี่ร่องครับ?",
+                "material": "รับช่องทางติดต่อแล้วครับ ถ้ายังไม่รู้วัสดุ ให้บอกลักษณะการใช้งานแทนได้ เช่น รับแรง/ทนสึก/โดนน้ำ/โดนความร้อน ใช้งานกับเครื่องอะไรครับ?",
                 "quantity": "รับช่องทางติดต่อแล้วครับ ต้องการจำนวนกี่ชิ้นครับ?",
                 "drawing_or_photo": "รับช่องทางติดต่อแล้วครับ มีรูปชิ้นงานหรือ drawing ส่งทาง LINE ได้ไหมครับ?",
                 "deadline": "รับช่องทางติดต่อแล้วครับ ต้องการใช้งานเมื่อไร หรือเป็นงานด่วนไหมครับ?",
@@ -883,7 +1056,21 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
         else:
             answer = f"ติดต่อทีมได้ทันที: โทร {c['phone']} หรือ LINE {c['line']} ถ้าฝากชื่อ/เบอร์/LINE ในช่องนี้ ระบบจะออกเลขอ้างอิงและบันทึกประวัติลูกค้าให้ครับ"
     else:
-        if first_missing and first_missing not in {"name", "phone", "line_or_email"}:
+        docs = retrieve_ai_knowledge(" ".join([msg, str(slots.get("job_context", "")), str(slots.get("work_item", ""))]), limit=2)
+        is_pulley = any("pulley" in d.get("slug", "") for d in docs) or any(w in lower for w in ["มู่เลย์", "pulley", "ร่อง", "สายพาน"])
+        if is_pulley:
+            prefix = f"รับข้อมูล {job_context} แล้วครับ มู่เลย์ต้องดูให้ตรงกับสายพานและการใช้งานจริง โดยร่อง A ใช้กับสายพาน A งานเบาถึงปานกลาง ส่วนร่อง B ใหญ่กว่าและส่งกำลังได้มากกว่า ห้ามสลับ A/B เพราะจะลื่นและกินสายพานได้"
+            ask_map = {
+                "pulley_groove": prefix + "\n\nต้องการร่อง A หรือ B และกี่ร่องครับ?",
+                "size_or_weight": prefix + "\n\nขอ OD หรือเส้นผ่านศูนย์กลางนอกของมู่เลย์ และความกว้างรวมครับ?",
+                "pulley_mounting": prefix + "\n\nรูเพลา bore เท่าไร และมี keyway/ลิ่ม หรือ taper bush ไหมครับ?",
+                "material": prefix + "\n\nใช้งานโหลดประมาณไหน/รอบสูงไหมครับ จะช่วยเลือก FC, FCD หรือเหล็กหล่อแบบอื่นให้เหมาะขึ้น",
+                "quantity": prefix + "\n\nต้องการจำนวนกี่ชิ้นครับ?",
+                "drawing_or_photo": prefix + "\n\nมีรูปมู่เลย์เดิมหรือ drawing ส่งทาง LINE ได้ไหมครับ?",
+                "deadline": prefix + "\n\nต้องการใช้งานเมื่อไร หรือเป็นงานด่วนหยุดเครื่องไหมครับ?",
+            }
+            answer = ask_map.get(first_missing, prefix + "\n\nขอรูปหรือขนาดหลักเพิ่มอีกนิดครับ")
+        elif first_missing and first_missing not in {"name", "phone", "line_or_email"}:
             ask_map = {
                 "material": f"รับข้อมูล {job_context} แล้วครับ ถ้ายังไม่รู้วัสดุ บอกการใช้งานแทนได้ เช่น รับแรง ทนสึก โดนน้ำ/ความร้อน หรือใช้กับเครื่องอะไรครับ?",
                 "quantity": f"รับข้อมูล {job_context} แล้วครับ ต้องการจำนวนกี่ชิ้นครับ?",
@@ -892,7 +1079,7 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
             }
             answer = ask_map.get(first_missing, f"รับข้อมูล {job_context} แล้วครับ ขอรายละเอียดเพิ่มอีกนิดเพื่อให้ฝ่ายขายประเมินราคาแม่นขึ้นครับ")
         else:
-            answer = "ผมช่วยตอบเรื่องรับหล่อโลหะ, วัสดุที่เหมาะสม, ขั้นตอนส่งแบบ, งานด่วน, งาน 1 ชิ้นขึ้นไป และช่วยสร้าง lead ให้ฝ่ายขายปิดดีลต่อได้ครับ เล่าโจทย์งานหรือส่งรายละเอียดที่มีมาได้เลย"
+            answer = "สวัสดีครับ ส่งชื่อชิ้นงานหรือรูป/ขนาดมาได้เลย ผมจะช่วยคัดข้อมูลงานหล่อให้ฝ่ายขาย: วัสดุ, จำนวน, จุด machining, ความเร่งด่วน และข้อมูลติดต่อ โดยจะไม่เดาราคาเองถ้าข้อมูลยังไม่ครบครับ"
     if memory_cue:
         answer = memory_cue + "\n\n" + answer
     missing_labels = readiness.get("missing_labels") or []
@@ -1020,6 +1207,10 @@ def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
             "INSERT INTO ai_sales_events(session_id,role,message,intent,lead_score,payload_json,created_at) VALUES(?,?,?,?,?,?,?)",
             (session_id, "assistant", reply["answer"], intent, score, jdump({"cta": reply["cta"], "lead": lead, "memory_stage": memory_after.get("stage")}), seen),
         )
+        conn.execute(
+            "INSERT INTO agent_tasks(task_type,related_entity_type,related_entity_id,agent_name,input_payload,output_payload,confidence_score,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+            ("technical_sales_reply", "ai_sales_session", session_id, "successcasting-ai-sales", jdump({"message": payload.message, "intent": intent, "readiness": reply.get("quote_readiness", {})}), jdump({"answer": reply.get("answer"), "mode": reply.get("mode"), "lead": lead}), int(score), "completed", seen, seen),
+        )
     customer_context = {
         "known": bool(known_customer_id),
         "customer_id": known_customer_id,
@@ -1038,10 +1229,11 @@ def ai_sales_brain_status() -> dict[str, Any]:
         try:
             event_count = conn.execute("SELECT COUNT(*) c FROM ai_sales_events").fetchone()["c"]
             hot_count = conn.execute("SELECT COUNT(*) c FROM ai_sales_events WHERE role='user' AND lead_score>=70").fetchone()["c"]
+            knowledge_count = conn.execute("SELECT COUNT(*) c FROM ai_knowledge_documents").fetchone()["c"]
         except sqlite3.OperationalError:
-            event_count = hot_count = 0
+            event_count = hot_count = knowledge_count = 0
     llm_cfg = ai_sales_llm_config()
-    return {"status": "ready", "version": brain.get("version"), "updated_at": brain.get("updated_at"), "business": brain.get("business"), "materials": brain.get("materials", []), "event_count": event_count, "hot_lead_events": hot_count, "llm_configured": bool(llm_cfg.get("api_key")), "llm_provider": llm_cfg.get("provider"), "llm_model": llm_cfg.get("model") or None, "llm_gateway": llm_cfg.get("gateway") or None, "privacy_note": "no secrets exposed; runtime brain can be updated via SUCCESSCASTING_AI_BRAIN json"}
+    return {"status": "ready", "version": brain.get("version"), "updated_at": brain.get("updated_at"), "business": brain.get("business"), "materials": brain.get("materials", []), "event_count": event_count, "hot_lead_events": hot_count, "knowledge_documents": knowledge_count, "llm_configured": bool(llm_cfg.get("api_key")), "llm_provider": llm_cfg.get("provider"), "llm_model": llm_cfg.get("model") or None, "llm_gateway": llm_cfg.get("gateway") or None, "privacy_note": "no secrets exposed; runtime brain can be updated via SUCCESSCASTING_AI_BRAIN json"}
 
 
 @app.get("/api/ai-sales/leads/status")
