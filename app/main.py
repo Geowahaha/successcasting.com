@@ -304,6 +304,26 @@ def init_db() -> None:
                 created_at TEXT NOT NULL,
                 closed_at TEXT NOT NULL DEFAULT ''
             );
+            CREATE TABLE IF NOT EXISTS rfq_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rfq_id TEXT NOT NULL UNIQUE,
+                customer_id TEXT NOT NULL DEFAULT '',
+                session_id TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'needs_info',
+                priority TEXT NOT NULL DEFAULT 'normal',
+                work_item TEXT NOT NULL DEFAULT '',
+                summary TEXT NOT NULL DEFAULT '',
+                missing_json TEXT NOT NULL DEFAULT '[]',
+                slots_json TEXT NOT NULL DEFAULT '{}',
+                readiness_score INTEGER NOT NULL DEFAULT 0,
+                source TEXT NOT NULL DEFAULT 'ai-sales',
+                owner TEXT NOT NULL DEFAULT '',
+                next_action TEXT NOT NULL DEFAULT '',
+                quote_number TEXT NOT NULL DEFAULT '',
+                operator_notes TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
             """
         )
         # Seed demo-safe inventory so the factory can run immediately.
@@ -447,6 +467,15 @@ class AIBrainUpdate(BaseModel):
     facts: dict[str, Any] = Field(default_factory=dict)
     research_notes: list[str] = Field(default_factory=list)
     sources: list[str] = Field(default_factory=list)
+
+
+class AdminRFQUpdate(BaseModel):
+    status: str = ""
+    priority: str = ""
+    owner: str = ""
+    next_action: str = ""
+    operator_notes: str = ""
+    quote_number: str = ""
 
 
 def ai_sales_brain_path() -> Path:
@@ -931,6 +960,169 @@ def load_session_memory(session_id: str) -> dict[str, Any] | None:
     return {"customer_id": customer_id, "summary": "\n".join(lines[-6:]), "quote_slots": merged_slots, "tags": [], "last_intent": sess["last_intent"] if sess else "", "stage": sess["stage"] if sess else "nurture", "customer": {"customer_id": customer_id}}
 
 
+
+def make_rfq_id() -> str:
+    return "rfq_" + uuid.uuid4().hex[:10]
+
+
+def make_ticket_id() -> str:
+    return "handoff_" + uuid.uuid4().hex[:10]
+
+
+def rfq_status_from_readiness(readiness: dict[str, Any]) -> str:
+    stage = readiness.get("stage") or ""
+    missing = readiness.get("missing") or []
+    if stage == "quote_ready" or (int(readiness.get("score") or 0) >= 84 and not missing[:3]):
+        return "quote_ready"
+    if stage == "hot_lead":
+        return "needs_operator_review"
+    return "needs_info"
+
+
+def rfq_priority(intent: str, score: int, readiness: dict[str, Any]) -> str:
+    if intent == "urgent_repair":
+        return "urgent"
+    if score >= 85 or int(readiness.get("score") or 0) >= 75:
+        return "high"
+    if score >= 70:
+        return "normal"
+    return "low"
+
+
+def rfq_summary(payload: AISalesChat, readiness: dict[str, Any], intent: str) -> str:
+    slots = readiness.get("slots") or {}
+    contact = slots.get("contact") or {}
+    bits = []
+    if contact.get("name"):
+        bits.append(f"ลูกค้า {contact.get('name')}")
+    work = slots.get("job_context") or slots.get("work_item") or payload.message[:120]
+    if work:
+        bits.append(f"งาน: {work}")
+    if slots.get("material"):
+        bits.append("มีข้อมูลวัสดุ/การใช้งาน")
+    if slots.get("quantity"):
+        bits.append(f"จำนวน {slots.get('quantity')}")
+    if slots.get("size_or_weight"):
+        bits.append(f"ขนาด/น้ำหนัก {slots.get('size_or_weight')}")
+    if slots.get("pulley_groove"):
+        bits.append(f"ร่อง {slots.get('pulley_groove')}")
+    if slots.get("pulley_mounting"):
+        bits.append("มีข้อมูลรูเพลา/ลิ่ม")
+    summary = " | ".join(bits) or f"{intent}: {payload.message[:180]}"
+    return summary[:900]
+
+
+def upsert_rfq_from_ai(session_id: str, customer_id: str, payload: AISalesChat, intent: str, score: int, readiness: dict[str, Any], answer: str) -> dict[str, Any]:
+    seen = now_iso()
+    status = rfq_status_from_readiness(readiness)
+    priority = rfq_priority(intent, score, readiness)
+    slots = readiness.get("slots") or {}
+    work_item = str(slots.get("job_context") or slots.get("work_item") or payload.message[:120]).strip()[:240]
+    missing = readiness.get("missing_labels") or readiness.get("missing") or []
+    next_action = "ข้อมูลหลักครบ: ฝ่ายขายประเมินราคา/ระยะเวลา" if status == "quote_ready" else (f"ขอข้อมูลเพิ่ม: {missing[0]}" if missing else "ฝ่ายขายตรวจ lead และติดต่อกลับ")
+    summary = rfq_summary(payload, readiness, intent)
+    with db() as conn:
+        existing = None
+        if session_id:
+            existing = conn.execute("SELECT * FROM rfq_requests WHERE session_id=? ORDER BY id DESC LIMIT 1", (session_id,)).fetchone()
+        if not existing and customer_id:
+            existing = conn.execute("SELECT * FROM rfq_requests WHERE customer_id=? AND status NOT IN ('quoted','won','lost','closed') ORDER BY id DESC LIMIT 1", (customer_id,)).fetchone()
+        if existing:
+            rfq_id = existing["rfq_id"]
+            priority_rank = {"low": 0, "normal": 1, "high": 2, "urgent": 3}
+            status_rank = {"needs_info": 0, "needs_operator_review": 1, "quote_ready": 2, "contacted": 3, "quoted": 4, "won": 5, "lost": 5, "closed": 5}
+            old_priority = existing["priority"] or "normal"
+            if priority_rank.get(old_priority, 1) > priority_rank.get(priority, 1):
+                priority = old_priority
+            old_status = existing["status"] or "needs_info"
+            if old_status not in {"quoted", "won", "lost", "closed"} and status_rank.get(old_status, 0) > status_rank.get(status, 0):
+                status = old_status
+            conn.execute(
+                "UPDATE rfq_requests SET customer_id=COALESCE(NULLIF(?,''),customer_id), status=?, priority=?, work_item=COALESCE(NULLIF(?,''),work_item), summary=?, missing_json=?, slots_json=?, readiness_score=?, next_action=?, updated_at=? WHERE rfq_id=?",
+                (customer_id or "", status, priority, work_item, summary, jdump(missing), jdump(slots), int(readiness.get("score") or 0), next_action, seen, rfq_id),
+            )
+        else:
+            rfq_id = make_rfq_id()
+            conn.execute(
+                "INSERT INTO rfq_requests(rfq_id,customer_id,session_id,status,priority,work_item,summary,missing_json,slots_json,readiness_score,source,next_action,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (rfq_id, customer_id or "", session_id or "", status, priority, work_item, summary, jdump(missing), jdump(slots), int(readiness.get("score") or 0), "ai-sales", next_action, seen, seen),
+            )
+        if status in {"quote_ready", "needs_operator_review"} or priority in {"urgent", "high"}:
+            open_ticket = conn.execute("SELECT ticket_id FROM handoff_tickets WHERE session_id=? AND status='open' ORDER BY id DESC LIMIT 1", (session_id,)).fetchone()
+            if open_ticket:
+                ticket_id = open_ticket["ticket_id"]
+                conn.execute(
+                    "UPDATE handoff_tickets SET customer_id=COALESCE(NULLIF(?,''),customer_id), reason=?, priority=?, agent_summary=? WHERE ticket_id=?",
+                    (customer_id or "", status, priority, summary[:700], ticket_id),
+                )
+            else:
+                ticket_id = make_ticket_id()
+                conn.execute(
+                    "INSERT INTO handoff_tickets(ticket_id,session_id,customer_id,reason,priority,status,agent_summary,created_at) VALUES(?,?,?,?,?,?,?,?)",
+                    (ticket_id, session_id or "", customer_id or "", status, priority, "open", summary[:700], seen),
+                )
+        else:
+            ticket_id = ""
+    return {"rfq_id": rfq_id, "status": status, "priority": priority, "readiness_score": int(readiness.get("score") or 0), "next_action": next_action, "handoff_ticket_id": ticket_id}
+
+
+def mask_contact(value: str, kind: str = "") -> str:
+    raw = str(value or "")
+    if not raw:
+        return ""
+    if kind == "phone" or raw.startswith("+66") or raw[:1].isdigit():
+        return raw[:4] + "****" + raw[-4:] if len(raw) >= 8 else "****"
+    if kind == "email" or "@" in raw:
+        name, _, dom = raw.partition("@")
+        return (name[:2] + "***@" + dom) if dom else raw[:2] + "***"
+    return raw[:3] + "***" if len(raw) > 4 else raw[0] + "***"
+
+
+def require_admin(request: Request) -> bool:
+    token = (os.getenv("ADMIN_DASHBOARD_TOKEN") or os.getenv("AI_BRAIN_UPDATE_TOKEN") or "").strip()
+    supplied = (request.headers.get("x-admin-token") or request.query_params.get("token") or "").strip()
+    host = request.client.host if request.client else ""
+    if host in {"127.0.0.1", "localhost", "::1"}:
+        return True
+    if token and supplied == token:
+        return True
+    raise HTTPException(403, "admin token required")
+
+
+def html_escape(value: Any) -> str:
+    return str(value or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def sales_admin_overview(limit: int = 80) -> dict[str, Any]:
+    with db() as conn:
+        counts = {
+            "rfqs": conn.execute("SELECT COUNT(*) c FROM rfq_requests").fetchone()["c"],
+            "quote_ready": conn.execute("SELECT COUNT(*) c FROM rfq_requests WHERE status='quote_ready'").fetchone()["c"],
+            "needs_review": conn.execute("SELECT COUNT(*) c FROM rfq_requests WHERE status='needs_operator_review'").fetchone()["c"],
+            "open_handoffs": conn.execute("SELECT COUNT(*) c FROM handoff_tickets WHERE status='open'").fetchone()["c"],
+            "customers": conn.execute("SELECT COUNT(*) c FROM customers").fetchone()["c"],
+            "agent_tasks": conn.execute("SELECT COUNT(*) c FROM agent_tasks").fetchone()["c"],
+        }
+        rfqs = conn.execute(
+            """
+            SELECT r.*, c.name, c.company, c.phone, c.email, c.line_id
+            FROM rfq_requests r
+            LEFT JOIN customers c ON c.customer_id=r.customer_id
+            ORDER BY CASE r.priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, r.updated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        tickets = conn.execute("SELECT * FROM handoff_tickets WHERE status='open' ORDER BY id DESC LIMIT 30").fetchall()
+        tasks = conn.execute("SELECT task_type,related_entity_type,related_entity_id,confidence_score,status,created_at FROM agent_tasks ORDER BY id DESC LIMIT 30").fetchall()
+    return {
+        "status": "ready",
+        "counts": counts,
+        "rfqs": [dict(r) for r in rfqs],
+        "handoff_tickets": [dict(r) for r in tickets],
+        "agent_tasks": [dict(r) for r in tasks],
+    }
+
 def load_customer_memory(customer_id: str) -> dict[str, Any] | None:
     if not customer_id:
         return None
@@ -1197,6 +1389,7 @@ def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
     memory_after = upsert_ai_session_and_memory(session_id, payload, known_customer_id, intent, reply["quote_readiness"])
     if memory_after.get("quote_readiness"):
         reply["quote_readiness"] = memory_after["quote_readiness"]
+    rfq = upsert_rfq_from_ai(session_id, known_customer_id, payload, intent, score, reply["quote_readiness"], reply["answer"])
     seen = now_iso()
     with db() as conn:
         conn.execute(
@@ -1219,7 +1412,7 @@ def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
         "stage": memory_after.get("stage") or reply["quote_readiness"].get("stage"),
         "tags": memory_after.get("tags", []),
     }
-    return {"status": "ok", "session_id": session_id, **reply, "lead": lead, "customer_context": customer_context, "privacy_note": "customer memory is used to avoid asking repeat questions; public status endpoints do not expose PII"}
+    return {"status": "ok", "session_id": session_id, **reply, "lead": lead, "rfq": rfq, "customer_context": customer_context, "privacy_note": "customer memory is used to avoid asking repeat questions; public status endpoints do not expose PII"}
 
 
 @app.get("/api/ai-sales/brain")
@@ -1325,6 +1518,70 @@ def customer_receipt(customer_id: str) -> str:
     items = "".join(f"<li>{r['created_at']} — {r['source']} — {r['subject']}</li>" for r in interactions)
     outs = "".join(f"<li>{r['created_at']} — {r['channel']}: {r['status']} {r['error']}</li>" for r in outbound) or "<li>No outbound confirmation configured yet</li>"
     return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Receipt {customer_id}</title><style>body{{font-family:system-ui;background:#0b1020;color:#eaf0ff;margin:0}}main{{max-width:760px;margin:0 auto;padding:34px 18px}}.card{{background:#141b34;border:1px solid #263256;padding:24px;border-radius:18px}}code{{color:#7ee787}}</style></head><body><main><div class='card'><h1>รับเรื่องแล้ว</h1><p>เลขอ้างอิง: <code>{customer['customer_id']}</code></p><p>ชื่อลูกค้า: {customer['name'] or '-'} | บริษัท: {customer['company'] or '-'}</p><p>ช่องทางที่เลือก: {customer['preferred_contact']}</p><h3>Interactions</h3><ul>{items}</ul><h3>Confirmations</h3><ul>{outs}</ul><p><a href='/'>กลับ Customer Connect Center</a></p></div></main></body></html>"""
+
+
+
+@app.get("/api/admin/sales/overview")
+def admin_sales_overview(request: Request, limit: int = 80) -> dict[str, Any]:
+    require_admin(request)
+    data = sales_admin_overview(limit=max(1, min(limit, 200)))
+    # API is authenticated; still return masked contact previews and raw IDs for operational workflow.
+    for r in data["rfqs"]:
+        r["phone_masked"] = mask_contact(r.get("phone", ""), "phone")
+        r["email_masked"] = mask_contact(r.get("email", ""), "email")
+        r["line_masked"] = mask_contact(r.get("line_id", ""), "line_id")
+        r["missing"] = load_json_safe(r.pop("missing_json", "[]"), [])
+        r["slots"] = load_json_safe(r.pop("slots_json", "{}"), {})
+    return data
+
+
+@app.patch("/api/admin/rfqs/{rfq_id}")
+def admin_update_rfq(rfq_id: str, payload: AdminRFQUpdate, request: Request) -> dict[str, Any]:
+    require_admin(request)
+    allowed_status = {"needs_info", "needs_operator_review", "quote_ready", "contacted", "quoted", "won", "lost", "closed"}
+    allowed_priority = {"low", "normal", "high", "urgent"}
+    data = payload.model_dump()
+    updates = []
+    values: list[Any] = []
+    if data.get("status"):
+        if data["status"] not in allowed_status:
+            raise HTTPException(422, "invalid status")
+        updates.append("status=?"); values.append(data["status"])
+    if data.get("priority"):
+        if data["priority"] not in allowed_priority:
+            raise HTTPException(422, "invalid priority")
+        updates.append("priority=?"); values.append(data["priority"])
+    for field in ["owner", "next_action", "operator_notes", "quote_number"]:
+        if data.get(field) is not None and str(data.get(field)).strip():
+            updates.append(f"{field}=?"); values.append(str(data[field]).strip()[:1200])
+    if not updates:
+        return {"status": "ok", "rfq_id": rfq_id, "updated": False}
+    updates.append("updated_at=?"); values.append(now_iso())
+    values.append(rfq_id)
+    with db() as conn:
+        conn.execute(f"UPDATE rfq_requests SET {', '.join(updates)} WHERE rfq_id=?", tuple(values))
+        row = conn.execute("SELECT rfq_id,status,priority,owner,next_action,quote_number,updated_at FROM rfq_requests WHERE rfq_id=?", (rfq_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "rfq not found")
+    return {"status": "ok", "rfq": dict(row), "updated": True}
+
+
+@app.get("/admin/sales", response_class=HTMLResponse)
+def admin_sales_dashboard(request: Request) -> str:
+    try:
+        require_admin(request)
+    except HTTPException:
+        return """<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>SuccessCasting Sales Admin</title><style>body{font-family:Inter,system-ui;background:#0b1220;color:#e5eefb;display:grid;min-height:100vh;place-items:center;margin:0}.box{max-width:520px;background:#111b2e;border:1px solid #233453;border-radius:24px;padding:28px;box-shadow:0 20px 80px #0006}input,button{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid #33445f;padding:13px 14px;background:#07111f;color:#e5eefb;margin-top:12px}button{background:#2563eb;border:0;font-weight:800;cursor:pointer}.muted{color:#9fb0c8}</style></head><body><form class='box' onsubmit="location.href='/admin/sales?token='+encodeURIComponent(this.token.value);return false"><h1>SuccessCasting Sales Admin</h1><p class='muted'>ใส่ admin token เพื่อดู RFQ, handoff, lead และ quote readiness หลังบ้าน</p><input name='token' type='password' autocomplete='current-password' placeholder='Admin token'><button>Open dashboard</button></form></body></html>"""
+    data = sales_admin_overview(limit=120)
+    cards = "".join(f"<div class='card'><b>{html_escape(k)}</b><strong>{html_escape(v)}</strong></div>" for k, v in data["counts"].items())
+    rows = []
+    for r in data["rfqs"]:
+        missing = load_json_safe(r.get("missing_json", "[]"), [])
+        contact = " / ".join([x for x in [r.get("name") or "", mask_contact(r.get("phone", ""), "phone"), mask_contact(r.get("line_id", ""), "line_id"), mask_contact(r.get("email", ""), "email")] if x])
+        rows.append(f"<tr><td><b>{html_escape(r['rfq_id'])}</b><br><span>{html_escape(r['updated_at'])}</span></td><td><span class='pill {html_escape(r['priority'])}'>{html_escape(r['priority'])}</span><br><span class='status'>{html_escape(r['status'])}</span><br>{html_escape(r['readiness_score'])}%</td><td>{html_escape(contact)}<br><small>{html_escape(r.get('customer_id',''))}</small></td><td>{html_escape(r.get('summary',''))}<br><small>Missing: {html_escape(', '.join(missing[:5]))}</small></td><td>{html_escape(r.get('next_action',''))}<br><small>Owner: {html_escape(r.get('owner') or '-')} Quote: {html_escape(r.get('quote_number') or '-')}</small></td></tr>")
+    ticket_rows = "".join(f"<tr><td>{html_escape(t['ticket_id'])}</td><td>{html_escape(t['priority'])}</td><td>{html_escape(t['reason'])}</td><td>{html_escape(t['agent_summary'])}</td></tr>" for t in data["handoff_tickets"])
+    task_rows = "".join(f"<tr><td>{html_escape(t['created_at'])}</td><td>{html_escape(t['task_type'])}</td><td>{html_escape(t['related_entity_id'])}</td><td>{html_escape(t['confidence_score'])}</td></tr>" for t in data["agent_tasks"])
+    return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>SuccessCasting Sales Admin</title><style>body{{font-family:Inter,system-ui;background:#f6f8fb;color:#0f172a;margin:0}}header{{background:#0b1220;color:#e5eefb;padding:24px 32px}}main{{padding:24px 32px;max-width:1440px;margin:auto}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}}.card{{background:white;border:1px solid #e2e8f0;border-radius:18px;padding:16px;box-shadow:0 6px 24px #0f172a0a}}.card b{{display:block;color:#64748b;font-size:12px;text-transform:uppercase}}.card strong{{font-size:28px}}section{{background:white;border:1px solid #e2e8f0;border-radius:22px;margin:18px 0;overflow:hidden;box-shadow:0 8px 30px #0f172a0a}}h2{{padding:18px 20px;margin:0;border-bottom:1px solid #e2e8f0}}table{{width:100%;border-collapse:collapse}}th,td{{padding:12px 14px;border-bottom:1px solid #eef2f7;text-align:left;vertical-align:top}}th{{font-size:12px;color:#64748b;text-transform:uppercase;background:#f8fafc}}small,span{{color:#64748b}}.pill{{display:inline-block;border-radius:999px;padding:4px 9px;background:#e2e8f0;font-weight:800;font-size:12px}}.urgent{{background:#fee2e2;color:#991b1b}}.high{{background:#ffedd5;color:#9a3412}}.normal{{background:#dbeafe;color:#1e40af}}.low{{background:#f1f5f9;color:#475569}}.status{{font-weight:700;color:#0f172a}}</style></head><body><header><h1>SuccessCasting Sales / RFQ Command Center</h1><p>Lead → RFQ → operator handoff → quote-ready workflow. PII is masked in table previews.</p></header><main><div class='grid'>{cards}</div><section><h2>RFQ Pipeline</h2><table><thead><tr><th>RFQ</th><th>Priority/Status</th><th>Customer</th><th>Summary / Missing</th><th>Next Action</th></tr></thead><tbody>{''.join(rows) or '<tr><td colspan=5>No RFQ yet</td></tr>'}</tbody></table></section><section><h2>Open Operator Handoffs</h2><table><thead><tr><th>Ticket</th><th>Priority</th><th>Reason</th><th>Agent Summary</th></tr></thead><tbody>{ticket_rows or '<tr><td colspan=4>No open handoff</td></tr>'}</tbody></table></section><section><h2>Recent Agent Tasks</h2><table><thead><tr><th>Created</th><th>Task</th><th>Entity</th><th>Confidence</th></tr></thead><tbody>{task_rows or '<tr><td colspan=4>No tasks</td></tr>'}</tbody></table></section></main></body></html>"""
 
 
 @app.post("/api/orders")
