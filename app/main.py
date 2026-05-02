@@ -4,6 +4,11 @@ import re
 import smtplib
 from email.message import EmailMessage
 import sqlite3
+import csv
+import hashlib
+import hmac
+import mimetypes
+from io import StringIO
 import uuid
 import urllib.request
 import urllib.error
@@ -11,7 +16,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -23,6 +28,8 @@ PLATFORMS = {"shopee", "lazada", "tiktok", "facebook"}
 app = FastAPI(title="SuccessCasting Automation Factory", version="1.0.0")
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 HOME_TEMPLATE = Path(__file__).parent / "home_template.html"
+UPLOAD_ROOT = Path(os.getenv("FACTORY_UPLOAD_ROOT", "/data/uploads"))
+SESSION_COOKIE = "successcasting_admin_session"
 
 
 def now_iso() -> str:
@@ -324,6 +331,55 @@ def init_db() -> None:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS uploaded_documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id TEXT NOT NULL UNIQUE,
+                rfq_id TEXT NOT NULL DEFAULT '',
+                customer_id TEXT NOT NULL DEFAULT '',
+                session_id TEXT NOT NULL DEFAULT '',
+                original_filename TEXT NOT NULL DEFAULT '',
+                storage_path TEXT NOT NULL DEFAULT '',
+                content_type TEXT NOT NULL DEFAULT '',
+                size_bytes INTEGER NOT NULL DEFAULT 0,
+                ocr_status TEXT NOT NULL DEFAULT 'pending',
+                extracted_text TEXT NOT NULL DEFAULT '',
+                extracted_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS quote_records (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                quote_id TEXT NOT NULL UNIQUE,
+                rfq_id TEXT NOT NULL DEFAULT '',
+                quote_number TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'draft',
+                material TEXT NOT NULL DEFAULT '',
+                quantity TEXT NOT NULL DEFAULT '',
+                unit_price REAL NOT NULL DEFAULT 0,
+                total_price REAL NOT NULL DEFAULT 0,
+                lead_time TEXT NOT NULL DEFAULT '',
+                validity_days INTEGER NOT NULL DEFAULT 7,
+                terms TEXT NOT NULL DEFAULT '',
+                notes TEXT NOT NULL DEFAULT '',
+                created_by TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS staff_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL DEFAULT '',
+                role TEXT NOT NULL DEFAULT 'sales',
+                display_name TEXT NOT NULL DEFAULT '',
+                active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS admin_sessions (
+                session_token TEXT PRIMARY KEY,
+                username TEXT NOT NULL DEFAULT '',
+                role TEXT NOT NULL DEFAULT 'sales',
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL
+            );
             """
         )
         # Seed demo-safe inventory so the factory can run immediately.
@@ -339,6 +395,7 @@ def init_db() -> None:
 @app.on_event("startup")
 def startup() -> None:
     init_db()
+    seed_staff_users()
     try:
         seed_ai_knowledge(force=os.getenv("AI_KNOWLEDGE_FORCE_SEED", "0") == "1")
     except Exception as exc:
@@ -476,6 +533,25 @@ class AdminRFQUpdate(BaseModel):
     next_action: str = ""
     operator_notes: str = ""
     quote_number: str = ""
+
+
+class AdminLogin(BaseModel):
+    username: str = ""
+    password: str = ""
+    token: str = ""
+
+
+class QuoteRecordIn(BaseModel):
+    quote_number: str = ""
+    status: str = "draft"
+    material: str = ""
+    quantity: str = ""
+    unit_price: float = 0
+    total_price: float = 0
+    lead_time: str = ""
+    validity_days: int = 7
+    terms: str = ""
+    notes: str = ""
 
 
 def ai_sales_brain_path() -> Path:
@@ -961,6 +1037,145 @@ def load_session_memory(session_id: str) -> dict[str, Any] | None:
 
 
 
+
+def make_document_id() -> str:
+    return "doc_" + uuid.uuid4().hex[:12]
+
+
+def make_quote_id() -> str:
+    return "quote_" + uuid.uuid4().hex[:10]
+
+
+def make_quote_number() -> str:
+    return "SCQ-" + datetime.now(timezone.utc).strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:4].upper()
+
+
+def hash_password(password: str) -> str:
+    salt = os.getenv("ADMIN_PASSWORD_SALT", "successcasting-local-salt")
+    return hashlib.sha256((salt + "::" + password).encode("utf-8")).hexdigest()
+
+
+def seed_staff_users() -> None:
+    username = os.getenv("ADMIN_DASHBOARD_USER", "admin").strip() or "admin"
+    password = os.getenv("ADMIN_DASHBOARD_PASSWORD", "").strip()
+    role = os.getenv("ADMIN_DASHBOARD_ROLE", "admin").strip() or "admin"
+    if not password:
+        return
+    with db() as conn:
+        exists = conn.execute("SELECT username FROM staff_users WHERE username=?", (username,)).fetchone()
+        if not exists:
+            conn.execute("INSERT INTO staff_users(username,password_hash,role,display_name,active,created_at) VALUES(?,?,?,?,?,?)", (username, hash_password(password), role, username, 1, now_iso()))
+
+
+def authenticate_staff(username: str, password: str) -> dict[str, Any] | None:
+    if not username or not password:
+        return None
+    with db() as conn:
+        row = conn.execute("SELECT username,password_hash,role,display_name,active FROM staff_users WHERE username=?", (username.strip(),)).fetchone()
+    if row and row["active"] and hmac.compare_digest(row["password_hash"], hash_password(password)):
+        return {"username": row["username"], "role": row["role"], "display_name": row["display_name"] or row["username"]}
+    return None
+
+
+def create_admin_session(username: str, role: str) -> str:
+    token = "sess_" + uuid.uuid4().hex + uuid.uuid4().hex[:12]
+    created = now_iso()
+    expires = (datetime.now(timezone.utc) + timedelta(hours=12)).isoformat()
+    with db() as conn:
+        conn.execute("INSERT INTO admin_sessions(session_token,username,role,created_at,expires_at) VALUES(?,?,?,?,?)", (token, username, role, created, expires))
+    return token
+
+
+def staff_from_request(request: Request) -> dict[str, Any] | None:
+    token = (request.cookies.get(SESSION_COOKIE) or request.headers.get("x-admin-session") or "").strip()
+    if not token:
+        return None
+    with db() as conn:
+        row = conn.execute("SELECT username,role,expires_at FROM admin_sessions WHERE session_token=?", (token,)).fetchone()
+    if not row:
+        return None
+    try:
+        if datetime.fromisoformat(row["expires_at"]) < datetime.now(timezone.utc):
+            return None
+    except Exception:
+        return None
+    return {"username": row["username"], "role": row["role"]}
+
+
+def role_allows(staff: dict[str, Any], roles: set[str]) -> bool:
+    return bool(staff and (staff.get("role") in roles or staff.get("role") == "admin"))
+
+
+def extract_text_from_document(path: Path, content_type: str) -> tuple[str, str, dict[str, Any]]:
+    suffix = path.suffix.lower()
+    meta: dict[str, Any] = {"suffix": suffix, "content_type": content_type}
+    try:
+        if suffix == ".pdf" or "pdf" in content_type:
+            try:
+                import fitz  # PyMuPDF
+                doc = fitz.open(str(path))
+                pages = []
+                for page in doc[:8]:
+                    txt = page.get_text("text") or ""
+                    if txt.strip():
+                        pages.append(txt.strip())
+                meta["pages_checked"] = min(len(doc), 8)
+                text = "\n\n".join(pages)[:8000]
+                return ("extracted" if text else "needs_ocr"), text, meta
+            except Exception as exc:
+                meta["pdf_error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
+                return "needs_ocr", "", meta
+        if suffix in {".txt", ".csv", ".md"} or content_type.startswith("text/"):
+            text = path.read_text(encoding="utf-8", errors="ignore")[:8000]
+            return "extracted", text, meta
+        if suffix in {".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff"}:
+            try:
+                import pytesseract
+                from PIL import Image
+                text = pytesseract.image_to_string(Image.open(path), lang=os.getenv("OCR_TESSERACT_LANG", "tha+eng"))[:8000]
+                return ("extracted" if text.strip() else "needs_manual_review"), text, meta
+            except Exception as exc:
+                meta["image_ocr_error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
+                return "needs_manual_review", "", meta
+    except Exception as exc:
+        meta["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
+        return "failed", "", meta
+    return "stored", "", meta
+
+
+def score_rfq_advanced(readiness: dict[str, Any], has_documents: bool = False) -> tuple[int, str, list[str]]:
+    slots = readiness.get("slots") or {}
+    base = int(readiness.get("score") or 0)
+    score = base
+    if has_documents:
+        score += 10
+    if slots.get("drawing_or_photo") or has_documents:
+        score += 7
+    if slots.get("pulley_groove") and slots.get("pulley_mounting"):
+        score += 8
+    if slots.get("material") and slots.get("quantity"):
+        score += 5
+    score = max(0, min(score, 100))
+    missing = list(readiness.get("missing_labels") or readiness.get("missing") or [])
+    if has_documents and "รูป/แบบ/drawing/ตัวอย่าง" in missing:
+        missing.remove("รูป/แบบ/drawing/ตัวอย่าง")
+    status = "quote_ready" if score >= 88 and len(missing) <= 2 else "needs_operator_review" if score >= 65 else "needs_info"
+    return score, status, missing
+
+
+def notify_hot_rfq(rfq_id: str, status: str, priority: str, summary: str, next_action: str) -> dict[str, Any]:
+    if status not in {"quote_ready", "needs_operator_review"} and priority not in {"urgent", "high"}:
+        return {"status": "skipped"}
+    message = f"Hot RFQ {rfq_id} [{priority}/{status}]\n{summary[:500]}\nNext: {next_action[:240]}"
+    target_email = os.getenv("SALES_NOTIFY_EMAIL", "").strip()
+    email_status, email_error = ("skipped", "SALES_NOTIFY_EMAIL missing")
+    if target_email:
+        email_status, email_error = send_email_receipt(target_email, f"SuccessCasting Hot RFQ {rfq_id}", message)
+    with db() as conn:
+        conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (rfq_id, "sales_notify_email", target_email, email_status, email_error, now_iso()))
+        conn.execute("INSERT INTO error_log(source,message,payload_json,created_at) VALUES(?,?,?,?)", ("sales-notify", message[:500], jdump({"rfq_id": rfq_id, "email_status": email_status}), now_iso()))
+    return {"status": "queued", "email_status": email_status}
+
 def make_rfq_id() -> str:
     return "rfq_" + uuid.uuid4().hex[:10]
 
@@ -1014,11 +1229,15 @@ def rfq_summary(payload: AISalesChat, readiness: dict[str, Any], intent: str) ->
 
 def upsert_rfq_from_ai(session_id: str, customer_id: str, payload: AISalesChat, intent: str, score: int, readiness: dict[str, Any], answer: str) -> dict[str, Any]:
     seen = now_iso()
-    status = rfq_status_from_readiness(readiness)
+    base_status = rfq_status_from_readiness(readiness)
     priority = rfq_priority(intent, score, readiness)
+    with db() as conn:
+        has_documents = bool(conn.execute("SELECT 1 FROM uploaded_documents WHERE session_id=? OR customer_id=? LIMIT 1", (session_id or "", customer_id or "")).fetchone())
+    advanced_score, advanced_status, advanced_missing = score_rfq_advanced(readiness, has_documents)
+    status = advanced_status if advanced_status != "needs_info" else base_status
     slots = readiness.get("slots") or {}
     work_item = str(slots.get("job_context") or slots.get("work_item") or payload.message[:120]).strip()[:240]
-    missing = readiness.get("missing_labels") or readiness.get("missing") or []
+    missing = advanced_missing or readiness.get("missing_labels") or readiness.get("missing") or []
     next_action = "ข้อมูลหลักครบ: ฝ่ายขายประเมินราคา/ระยะเวลา" if status == "quote_ready" else (f"ขอข้อมูลเพิ่ม: {missing[0]}" if missing else "ฝ่ายขายตรวจ lead และติดต่อกลับ")
     summary = rfq_summary(payload, readiness, intent)
     with db() as conn:
@@ -1039,13 +1258,13 @@ def upsert_rfq_from_ai(session_id: str, customer_id: str, payload: AISalesChat, 
                 status = old_status
             conn.execute(
                 "UPDATE rfq_requests SET customer_id=COALESCE(NULLIF(?,''),customer_id), status=?, priority=?, work_item=COALESCE(NULLIF(?,''),work_item), summary=?, missing_json=?, slots_json=?, readiness_score=?, next_action=?, updated_at=? WHERE rfq_id=?",
-                (customer_id or "", status, priority, work_item, summary, jdump(missing), jdump(slots), int(readiness.get("score") or 0), next_action, seen, rfq_id),
+                (customer_id or "", status, priority, work_item, summary, jdump(missing), jdump(slots), advanced_score, next_action, seen, rfq_id),
             )
         else:
             rfq_id = make_rfq_id()
             conn.execute(
                 "INSERT INTO rfq_requests(rfq_id,customer_id,session_id,status,priority,work_item,summary,missing_json,slots_json,readiness_score,source,next_action,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (rfq_id, customer_id or "", session_id or "", status, priority, work_item, summary, jdump(missing), jdump(slots), int(readiness.get("score") or 0), "ai-sales", next_action, seen, seen),
+                (rfq_id, customer_id or "", session_id or "", status, priority, work_item, summary, jdump(missing), jdump(slots), advanced_score, "ai-sales", next_action, seen, seen),
             )
         if status in {"quote_ready", "needs_operator_review"} or priority in {"urgent", "high"}:
             open_ticket = conn.execute("SELECT ticket_id FROM handoff_tickets WHERE session_id=? AND status='open' ORDER BY id DESC LIMIT 1", (session_id,)).fetchone()
@@ -1063,7 +1282,8 @@ def upsert_rfq_from_ai(session_id: str, customer_id: str, payload: AISalesChat, 
                 )
         else:
             ticket_id = ""
-    return {"rfq_id": rfq_id, "status": status, "priority": priority, "readiness_score": int(readiness.get("score") or 0), "next_action": next_action, "handoff_ticket_id": ticket_id}
+    notification = notify_hot_rfq(rfq_id, status, priority, summary, next_action)
+    return {"rfq_id": rfq_id, "status": status, "priority": priority, "readiness_score": advanced_score, "next_action": next_action, "handoff_ticket_id": ticket_id, "notification": notification}
 
 
 def mask_contact(value: str, kind: str = "") -> str:
@@ -1078,15 +1298,19 @@ def mask_contact(value: str, kind: str = "") -> str:
     return raw[:3] + "***" if len(raw) > 4 else raw[0] + "***"
 
 
-def require_admin(request: Request) -> bool:
+def require_admin(request: Request, roles: set[str] | None = None) -> dict[str, Any]:
+    roles = roles or {"admin", "sales", "engineer"}
+    staff = staff_from_request(request)
+    if staff and role_allows(staff, roles):
+        return staff
     token = (os.getenv("ADMIN_DASHBOARD_TOKEN") or os.getenv("AI_BRAIN_UPDATE_TOKEN") or "").strip()
     supplied = (request.headers.get("x-admin-token") or request.query_params.get("token") or "").strip()
     host = request.client.host if request.client else ""
     if host in {"127.0.0.1", "localhost", "::1"}:
-        return True
+        return {"username": "local", "role": "admin"}
     if token and supplied == token:
-        return True
-    raise HTTPException(403, "admin token required")
+        return {"username": "token-admin", "role": "admin"}
+    raise HTTPException(403, "admin login or token required")
 
 
 def html_escape(value: Any) -> str:
@@ -1578,10 +1802,113 @@ def admin_sales_dashboard(request: Request) -> str:
     for r in data["rfqs"]:
         missing = load_json_safe(r.get("missing_json", "[]"), [])
         contact = " / ".join([x for x in [r.get("name") or "", mask_contact(r.get("phone", ""), "phone"), mask_contact(r.get("line_id", ""), "line_id"), mask_contact(r.get("email", ""), "email")] if x])
-        rows.append(f"<tr><td><b>{html_escape(r['rfq_id'])}</b><br><span>{html_escape(r['updated_at'])}</span></td><td><span class='pill {html_escape(r['priority'])}'>{html_escape(r['priority'])}</span><br><span class='status'>{html_escape(r['status'])}</span><br>{html_escape(r['readiness_score'])}%</td><td>{html_escape(contact)}<br><small>{html_escape(r.get('customer_id',''))}</small></td><td>{html_escape(r.get('summary',''))}<br><small>Missing: {html_escape(', '.join(missing[:5]))}</small></td><td>{html_escape(r.get('next_action',''))}<br><small>Owner: {html_escape(r.get('owner') or '-')} Quote: {html_escape(r.get('quote_number') or '-')}</small></td></tr>")
+        rows.append(f"<tr><td><a href='/admin/rfqs/{html_escape(r['rfq_id'])}'><b>{html_escape(r['rfq_id'])}</b></a><br><span>{html_escape(r['updated_at'])}</span></td><td><span class='pill {html_escape(r['priority'])}'>{html_escape(r['priority'])}</span><br><span class='status'>{html_escape(r['status'])}</span><br>{html_escape(r['readiness_score'])}%</td><td>{html_escape(contact)}<br><small>{html_escape(r.get('customer_id',''))}</small></td><td>{html_escape(r.get('summary',''))}<br><small>Missing: {html_escape(', '.join(missing[:5]))}</small></td><td>{html_escape(r.get('next_action',''))}<br><small>Owner: {html_escape(r.get('owner') or '-')} Quote: {html_escape(r.get('quote_number') or '-')}</small></td></tr>")
     ticket_rows = "".join(f"<tr><td>{html_escape(t['ticket_id'])}</td><td>{html_escape(t['priority'])}</td><td>{html_escape(t['reason'])}</td><td>{html_escape(t['agent_summary'])}</td></tr>" for t in data["handoff_tickets"])
     task_rows = "".join(f"<tr><td>{html_escape(t['created_at'])}</td><td>{html_escape(t['task_type'])}</td><td>{html_escape(t['related_entity_id'])}</td><td>{html_escape(t['confidence_score'])}</td></tr>" for t in data["agent_tasks"])
-    return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>SuccessCasting Sales Admin</title><style>body{{font-family:Inter,system-ui;background:#f6f8fb;color:#0f172a;margin:0}}header{{background:#0b1220;color:#e5eefb;padding:24px 32px}}main{{padding:24px 32px;max-width:1440px;margin:auto}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}}.card{{background:white;border:1px solid #e2e8f0;border-radius:18px;padding:16px;box-shadow:0 6px 24px #0f172a0a}}.card b{{display:block;color:#64748b;font-size:12px;text-transform:uppercase}}.card strong{{font-size:28px}}section{{background:white;border:1px solid #e2e8f0;border-radius:22px;margin:18px 0;overflow:hidden;box-shadow:0 8px 30px #0f172a0a}}h2{{padding:18px 20px;margin:0;border-bottom:1px solid #e2e8f0}}table{{width:100%;border-collapse:collapse}}th,td{{padding:12px 14px;border-bottom:1px solid #eef2f7;text-align:left;vertical-align:top}}th{{font-size:12px;color:#64748b;text-transform:uppercase;background:#f8fafc}}small,span{{color:#64748b}}.pill{{display:inline-block;border-radius:999px;padding:4px 9px;background:#e2e8f0;font-weight:800;font-size:12px}}.urgent{{background:#fee2e2;color:#991b1b}}.high{{background:#ffedd5;color:#9a3412}}.normal{{background:#dbeafe;color:#1e40af}}.low{{background:#f1f5f9;color:#475569}}.status{{font-weight:700;color:#0f172a}}</style></head><body><header><h1>SuccessCasting Sales / RFQ Command Center</h1><p>Lead → RFQ → operator handoff → quote-ready workflow. PII is masked in table previews.</p></header><main><div class='grid'>{cards}</div><section><h2>RFQ Pipeline</h2><table><thead><tr><th>RFQ</th><th>Priority/Status</th><th>Customer</th><th>Summary / Missing</th><th>Next Action</th></tr></thead><tbody>{''.join(rows) or '<tr><td colspan=5>No RFQ yet</td></tr>'}</tbody></table></section><section><h2>Open Operator Handoffs</h2><table><thead><tr><th>Ticket</th><th>Priority</th><th>Reason</th><th>Agent Summary</th></tr></thead><tbody>{ticket_rows or '<tr><td colspan=4>No open handoff</td></tr>'}</tbody></table></section><section><h2>Recent Agent Tasks</h2><table><thead><tr><th>Created</th><th>Task</th><th>Entity</th><th>Confidence</th></tr></thead><tbody>{task_rows or '<tr><td colspan=4>No tasks</td></tr>'}</tbody></table></section></main></body></html>"""
+    return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>SuccessCasting Sales Admin</title><style>body{{font-family:Inter,system-ui;background:#f6f8fb;color:#0f172a;margin:0}}header{{background:#0b1220;color:#e5eefb;padding:24px 32px}}main{{padding:24px 32px;max-width:1440px;margin:auto}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}}.card{{background:white;border:1px solid #e2e8f0;border-radius:18px;padding:16px;box-shadow:0 6px 24px #0f172a0a}}.card b{{display:block;color:#64748b;font-size:12px;text-transform:uppercase}}.card strong{{font-size:28px}}section{{background:white;border:1px solid #e2e8f0;border-radius:22px;margin:18px 0;overflow:hidden;box-shadow:0 8px 30px #0f172a0a}}h2{{padding:18px 20px;margin:0;border-bottom:1px solid #e2e8f0}}table{{width:100%;border-collapse:collapse}}th,td{{padding:12px 14px;border-bottom:1px solid #eef2f7;text-align:left;vertical-align:top}}th{{font-size:12px;color:#64748b;text-transform:uppercase;background:#f8fafc}}small,span{{color:#64748b}}.pill{{display:inline-block;border-radius:999px;padding:4px 9px;background:#e2e8f0;font-weight:800;font-size:12px}}.urgent{{background:#fee2e2;color:#991b1b}}.high{{background:#ffedd5;color:#9a3412}}.normal{{background:#dbeafe;color:#1e40af}}.low{{background:#f1f5f9;color:#475569}}.status{{font-weight:700;color:#0f172a}}</style></head><body><header><h1>SuccessCasting Sales / RFQ Command Center</h1><p>Lead → RFQ → operator handoff → quote-ready workflow. PII is masked in table previews.</p><p><a style='color:#93c5fd' href='/api/admin/rfqs/export.csv'>Export RFQ CSV</a></p></header><main><div class='grid'>{cards}</div><section><h2>RFQ Pipeline</h2><table><thead><tr><th>RFQ</th><th>Priority/Status</th><th>Customer</th><th>Summary / Missing</th><th>Next Action</th></tr></thead><tbody>{''.join(rows) or '<tr><td colspan=5>No RFQ yet</td></tr>'}</tbody></table></section><section><h2>Open Operator Handoffs</h2><table><thead><tr><th>Ticket</th><th>Priority</th><th>Reason</th><th>Agent Summary</th></tr></thead><tbody>{ticket_rows or '<tr><td colspan=4>No open handoff</td></tr>'}</tbody></table></section><section><h2>Recent Agent Tasks</h2><table><thead><tr><th>Created</th><th>Task</th><th>Entity</th><th>Confidence</th></tr></thead><tbody>{task_rows or '<tr><td colspan=4>No tasks</td></tr>'}</tbody></table></section></main></body></html>"""
+
+
+
+@app.post("/api/admin/login")
+def admin_login(payload: AdminLogin) -> Response:
+    staff = authenticate_staff(payload.username, payload.password)
+    token = (os.getenv("ADMIN_DASHBOARD_TOKEN") or os.getenv("AI_BRAIN_UPDATE_TOKEN") or "").strip()
+    if not staff and token and payload.token and hmac.compare_digest(token, payload.token):
+        staff = {"username": "token-admin", "role": "admin", "display_name": "Token Admin"}
+    if not staff:
+        raise HTTPException(403, "invalid login")
+    sess = create_admin_session(staff["username"], staff["role"])
+    resp = Response(content=json.dumps({"status": "ok", "staff": staff}, ensure_ascii=False), media_type="application/json")
+    resp.set_cookie(SESSION_COOKIE, sess, httponly=True, secure=True, samesite="lax", max_age=43200)
+    return resp
+
+
+@app.post("/api/admin/rfqs/{rfq_id}/documents")
+async def admin_upload_rfq_document(rfq_id: str, request: Request, file: UploadFile = File(...), session_id: str = Form(""), customer_id: str = Form("")) -> dict[str, Any]:
+    require_admin(request, {"admin", "sales", "engineer"})
+    if not file.filename:
+        raise HTTPException(422, "filename required")
+    safe_name = re.sub(r"[^A-Za-z0-9ก-๙._-]+", "_", file.filename)[:120]
+    doc_id = make_document_id()
+    target_dir = UPLOAD_ROOT / rfq_id
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / f"{doc_id}_{safe_name}"
+    content = await file.read()
+    if len(content) > int(os.getenv("MAX_UPLOAD_BYTES", "15728640")):
+        raise HTTPException(413, "file too large")
+    target.write_bytes(content)
+    ctype = file.content_type or mimetypes.guess_type(str(target))[0] or "application/octet-stream"
+    ocr_status, text, meta = extract_text_from_document(target, ctype)
+    seen = now_iso()
+    with db() as conn:
+        rfq = conn.execute("SELECT customer_id,session_id,slots_json,missing_json,status,priority,summary,next_action FROM rfq_requests WHERE rfq_id=?", (rfq_id,)).fetchone()
+        if not rfq:
+            raise HTTPException(404, "rfq not found")
+        customer_id = customer_id or rfq["customer_id"] or ""
+        session_id = session_id or rfq["session_id"] or ""
+        conn.execute("INSERT INTO uploaded_documents(document_id,rfq_id,customer_id,session_id,original_filename,storage_path,content_type,size_bytes,ocr_status,extracted_text,extracted_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", (doc_id, rfq_id, customer_id, session_id, file.filename, str(target), ctype, len(content), ocr_status, text, jdump(meta), seen))
+        slots = load_json_safe(rfq["slots_json"], {})
+        if text:
+            tl = text.lower()
+            if any(x in tl for x in ["fc", "fcd", "sus", "เหล็ก", "cast iron", "steel"]):
+                slots["material"] = slots.get("material") or "from_document"
+            if re.search(r"\d+\s*(mm|cm|kg|กก)", tl):
+                slots["size_or_weight"] = slots.get("size_or_weight") or "from_document"
+        slots["drawing_or_photo"] = True
+        pseudo = {"score": rfq["status"], "slots": slots, "missing_labels": load_json_safe(rfq["missing_json"], [])}
+        score2, status2, missing2 = score_rfq_advanced({"score": 0, "slots": slots, "missing_labels": load_json_safe(rfq["missing_json"], [])}, True)
+        if status2 == "needs_info": status2 = rfq["status"]
+        next_action = "ไฟล์ถูกแนบแล้ว: ฝ่ายขาย/วิศวกรตรวจ drawing/OCR" if status2 != "quote_ready" else "ข้อมูลพร้อมขึ้นใบเสนอราคา: ตรวจไฟล์แนบและออก quote number"
+        conn.execute("UPDATE rfq_requests SET slots_json=?, missing_json=?, readiness_score=MAX(readiness_score,?), status=?, next_action=?, updated_at=? WHERE rfq_id=?", (jdump(slots), jdump(missing2), score2, status2, next_action, seen, rfq_id))
+        conn.execute("INSERT INTO agent_tasks(task_type,related_entity_type,related_entity_id,agent_name,input_payload,output_payload,confidence_score,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?)", ("document_ocr", "rfq", rfq_id, "successcasting-document-agent", jdump({"document_id": doc_id, "filename": file.filename}), jdump({"ocr_status": ocr_status, "chars": len(text)}), score2, "completed", seen, seen))
+    return {"status": "ok", "document_id": doc_id, "rfq_id": rfq_id, "ocr_status": ocr_status, "extracted_chars": len(text), "next_action": next_action}
+
+
+@app.post("/api/admin/rfqs/{rfq_id}/quote")
+def admin_create_quote(rfq_id: str, payload: QuoteRecordIn, request: Request) -> dict[str, Any]:
+    staff = require_admin(request, {"admin", "sales"})
+    seen = now_iso()
+    quote_id = make_quote_id()
+    qnum = payload.quote_number.strip() or make_quote_number()
+    total = float(payload.total_price or 0) or float(payload.unit_price or 0)
+    with db() as conn:
+        rfq = conn.execute("SELECT rfq_id FROM rfq_requests WHERE rfq_id=?", (rfq_id,)).fetchone()
+        if not rfq:
+            raise HTTPException(404, "rfq not found")
+        conn.execute("INSERT INTO quote_records(quote_id,rfq_id,quote_number,status,material,quantity,unit_price,total_price,lead_time,validity_days,terms,notes,created_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (quote_id, rfq_id, qnum, payload.status or "draft", payload.material, payload.quantity, float(payload.unit_price or 0), total, payload.lead_time, int(payload.validity_days or 7), payload.terms, payload.notes, staff.get("username", "admin"), seen, seen))
+        conn.execute("UPDATE rfq_requests SET quote_number=?, status=?, next_action=?, updated_at=? WHERE rfq_id=?", (qnum, "quoted" if payload.status in {"sent", "approved"} else "quote_ready", "ตรวจ/ส่งใบเสนอราคาให้ลูกค้า", seen, rfq_id))
+    return {"status": "ok", "quote_id": quote_id, "quote_number": qnum, "rfq_id": rfq_id}
+
+
+@app.get("/api/admin/rfqs/export.csv")
+def admin_export_rfqs_csv(request: Request) -> Response:
+    require_admin(request, {"admin", "sales"})
+    data = sales_admin_overview(limit=1000)
+    out = StringIO()
+    fields = ["rfq_id", "status", "priority", "readiness_score", "customer_id", "name", "phone", "line_id", "email", "work_item", "summary", "next_action", "quote_number", "owner", "updated_at"]
+    writer = csv.DictWriter(out, fieldnames=fields)
+    writer.writeheader()
+    for row in data["rfqs"]:
+        d = {k: row.get(k, "") for k in fields}
+        writer.writerow(d)
+    return Response(content=out.getvalue(), media_type="text/csv; charset=utf-8", headers={"content-disposition": "attachment; filename=successcasting-rfqs.csv"})
+
+
+@app.get("/admin/rfqs/{rfq_id}", response_class=HTMLResponse)
+def admin_rfq_detail(rfq_id: str, request: Request) -> str:
+    try:
+        require_admin(request)
+    except HTTPException:
+        return RedirectResponse("/admin/sales")
+    with db() as conn:
+        r = conn.execute("SELECT r.*, c.name, c.phone, c.email, c.line_id FROM rfq_requests r LEFT JOIN customers c ON c.customer_id=r.customer_id WHERE r.rfq_id=?", (rfq_id,)).fetchone()
+        if not r:
+            raise HTTPException(404, "rfq not found")
+        docs = conn.execute("SELECT document_id,original_filename,content_type,size_bytes,ocr_status,substr(extracted_text,1,500) preview,created_at FROM uploaded_documents WHERE rfq_id=? ORDER BY id DESC", (rfq_id,)).fetchall()
+        quotes = conn.execute("SELECT quote_number,status,material,quantity,total_price,lead_time,created_at FROM quote_records WHERE rfq_id=? ORDER BY id DESC", (rfq_id,)).fetchall()
+    doc_html = "".join(f"<li>{html_escape(d['original_filename'])} — {html_escape(d['ocr_status'])} — {html_escape(d['preview'])}</li>" for d in docs) or "<li>No documents yet</li>"
+    quote_html = "".join(f"<li>{html_escape(q['quote_number'])} — {html_escape(q['status'])} — {html_escape(q['total_price'])} THB — {html_escape(q['lead_time'])}</li>" for q in quotes) or "<li>No quote yet</li>"
+    return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{html_escape(rfq_id)}</title><style>body{{font-family:Inter,system-ui;background:#f6f8fb;color:#0f172a;margin:0}}main{{max-width:980px;margin:auto;padding:28px}}section,form{{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:18px;margin:16px 0}}input,textarea,button{{width:100%;box-sizing:border-box;margin:8px 0;padding:12px;border:1px solid #cbd5e1;border-radius:12px}}button{{background:#2563eb;color:white;font-weight:800;border:0}}</style></head><body><main><a href='/admin/sales'>← Sales dashboard</a><h1>{html_escape(rfq_id)}</h1><section><h2>{html_escape(r['status'])} / {html_escape(r['priority'])} / {html_escape(r['readiness_score'])}%</h2><p>{html_escape(r['summary'])}</p><p>Next: {html_escape(r['next_action'])}</p><p>Customer: {html_escape(r['name'])} {html_escape(mask_contact(r['phone'],'phone'))} {html_escape(mask_contact(r['line_id'],'line_id'))}</p></section><form method='post' action='/api/admin/rfqs/{html_escape(rfq_id)}/documents' enctype='multipart/form-data'><h2>Upload drawing/photo/PDF</h2><input type='file' name='file' required><button>Upload + OCR</button></form><section><h2>Documents / OCR</h2><ul>{doc_html}</ul></section><section><h2>Quotes</h2><ul>{quote_html}</ul><p>API: POST /api/admin/rfqs/{html_escape(rfq_id)}/quote</p></section></main></body></html>"""
 
 
 @app.post("/api/orders")
