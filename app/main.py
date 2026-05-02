@@ -5,6 +5,8 @@ import smtplib
 from email.message import EmailMessage
 import sqlite3
 import uuid
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
@@ -236,6 +238,35 @@ def init_db() -> None:
                 error TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS ai_sales_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                message TEXT NOT NULL,
+                intent TEXT NOT NULL DEFAULT '',
+                lead_score INTEGER NOT NULL DEFAULT 0,
+                payload_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS ai_sales_sessions (
+                session_id TEXT PRIMARY KEY,
+                customer_id TEXT NOT NULL DEFAULT '',
+                visitor_id TEXT NOT NULL DEFAULT '',
+                current_page TEXT NOT NULL DEFAULT '',
+                stage TEXT NOT NULL DEFAULT 'new',
+                last_intent TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS customer_memory (
+                customer_id TEXT PRIMARY KEY,
+                summary TEXT NOT NULL DEFAULT '',
+                quote_slots_json TEXT NOT NULL DEFAULT '{}',
+                tags_json TEXT NOT NULL DEFAULT '[]',
+                last_intent TEXT NOT NULL DEFAULT '',
+                stage TEXT NOT NULL DEFAULT 'nurture',
+                updated_at TEXT NOT NULL
+            );
             """
         )
         # Seed demo-safe inventory so the factory can run immediately.
@@ -356,6 +387,361 @@ class CustomerConnect(BaseModel):
     source: str = "web"
 
 
+class AISalesChat(BaseModel):
+    session_id: str = ""
+    visitor_id: str = ""
+    current_page: str = ""
+    message: str
+    name: str = ""
+    company: str = ""
+    phone: str = ""
+    email: str = ""
+    line_id: str = ""
+    preferred_contact: str = "line"
+
+
+class AIBrainUpdate(BaseModel):
+    version: str = ""
+    facts: dict[str, Any] = Field(default_factory=dict)
+    research_notes: list[str] = Field(default_factory=list)
+    sources: list[str] = Field(default_factory=list)
+
+
+def ai_sales_brain_path() -> Path:
+    return Path(os.getenv("SUCCESSCASTING_AI_BRAIN", "/data/successcasting_ai_brain.json"))
+
+
+def ai_sales_brain() -> dict[str, Any]:
+    brain_path = ai_sales_brain_path()
+    base = {
+        "version": "successcasting-sales-brain-v2",
+        "business": "Success Casting / บริษัท ซัคเซสเน็ทเวิร์ค จำกัด",
+        "positioning": "AI-assisted โรงหล่อโลหะบางนา-บางพลี รับงาน 1 ชิ้นขึ้นไป งานด่วน งานซ่อมบำรุง และงานผลิตตามแบบ",
+        "updated_at": "builtin",
+        "sales_rules": ["ห้ามเดาราคาโดยไม่มีแบบ/รูป/ขนาด/วัสดุ/จำนวน", "งานซ่อมด่วนให้ขอรูปและเบอร์โทรก่อน", "คำตอบต้องพาลูกค้าไปขั้นตอนส่งแบบหรือฝากเบอร์ติดต่อ"],
+        "contacts": {"phone": "084-111-7211, 098-636-2356", "line": "@305idxid", "email": "jack0841117211@gmail.com, scnwmax@gmail.com"},
+        "materials": ["เหล็กหล่อ FC", "เหล็กหล่อเหนียว FCD", "เหล็กเหนียวหล่อ", "เหล็กทนสึก/ไฮโครม/ไฮแมงกานีส", "สแตนเลส SUS304/SUS316", "ทองเหลือง", "บรอนซ์", "อลูมิเนียม"],
+        "questions": ["มีแบบ Drawing หรือรูปชิ้นงานไหม", "ต้องการวัสดุ/เกรดอะไร", "จำนวนกี่ชิ้น", "ขนาดและน้ำหนักประมาณเท่าไร", "ใช้งานกับเครื่องจักรอะไร/เสียหายแบบไหน", "ต้องการใช้เมื่อไร"],
+        "next_step": "ส่งรูป/แบบ/ขนาด/จำนวนผ่านฟอร์มหรือ LINE เพื่อให้ทีมประเมินราคาและระยะเวลา"
+    }
+    try:
+        seed_path = Path(__file__).parent / "successcasting_ai_brain.seed.json"
+        source_path = brain_path if brain_path.exists() else seed_path
+        if source_path.exists():
+            external = json.loads(source_path.read_text(encoding="utf-8"))
+            if isinstance(external, dict):
+                base.update(external)
+    except Exception:
+        pass
+    return base
+
+
+def classify_sales_intent(text: str) -> tuple[str, int]:
+    t = text.lower()
+    score = 12
+    intent = "general"
+    hot_words = ["ราคา", "quote", "ใบเสนอ", "เสนอราคา", "ด่วน", "สั่ง", "ผลิต", "หล่อ", "จำนวน", "กี่บาท", "delivery", "ส่งของ", "ติดต่อ", "โทร", "line"]
+    tech_words = ["วัสดุ", "เกรด", "fc", "fcd", "sus", "บรอนซ์", "ทองเหลือง", "อลู", "เหล็ก", "ทนสึก", "แบบ", "drawing", "ขนาด"]
+    if any(w in t for w in hot_words):
+        intent, score = "quote_or_sales", 72
+    if any(w in t for w in tech_words):
+        intent, score = ("technical_quote" if score >= 70 else "technical_question"), max(score, 58)
+    if any(w in t for w in ["เสีย", "ซ่อม", "แตก", "สึก", "หยุดไลน์", "หยุดเครื่อง"]):
+        intent, score = "urgent_repair", 88
+    if any(w in t for w in ["เบอร์", "โทร", "ติดต่อ", "line", "ไลน์"]):
+        intent, score = "contact_request", max(score, 82)
+    return intent, score
+
+
+def quote_readiness(payload: AISalesChat, intent: str, score: int) -> dict[str, Any]:
+    text = " ".join([payload.message, payload.name, payload.phone, payload.email, payload.line_id]).lower()
+    checks = {
+        "contact": bool(payload.name.strip() or normalize_contact("phone", payload.phone) or normalize_contact("email", payload.email) or normalize_contact("line_id", payload.line_id)),
+        "material": any(w in text for w in ["fc", "fcd", "sus", "เหล็ก", "บรอนซ์", "ทองเหลือง", "อลู", "สแตนเลส", "วัสดุ", "เกรด"]),
+        "quantity": bool(re.search(r"\d+\s*(ชิ้น|pcs|pc|piece|ตัว|ชุด)?", text)) or any(w in text for w in ["จำนวน", "กี่ชิ้น"]),
+        "drawing_or_photo": any(w in text for w in ["รูป", "แบบ", "drawing", "ไฟล์", "ตัวอย่าง", "sketch"]),
+        "size_or_weight": any(w in text for w in ["ขนาด", "น้ำหนัก", "กก", "kg", "mm", "cm", "เมตร"]),
+        "deadline": any(w in text for w in ["ด่วน", "วันนี้", "พรุ่งนี้", "เมื่อไร", "deadline", "กำหนด", "วัน"]),
+    }
+    missing = [k for k, ok in checks.items() if not ok]
+    readiness = int(round((sum(1 for ok in checks.values() if ok) / len(checks)) * 100))
+    stage = "quote_ready" if readiness >= 84 else "hot_lead" if score >= 80 or readiness >= 60 else "nurture"
+    return {"score": readiness, "stage": stage, "checks": checks, "missing": missing}
+
+
+def ai_sales_llm_config() -> dict[str, Any]:
+    """Return OpenAI-compatible LLM config without exposing secret values."""
+    gemini_key = (
+        os.getenv("AI_SALES_GEMINI_API_KEY")
+        or os.getenv("GEMINI_API_KEY")
+        or os.getenv("GEMINI_API")
+        or os.getenv("GEMINI_KEY")
+        or os.getenv("GOOGLE_API_KEY")
+    )
+    openai_key = os.getenv("AI_SALES_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+    gateway_url = os.getenv("AI_SALES_CLOUDFLARE_AI_GATEWAY_URL") or os.getenv("CLOUDFLARE_AI_GATEWAY_URL") or os.getenv("CF_AI_GATEWAY_URL")
+    if gemini_key:
+        return {
+            "provider": "gemini",
+            "api_key": gemini_key,
+            "url": gateway_url or os.getenv("AI_SALES_OPENAI_URL") or os.getenv("AI_SALES_GEMINI_OPENAI_URL", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"),
+            "model": os.getenv("AI_SALES_OPENAI_MODEL") or os.getenv("AI_SALES_GEMINI_MODEL", "gemini-2.5-flash-lite"),
+            "gateway": "cloudflare-ai-gateway" if gateway_url else "direct-gemini",
+        }
+    if openai_key:
+        return {
+            "provider": "openai-compatible",
+            "api_key": openai_key,
+            "url": gateway_url or os.getenv("AI_SALES_OPENAI_URL", "https://api.openai.com/v1/chat/completions"),
+            "model": os.getenv("AI_SALES_OPENAI_MODEL", "gpt-4o-mini"),
+            "gateway": "cloudflare-ai-gateway" if gateway_url else "direct-provider",
+        }
+    return {"provider": "local-brain", "api_key": "", "url": "", "model": "", "gateway": "cloudflare-ai-gateway-ready" if gateway_url else ""}
+
+
+def llm_sales_reply(payload: AISalesChat, intent: str, score: int, readiness: dict[str, Any], brain: dict[str, Any]) -> str | None:
+    cfg = ai_sales_llm_config()
+    api_key = cfg.get("api_key")
+    if not api_key:
+        return None
+    url = cfg["url"]
+    model = cfg["model"]
+    system = (
+        "You are Success Casting AI Sales Concierge. Reply in Thai unless user uses English. "
+        "Be consultative and concise. Never invent prices or delivery promises. "
+        "Drive the customer toward sending drawing/photo/size/material/quantity/deadline/contact. "
+        "Do not expose secrets."
+    )
+    user = json.dumps({"customer_message": payload.message, "intent": intent, "lead_score": score, "quote_readiness": readiness, "business_brain": brain}, ensure_ascii=False)[:6000]
+    body = json.dumps({"model": model, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.25, "max_tokens": 420}).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={
+            "content-type": "application/json",
+            "authorization": f"Bearer {api_key}",
+            "user-agent": "SuccessCastingAI/1.0",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        return data.get("choices", [{}])[0].get("message", {}).get("content") or None
+    except Exception:
+        return None
+
+
+def research_successcasting_brain() -> dict[str, Any]:
+    brain = ai_sales_brain()
+    urls = [u.strip() for u in os.getenv("AI_SALES_RESEARCH_URLS", "https://www.successcasting.com/,https://fractory.com/sand-casting/").split(",") if u.strip()]
+    notes: list[str] = []
+    sources: list[str] = []
+    for url in urls[:6]:
+        try:
+            req = urllib.request.Request(url, headers={"user-agent": "SuccessCastingAIResearch/1.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                raw = resp.read(200000).decode("utf-8", errors="ignore")
+            text = re.sub(r"<script.*?</script>|<style.*?</style>", " ", raw, flags=re.I | re.S)
+            text = re.sub(r"<[^>]+>", " ", text)
+            text = re.sub(r"\s+", " ", text).strip()
+            if text:
+                sources.append(url)
+                for key in ["sand casting", "หล่อ", "เหล็ก", "bronze", "stainless", "aluminum"]:
+                    idx = text.lower().find(key)
+                    if idx >= 0:
+                        notes.append(text[max(0, idx-120):idx+260])
+                        break
+        except Exception as exc:
+            notes.append(f"source failed {url}: {type(exc).__name__}")
+    updated = dict(brain)
+    updated["version"] = "successcasting-sales-brain-v2-researched"
+    updated["updated_at"] = now_iso()
+    updated["research_notes"] = notes[:12]
+    updated["sources"] = sources
+    path = ai_sales_brain_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(updated, ensure_ascii=False, indent=2), encoding="utf-8")
+    return updated
+
+
+
+def load_json_safe(raw: str, fallback: Any) -> Any:
+    try:
+        value = json.loads(raw or "")
+        return value if value is not None else fallback
+    except Exception:
+        return fallback
+
+
+def find_customer_id_from_payload(payload: AISalesChat) -> str:
+    rows = contact_rows(payload.model_dump())
+    if not rows:
+        return ""
+    with db() as conn:
+        for kind, value in rows:
+            hit = conn.execute("SELECT customer_id FROM contact_methods WHERE type=? AND value=?", (kind, value)).fetchone()
+            if hit:
+                return hit["customer_id"]
+    return ""
+
+
+def extract_quote_slots(payload: AISalesChat) -> dict[str, Any]:
+    text = " ".join([payload.message, payload.name, payload.company, payload.phone, payload.email, payload.line_id]).strip()
+    lower = text.lower()
+    slots: dict[str, Any] = {}
+    contact = {}
+    if payload.name.strip(): contact["name"] = payload.name.strip()
+    if payload.company.strip(): contact["company"] = payload.company.strip()
+    if normalize_contact("phone", payload.phone): contact["phone"] = normalize_contact("phone", payload.phone)
+    if normalize_contact("email", payload.email): contact["email"] = normalize_contact("email", payload.email)
+    if normalize_contact("line_id", payload.line_id): contact["line_id"] = normalize_contact("line_id", payload.line_id)
+    if contact: slots["contact"] = contact
+    material_words = ["fc", "fcd", "sus", "เหล็ก", "บรอนซ์", "ทองเหลือง", "อลู", "สแตนเลส", "วัสดุ", "เกรด", "hi chrome", "แมงกานีส"]
+    if any(w in lower for w in material_words): slots["material"] = True
+    qty = re.search(r"(\d+)\s*(ชิ้น|pcs|pc|piece|ตัว|ชุด)", lower)
+    if qty: slots["quantity"] = qty.group(0)
+    elif any(w in lower for w in ["จำนวน", "กี่ชิ้น"]): slots["quantity"] = "mentioned"
+    if any(w in lower for w in ["รูป", "แบบ", "drawing", "ไฟล์", "ตัวอย่าง", "sketch", "ถ่าย"]): slots["drawing_or_photo"] = True
+    size = re.search(r"\d+(?:\.\d+)?\s*(mm|cm|เมตร|m|kg|กก|กิโล)", lower)
+    if size: slots["size_or_weight"] = size.group(0)
+    elif any(w in lower for w in ["ขนาด", "น้ำหนัก"]): slots["size_or_weight"] = "mentioned"
+    if any(w in lower for w in ["ด่วน", "วันนี้", "พรุ่งนี้", "เมื่อไร", "deadline", "กำหนด", "วัน", "หยุดไลน์", "หยุดเครื่อง"]): slots["deadline"] = True
+    if any(w in lower for w in ["ซ่อม", "แตก", "สึก", "หยุดเครื่อง", "หยุดไลน์"]): slots["use_case"] = "urgent_repair"
+    return slots
+
+
+def merge_slots(old_slots: dict[str, Any], new_slots: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(old_slots or {})
+    for k, v in (new_slots or {}).items():
+        if k == "contact" and isinstance(v, dict):
+            c = dict(merged.get("contact") or {})
+            c.update({kk: vv for kk, vv in v.items() if vv})
+            merged["contact"] = c
+        elif v:
+            merged[k] = v
+    return merged
+
+
+def readiness_from_slots(slots: dict[str, Any], intent: str, score: int) -> dict[str, Any]:
+    checks = {
+        "contact": bool((slots.get("contact") or {})),
+        "material": bool(slots.get("material")),
+        "quantity": bool(slots.get("quantity")),
+        "drawing_or_photo": bool(slots.get("drawing_or_photo")),
+        "size_or_weight": bool(slots.get("size_or_weight")),
+        "deadline": bool(slots.get("deadline")),
+    }
+    missing = [k for k, ok in checks.items() if not ok]
+    readiness = int(round((sum(1 for ok in checks.values() if ok) / len(checks)) * 100))
+    stage = "quote_ready" if readiness >= 84 else "hot_lead" if score >= 80 or readiness >= 60 else "nurture"
+    labels = {
+        "contact": "ชื่อ/เบอร์/LINE หรืออีเมล",
+        "material": "วัสดุหรือเกรดที่ต้องการ",
+        "quantity": "จำนวนชิ้น",
+        "drawing_or_photo": "รูป/แบบ/drawing/ตัวอย่าง",
+        "size_or_weight": "ขนาดหรือน้ำหนักคร่าว ๆ",
+        "deadline": "วันต้องการใช้งาน/ความด่วน",
+    }
+    return {"score": readiness, "stage": stage, "checks": checks, "missing": missing, "missing_labels": [labels[m] for m in missing], "slots": slots}
+
+
+def load_customer_memory(customer_id: str) -> dict[str, Any] | None:
+    if not customer_id:
+        return None
+    with db() as conn:
+        row = conn.execute("SELECT * FROM customer_memory WHERE customer_id=?", (customer_id,)).fetchone()
+        cust = conn.execute("SELECT customer_id,name,company,preferred_contact,last_seen_at FROM customers WHERE customer_id=?", (customer_id,)).fetchone()
+    if not row and not cust:
+        return None
+    memory = dict(row) if row else {"customer_id": customer_id, "summary": "", "quote_slots_json": "{}", "tags_json": "[]", "last_intent": "", "stage": "nurture", "updated_at": ""}
+    memory["quote_slots"] = load_json_safe(memory.pop("quote_slots_json", "{}"), {})
+    memory["tags"] = load_json_safe(memory.pop("tags_json", "[]"), [])
+    memory["customer"] = dict(cust) if cust else {"customer_id": customer_id}
+    return memory
+
+
+def summarize_memory(existing_summary: str, payload: AISalesChat, intent: str, readiness: dict[str, Any]) -> str:
+    bits = []
+    if payload.company.strip(): bits.append(f"บริษัท/หน่วยงาน {payload.company.strip()}")
+    if readiness.get("slots", {}).get("use_case"): bits.append("มีบริบทงานซ่อม/งานเร่ง")
+    if readiness.get("slots", {}).get("material"): bits.append("มีการระบุวัสดุ/เกรดแล้ว")
+    if readiness.get("slots", {}).get("quantity"): bits.append(f"จำนวน: {readiness['slots']['quantity']}")
+    if readiness.get("slots", {}).get("size_or_weight"): bits.append(f"ขนาด/น้ำหนัก: {readiness['slots']['size_or_weight']}")
+    base = existing_summary.strip()
+    addition = "; ".join(bits) or f"คุยล่าสุดเรื่อง {intent}"
+    if addition and addition not in base:
+        base = (base + " | " + addition).strip(" |")
+    return base[:700]
+
+
+def upsert_ai_session_and_memory(session_id: str, payload: AISalesChat, customer_id: str, intent: str, readiness: dict[str, Any]) -> dict[str, Any]:
+    seen = now_iso()
+    with db() as conn:
+        conn.execute(
+            "INSERT INTO ai_sales_sessions(session_id,customer_id,visitor_id,current_page,stage,last_intent,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(session_id) DO UPDATE SET customer_id=COALESCE(NULLIF(?,''),customer_id), visitor_id=COALESCE(NULLIF(?,''),visitor_id), current_page=COALESCE(NULLIF(?,''),current_page), stage=?, last_intent=?, updated_at=?",
+            (session_id, customer_id or "", payload.visitor_id.strip(), payload.current_page.strip(), readiness["stage"], intent, seen, seen, customer_id or "", payload.visitor_id.strip(), payload.current_page.strip(), readiness["stage"], intent, seen),
+        )
+        if customer_id:
+            row = conn.execute("SELECT summary,quote_slots_json,tags_json FROM customer_memory WHERE customer_id=?", (customer_id,)).fetchone()
+            old_slots = load_json_safe(row["quote_slots_json"], {}) if row else {}
+            merged_slots = merge_slots(old_slots, readiness.get("slots", {}))
+            merged_readiness = readiness_from_slots(merged_slots, intent, 0)
+            tags = set(load_json_safe(row["tags_json"], []) if row else [])
+            tags.update([intent, merged_readiness["stage"]])
+            if merged_slots.get("use_case"): tags.add(str(merged_slots["use_case"]))
+            summary = summarize_memory(row["summary"] if row else "", payload, intent, merged_readiness)
+            conn.execute(
+                "INSERT INTO customer_memory(customer_id,summary,quote_slots_json,tags_json,last_intent,stage,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(customer_id) DO UPDATE SET summary=?, quote_slots_json=?, tags_json=?, last_intent=?, stage=?, updated_at=?",
+                (customer_id, summary, jdump(merged_slots), jdump(sorted(tags)), intent, merged_readiness["stage"], seen, summary, jdump(merged_slots), jdump(sorted(tags)), intent, merged_readiness["stage"], seen),
+            )
+            return {"summary": summary, "quote_slots": merged_slots, "tags": sorted(tags), "stage": merged_readiness["stage"], "quote_readiness": merged_readiness}
+    return {}
+
+
+def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dict[str, Any] | None = None) -> dict[str, Any]:
+    brain = ai_sales_brain()
+    old_slots = (memory or {}).get("quote_slots", {}) if memory else {}
+    slots = merge_slots(old_slots, extract_quote_slots(payload))
+    readiness = readiness_from_slots(slots, intent, score)
+    msg = payload.message.strip()
+    lower = msg.lower()
+    customer_name = ((memory or {}).get("customer") or {}).get("name") or payload.name.strip()
+    memory_cue = ""
+    if memory and (memory.get("summary") or customer_name):
+        who = f"คุณ{customer_name}" if customer_name else "ลูกค้าเดิม"
+        memory_cue = f"ยินดีต้อนรับกลับครับ {who} — ผมจำบริบทเดิมไว้แล้ว: {memory.get('summary') or 'มีประวัติการติดต่อกับ Success Casting'}"
+    llm_answer = llm_sales_reply(payload, intent, score, readiness, brain)
+    if llm_answer:
+        if memory_cue:
+            llm_answer = memory_cue + "\n\n" + llm_answer
+        return {"answer": llm_answer, "intent": intent, "lead_score": score, "quote_readiness": readiness, "next_questions": brain["questions"][:4], "cta": "ฝากชื่อ เบอร์ หรือ LINE เพื่อให้ทีมขายติดตามและออกเลขอ้างอิง", "brain_version": brain.get("version", "llm"), "mode": "llm", "memory_cue": memory_cue}
+    if any(w in lower for w in ["hello", "hi", "สวัสดี", "ดีครับ", "ดีค่ะ"]):
+        answer = "สวัสดีครับ ผมคือ AI Sales Concierge ของ Success Casting ช่วยคัดกรองงานหล่อและพาลูกค้าไปถึงขั้นขอใบเสนอราคาได้เร็วขึ้นครับ"
+    elif intent == "urgent_repair":
+        answer = "งานซ่อม/ชิ้นส่วนแตก/สึกถือเป็นงานเร่งครับ ส่งรูปชิ้นงาน ขนาดคร่าว ๆ จำนวน และวัสดุเดิมมาได้เลย ถ้ายังไม่รู้เกรดวัสดุ ทีมจะช่วยประเมินจากการใช้งานจริง เช่น รับแรงกระแทก ทนสึก หรือทนความร้อน"
+    elif intent in {"quote_or_sales", "technical_quote"}:
+        answer = "ขอใบเสนอราคาได้ครับ เพื่อประเมินเร็วที่สุด กรุณาส่ง 1) แบบหรือรูป 2) ขนาด/น้ำหนัก 3) วัสดุหรือการใช้งาน 4) จำนวน 5) วันที่ต้องการใช้งาน งาน 1 ชิ้นขึ้นไปสามารถคุยได้"
+    elif intent == "technical_question":
+        mats = ", ".join(brain["materials"][:8])
+        answer = f"Success Casting รับงานหล่อหลายกลุ่ม เช่น {mats} การเลือกวัสดุควรดูโหลด, การสึก, ความร้อน, สารเคมี และชิ้นงานเดิม ถ้าส่งรูป/แบบมา AI จะช่วยจัดข้อมูลให้ทีมประเมินต่อได้"
+    elif intent == "contact_request":
+        c = brain["contacts"]
+        answer = f"ติดต่อทีมได้ทันที: โทร {c['phone']} หรือ LINE {c['line']} ถ้าฝากชื่อ/เบอร์/LINE ในช่องนี้ ระบบจะออกเลขอ้างอิงและบันทึกประวัติลูกค้าให้ครับ"
+    else:
+        answer = "ผมช่วยตอบเรื่องรับหล่อโลหะ, วัสดุที่เหมาะสม, ขั้นตอนส่งแบบ, งานด่วน, งาน 1 ชิ้นขึ้นไป และช่วยสร้าง lead ให้ฝ่ายขายปิดดีลต่อได้ครับ เล่าโจทย์งานหรือส่งรายละเอียดที่มีมาได้เลย"
+    if memory_cue:
+        answer = memory_cue + "\n\n" + answer
+    missing_labels = readiness.get("missing_labels") or []
+    if readiness.get("stage") == "quote_ready" and not missing_labels:
+        next_questions = ["ข้อมูลหลักครบสำหรับส่งฝ่ายขายประเมินแล้ว", "ถ้ามีรูป/แบบเพิ่มเติม ส่งผ่าน LINE หรือแนบในช่องทางที่สะดวก", "ทีมจะใช้เลขอ้างอิงนี้ติดตามงานต่อ"]
+    else:
+        next_questions = missing_labels[:4] if missing_labels else (brain["questions"][:4] if score >= 55 else ["ต้องการหล่อชิ้นงานประเภทไหน", "มีรูปหรือแบบไหม", "ต้องการจำนวนกี่ชิ้น"])
+    cta = "ฝากชื่อ เบอร์ หรือ LINE ได้เลย ผมจะสร้างเลขอ้างอิงให้ทีมขายติดตามต่อ" if score >= 70 else "ถ้าพร้อมขอราคา ให้พิมพ์: ขอใบเสนอราคา + รายละเอียดงาน"
+    smart_actions = ["ส่งรูป/แบบชิ้นงาน", "บันทึกเป็นงานด่วน", "โทรฝ่ายขาย 084-111-7211", "เปิด LINE @305idxid"]
+    return {"answer": answer, "intent": intent, "lead_score": score, "quote_readiness": readiness, "next_questions": next_questions, "cta": cta, "brain_version": brain.get("version", "local"), "mode": "local-brain", "memory_cue": memory_cue, "smart_actions": smart_actions}
+
+
 @app.post("/api/customers/connect")
 def connect_customer(payload: CustomerConnect) -> dict[str, Any]:
     data = payload.model_dump()
@@ -400,6 +786,109 @@ def connect_customer(payload: CustomerConnect) -> dict[str, Any]:
     if data.get("preferred_contact") in {"line", "telegram", "instagram"}:
         feedback += " (ช่องทางโซเชียลต้องให้ลูกค้าเริ่มแชท/เพิ่ม OA ก่อน ระบบจึงจะผูก ID สำหรับตอบกลับอัตโนมัติได้)"
     return {"status": "ok", "customer_id": cid, "returning_customer": returning, "user_feedback": feedback, "status_url": f"/customers/{cid}"}
+
+
+@app.post("/api/ai-sales/chat")
+def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
+    session_id = payload.session_id.strip() or ("ai_" + uuid.uuid4().hex[:12])
+    intent, score = classify_sales_intent(payload.message)
+    known_customer_id = find_customer_id_from_payload(payload)
+    memory_before = load_customer_memory(known_customer_id) if known_customer_id else None
+    reply = build_sales_reply(payload, intent, score, memory_before)
+    lead = None
+    has_contact = any([payload.name.strip(), normalize_contact("phone", payload.phone), normalize_contact("email", payload.email), normalize_contact("line_id", payload.line_id)])
+    if has_contact:
+        lead_payload = CustomerConnect(
+            name=payload.name,
+            company=payload.company,
+            email=payload.email,
+            phone=payload.phone,
+            line_id=payload.line_id,
+            preferred_contact=payload.preferred_contact or "line",
+            message=f"AI Sales Concierge lead ({intent}, score {score}, readiness {reply['quote_readiness']['score']}%): {payload.message}",
+            source="successcasting-ai-sales-concierge",
+        )
+        lead = connect_customer(lead_payload)
+        known_customer_id = lead.get("customer_id") or known_customer_id
+    memory_after = upsert_ai_session_and_memory(session_id, payload, known_customer_id, intent, reply["quote_readiness"])
+    if memory_after.get("quote_readiness"):
+        reply["quote_readiness"] = memory_after["quote_readiness"]
+    seen = now_iso()
+    with db() as conn:
+        conn.execute(
+            "INSERT INTO ai_sales_events(session_id,role,message,intent,lead_score,payload_json,created_at) VALUES(?,?,?,?,?,?,?)",
+            (session_id, "user", payload.message.strip(), intent, score, jdump({"customer_id": known_customer_id, "visitor_id": payload.visitor_id, "current_page": payload.current_page, "has_contact": has_contact, "slots": reply.get("quote_readiness", {}).get("slots", {})}), seen),
+        )
+        conn.execute(
+            "INSERT INTO ai_sales_events(session_id,role,message,intent,lead_score,payload_json,created_at) VALUES(?,?,?,?,?,?,?)",
+            (session_id, "assistant", reply["answer"], intent, score, jdump({"cta": reply["cta"], "lead": lead, "memory_stage": memory_after.get("stage")}), seen),
+        )
+    customer_context = {
+        "known": bool(known_customer_id),
+        "customer_id": known_customer_id,
+        "returning_customer": bool(memory_before),
+        "summary": memory_after.get("summary") or (memory_before or {}).get("summary", ""),
+        "stage": memory_after.get("stage") or reply["quote_readiness"].get("stage"),
+        "tags": memory_after.get("tags", []),
+    }
+    return {"status": "ok", "session_id": session_id, **reply, "lead": lead, "customer_context": customer_context, "privacy_note": "customer memory is used to avoid asking repeat questions; public status endpoints do not expose PII"}
+
+
+@app.get("/api/ai-sales/brain")
+def ai_sales_brain_status() -> dict[str, Any]:
+    brain = ai_sales_brain()
+    with db() as conn:
+        try:
+            event_count = conn.execute("SELECT COUNT(*) c FROM ai_sales_events").fetchone()["c"]
+            hot_count = conn.execute("SELECT COUNT(*) c FROM ai_sales_events WHERE role='user' AND lead_score>=70").fetchone()["c"]
+        except sqlite3.OperationalError:
+            event_count = hot_count = 0
+    llm_cfg = ai_sales_llm_config()
+    return {"status": "ready", "version": brain.get("version"), "updated_at": brain.get("updated_at"), "business": brain.get("business"), "materials": brain.get("materials", []), "event_count": event_count, "hot_lead_events": hot_count, "llm_configured": bool(llm_cfg.get("api_key")), "llm_provider": llm_cfg.get("provider"), "llm_model": llm_cfg.get("model") or None, "llm_gateway": llm_cfg.get("gateway") or None, "privacy_note": "no secrets exposed; runtime brain can be updated via SUCCESSCASTING_AI_BRAIN json"}
+
+
+@app.get("/api/ai-sales/leads/status")
+def ai_sales_leads_status() -> dict[str, Any]:
+    with db() as conn:
+        rows = conn.execute("SELECT intent, COUNT(*) c, MAX(lead_score) max_score FROM ai_sales_events WHERE role='user' GROUP BY intent ORDER BY c DESC").fetchall()
+        latest = conn.execute("SELECT session_id,intent,lead_score,created_at FROM ai_sales_events WHERE role='user' ORDER BY id DESC LIMIT 10").fetchall()
+        counts = {
+            "sessions": conn.execute("SELECT COUNT(*) c FROM ai_sales_sessions").fetchone()["c"],
+            "customer_memories": conn.execute("SELECT COUNT(*) c FROM customer_memory").fetchone()["c"],
+            "quote_ready_memories": conn.execute("SELECT COUNT(*) c FROM customer_memory WHERE stage='quote_ready'").fetchone()["c"],
+        }
+    return {"status": "ready", "summary": [dict(r) for r in rows], "latest": [dict(r) for r in latest], "memory_counts": counts, "privacy_note": "public status excludes message text and customer PII"}
+
+
+@app.post("/api/ai-sales/brain/update")
+def ai_sales_brain_update(payload: AIBrainUpdate, request: Request) -> dict[str, Any]:
+    token = os.getenv("AI_BRAIN_UPDATE_TOKEN", "").strip()
+    supplied = request.headers.get("x-ai-brain-token", "").strip()
+    if not token or supplied != token:
+        raise HTTPException(403, "brain update token required")
+    current = ai_sales_brain()
+    merged = dict(current)
+    if payload.version:
+        merged["version"] = payload.version
+    merged["updated_at"] = now_iso()
+    merged.setdefault("research_notes", [])
+    merged.setdefault("sources", [])
+    merged.update(payload.facts)
+    merged["research_notes"] = (payload.research_notes or []) + list(merged.get("research_notes", []))[:20]
+    merged["sources"] = sorted(set((payload.sources or []) + list(merged.get("sources", []))))
+    path = ai_sales_brain_path(); path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(merged, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"status": "ok", "version": merged.get("version"), "updated_at": merged.get("updated_at"), "path": str(path)}
+
+
+@app.post("/api/ai-sales/research/run")
+def ai_sales_research_run(request: Request) -> dict[str, Any]:
+    token = os.getenv("AI_BRAIN_UPDATE_TOKEN", "").strip()
+    supplied = request.headers.get("x-ai-brain-token", "").strip()
+    if not token or supplied != token:
+        raise HTTPException(403, "brain update token required")
+    brain = research_successcasting_brain()
+    return {"status": "ok", "version": brain.get("version"), "updated_at": brain.get("updated_at"), "sources": brain.get("sources", []), "notes_count": len(brain.get("research_notes", []))}
 
 
 @app.get("/api/channels/status")
