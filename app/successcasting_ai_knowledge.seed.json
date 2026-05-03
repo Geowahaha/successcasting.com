@@ -1,5 +1,5 @@
 {
-  "version": "successcasting-agentic-knowledge-v1",
+  "version": "successcasting-agentic-knowledge-v2-pulley-expert",
   "updated_at": "2026-05-02",
   "private_note": "Backend knowledge only. Do not render this file as marketing copy on the public website.",
   "documents": [
@@ -7,43 +7,203 @@
       "slug": "sand-casting-process",
       "title": "Sand casting process and practical limitations",
       "category": "process",
-      "keywords": ["sand casting", "หล่อทราย", "แม่พิมพ์ทราย", "pattern", "core", "gating", "riser", "defect"],
+      "keywords": [
+        "sand casting",
+        "หล่อทราย",
+        "แม่พิมพ์ทราย",
+        "pattern",
+        "core",
+        "gating",
+        "riser",
+        "defect"
+      ],
       "content": "Sand casting คือการทำแบบหล่อด้วยทราย ใส่ core ถ้าต้องมีโพรง เทโลหะหลอม รอแข็งตัว แกะแบบ ตัด gate/riser ทำความสะอาด ตรวจสอบ และ machining ตามจุดสำคัญ ขั้นตอนหลัก: รับแบบ/รูป/ตัวอย่าง, ตรวจวัสดุและขนาด, ทำ pattern เผื่อ shrinkage และ machining allowance, ทำ mold/core, ออกแบบ gating/riser, melting/pouring, shakeout/fettling, heat treatment ถ้าจำเป็น, machining, inspection. ข้อจำกัด: ผิวหล่อทรายหยาบกว่า die/investment casting, tolerance กว้างกว่างาน machining, ผนังบางมาก/มุมคม/รูเล็กยาว/ส่วนหนาบางต่างกันมากเสี่ยง defect. Defect ที่ควรอธิบายลูกค้า: porosity จาก gas/shrinkage, sand inclusion, cold shut/misrun, crack/hot tear, hard spot/chill, dimension variation. ถ้าไม่มี drawing ให้ขอรูปหลายมุมพร้อมขนาดหลัก น้ำหนัก วัสดุเดิม จุดเสียหาย และตัวอย่างจริงถ้ามี."
     },
     {
       "slug": "cast-iron-fc-fcd",
       "title": "FC gray cast iron vs FCD ductile iron",
       "category": "material",
-      "keywords": ["FC", "FCD", "เหล็กหล่อ", "เหล็กหล่อเทา", "เหล็กหล่อเหนียว", "gray iron", "ductile iron"],
+      "keywords": [
+        "FC",
+        "FCD",
+        "เหล็กหล่อ",
+        "เหล็กหล่อเทา",
+        "เหล็กหล่อเหนียว",
+        "gray iron",
+        "ductile iron"
+      ],
       "content": "FC หรือเหล็กหล่อเทา เช่น FC150/FC200/FC250/FC300 มี graphite เป็นแผ่น กลึงง่าย ลดสั่นดี ทนแรงอัดดี เหมาะกับฐานเครื่องจักร housing pulley flywheel cover pump casing บางงาน แต่เปราะและรับแรงกระแทก/แรงดึงต่ำกว่า FCD. FCD หรือเหล็กหล่อเหนียว เช่น FCD400/FCD450/FCD500/FCD600/FCD700 มี graphite เป็นก้อนกลม เหนียวกว่า รับแรงดึงและแรงกระแทกดีกว่า เหมาะกับ gear, pulley รับโหลด, bracket, wheel, pipe fitting, valve body, arm/ชิ้นส่วนเครื่องจักรหนัก. เลือก FC เมื่องานทั่วไป กลึงง่าย ลดสั่น ไม่กระแทกหนัก. เลือก FCD เมื่องานเดิมแตกง่าย โหลดสูง ต้องการความเหนียวกว่า. ควรยืนยันมาตรฐาน JIS/ISO/ASTM ตามแบบลูกค้า เช่น JIS G5501/G5502, ISO 185/1083, ASTM A48/A536."
     },
     {
       "slug": "cast-steel-high-chrome-stainless-bronze-aluminum",
       "title": "Other casting materials selection guide",
       "category": "material",
-      "keywords": ["cast steel", "high chrome", "สแตนเลส", "bronze", "บรอนซ์", "aluminum", "อลูมิเนียม", "ทนสึก"],
+      "keywords": [
+        "cast steel",
+        "high chrome",
+        "สแตนเลส",
+        "bronze",
+        "บรอนซ์",
+        "aluminum",
+        "อลูมิเนียม",
+        "ทนสึก"
+      ],
       "content": "Cast steel เหมาะกับงานรับแรงกระแทก/โหลดสูง/ต้องการ toughness หรือเชื่อมซ่อมได้ดีกว่า cast iron แต่หล่อยากกว่า shrinkage สูงกว่า และควรมี heat treatment/NDT ในงาน critical. High chrome cast iron เหมาะกับงานทนสึกแบบ abrasion เช่น liner, slurry pump impeller, crusher/wear part, งานโดนทราย หิน ปูน แร่ แต่แข็งและเปราะ กลึงยาก ไม่เหมาะกับ impact สูงมาก. Stainless casting เช่น CF8/CF8M ใช้กับงานกัดกร่อน pump/valve/food/chemical/marine แต่ต้องถาม medium, chloride, pH, temperature; ห้ามบอกว่าสแตนเลสไม่เป็นสนิมทุกกรณี. Bronze ใช้กับ bushing/bearing/worm wheel/impeller/marine part ทนกัดกร่อนและลดเสียดสี ต้องถาม load, speed, lubrication, shaft material. Aluminum casting น้ำหนักเบา ใช้ housing/cover/impeller/fan/pulley น้ำหนักเบา แต่ต้องตรวจ strength, อุณหภูมิ, pressure-tight requirement."
     },
     {
       "slug": "pulley-v-belt-a-b-groove",
       "title": "Pulley V-belt groove A/B usage and quotation checklist",
       "category": "pulley",
-      "keywords": ["มู่เลย์", "pulley", "ร่อง A", "ร่อง B", "สายพาน", "V-belt", "keyway", "bore"],
+      "keywords": [
+        "มู่เลย์",
+        "pulley",
+        "ร่อง A",
+        "ร่อง B",
+        "สายพาน",
+        "V-belt",
+        "keyway",
+        "bore"
+      ],
       "content": "พูลเลย์ V-belt ต้องเลือกสายพานและร่องให้ตรงกัน. ร่อง A ใช้กับสายพาน A ขนาดเล็กกว่า โดยทั่วไป top width ประมาณ 13 mm สูงประมาณ 8 mm เหมาะงานเบาถึงปานกลาง เช่น motor เล็ก/กลาง fan blower pump small machine. ร่อง B ใช้กับสายพาน B top width ประมาณ 17 mm สูงประมาณ 11 mm ส่งกำลังได้มากกว่า เหมาะงานปานกลางถึงหนัก conveyor pump/blower โหลดสูง เครื่องจักรอุตสาหกรรม. ห้ามใช้สายพาน A กับร่อง B หรือ B กับร่อง A โดยไม่ตรวจ เพราะสายพานนั่งร่องผิด ลื่น กินสายพาน และส่งกำลังไม่ได้เต็มที่. มุมร่องมักอยู่ประมาณ 34-40 องศาขึ้นกับ section และเส้นผ่านศูนย์กลาง ต้องอ้างอิงตารางผู้ผลิต/มาตรฐานจริง. คำถามสำคัญ: ต้องการร่อง A หรือ B, จำนวนร่อง, OD, pitch/effective diameter ถ้ามี, bore รูเพลา, keyway, set screw/taper bush, ความกว้างรวม, RPM, motor kW/HP, ระยะศูนย์เพลา, ต้อง balance หรือไม่, วัสดุ FC/FCD/steel/aluminum, มีรูปหรือ pulley เดิมไหม. พูลเลย์รอบสูงควรพิจารณา balancing และวัสดุ; FC ใช้ทั่วไป แต่โหลดกระแทกหรือรอบสูงควรพิจารณา FCD/cast steel."
     },
     {
       "slug": "quotation-rfq-checklist",
       "title": "RFQ and quotation questions for casting jobs",
       "category": "sales_workflow",
-      "keywords": ["RFQ", "quotation", "ใบเสนอราคา", "ขอราคา", "drawing", "รูป", "จำนวน", "deadline"],
+      "keywords": [
+        "RFQ",
+        "quotation",
+        "ใบเสนอราคา",
+        "ขอราคา",
+        "drawing",
+        "รูป",
+        "จำนวน",
+        "deadline"
+      ],
       "content": "ก่อนเสนอราคางานหล่อควรถามให้ครบ: 1) ชิ้นงานชื่ออะไร ใช้กับเครื่องจักรอะไร 2) มี drawing/3D/PDF/DWG/DXF/STEP หรือรูป/ตัวอย่างไหม 3) ขนาดหลัก OD/ID/หนา/กว้างยาวสูง/น้ำหนัก 4) วัสดุหรือเกรดที่ต้องการ เช่น FC200, FCD450, cast steel, high chrome, stainless, bronze, aluminum ถ้าไม่รู้ให้ถามลักษณะใช้งานและการเสียหาย 5) จำนวนต่อ lot และผลิตซ้ำไหม 6) จุด machining/tolerance/keyway/hole/thread/surface finish 7) heat treatment, coating, balancing, inspection/NDT/cert ต้องการไหม 8) ใช้งานรับแรงแบบใด แรงบิด/แรงกระแทก/สึก/กัดกร่อน/RPM/temperature/chemical 9) deadline และสถานที่ส่งของ 10) ชื่อ เบอร์ LINE/email. ห้ามเดาราคาโดยไม่มีข้อมูลหลัก แต่สามารถบอกได้ว่าข้อมูลใดทำให้ประเมินแม่นขึ้น."
     },
     {
       "slug": "agentic-backoffice-principles",
       "title": "Agentic back-office operating principles",
       "category": "agentic_system",
-      "keywords": ["agentic", "digital workforce", "หลังบ้าน", "lead", "handoff", "PDPA", "workflow"],
+      "keywords": [
+        "agentic",
+        "digital workforce",
+        "หลังบ้าน",
+        "lead",
+        "handoff",
+        "PDPA",
+        "workflow"
+      ],
       "content": "เป้าหมายหลังบ้านไม่ใช่ chatbot ตอบคำถาม แต่เป็น digital sales/technical worker ที่ทำงานจริง: รับ lead, normalize contact, จำ session/customer, enrich RFQ, ดึง knowledge, ถาม missing info ทีละข้อ, สรุปให้ฝ่ายขาย, สร้าง handoff ticket, เก็บ audit trail และวัด conversion. Agent ต้องรู้ขอบเขต: ไม่เสนอราคาผูกพัน ไม่รับประกัน lead time/อายุใช้งาน/วัสดุถ้าไม่มีข้อมูล ไม่เปิดเผยข้อมูลลูกค้าคนอื่น ต้องเก็บ consent/PDPA และส่งต่อคนเมื่อ confidence ต่ำ งาน critical หรือลูกค้าขอราคาทางการ. Roadmap หลังบ้าน: customers/leads/RFQs/conversations/messages/knowledge_docs/agent_tasks/handoff_tickets/analytics_events, RAG knowledge retrieval, quotation readiness score, operator approval ก่อนส่ง quotation, dashboard RFQ backlog/follow-up/quote-ready."
+    },
+    {
+      "slug": "pulley-expert-master-guide",
+      "title": "Pulley Expert Master Guide: ภาพรวมมูเล่ย์/Sheave/Belt Drive",
+      "category": "pulley",
+      "keywords": [
+        "pulley",
+        "มู่เลย์",
+        "มูเล่ย์",
+        "มูเล่ย",
+        "sheave",
+        "belt drive",
+        "มูเล่ย์โรงงาน",
+        "มูเล่ย์สายพาน"
+      ],
+      "content": "SuccessCasting ต้องตอบเรื่องมูเล่ย์แบบผู้เชี่ยวชาญ ไม่ใช่สคริปต์ขายทั่วไป: มูเล่ย์คือชิ้นส่วนส่งกำลังระหว่างเพลาผ่านสายพาน ใช้ควบคุมรอบ แรงบิด ทิศทาง และความนุ่มของระบบส่งกำลัง ประเภทหลักคือ V-belt pulley/sheave, timing pulley/synchronous pulley, flat belt pulley, variable speed pulley, idler/tensioner pulley และ pulley สั่งหล่อ/กลึงพิเศษตาม drawing/sample. หลักคิดอันดับหนึ่ง: ต้องเลือกให้ตรงกับชนิดสายพาน, กำลังมอเตอร์, รอบ, โหลด, รูเพลา, keyway/taper bush, จำนวนร่อง, วัสดุ และสภาพแวดล้อม. สูตรอัตราทดเบื้องต้น: รอบออก ≈ รอบเข้า × เส้นผ่านศูนย์กลางพูลเลย์ขับ / เส้นผ่านศูนย์กลางพูลเลย์ตาม โดยงานแม่นควรใช้ pitch/datum diameter ไม่ใช้ OD อย่างเดียว. ถ้าลูกค้าถามว่า “มีมูเล่ย์แบบไหนบ้าง” ให้ตอบทันทีเป็นหมวด: ร่อง A/B/C, SPZ/SPA/SPB/SPC, timing pulley, flat belt, หลายร่อง, taper bush, finished bore/keyway, สั่งหล่อ FC/FCD/Steel/Aluminum. คำถามสำคัญที่ต้องถามต่อเสมอ: ใช้สายพานเบอร์อะไร, OD/PD เท่าไร, กี่ร่อง, รูเพลา bore เท่าไร, มี keyway/ลิ่มหรือ taper bush ไหม, ใช้กับมอเตอร์กี่ HP/kW รอบเท่าไร, โหลดกระแทกไหม, มีรูป/drawing/sample ไหม. ห้ามเดาราคาโดยไม่มีขนาด/วัสดุ/จำนวน/แบบ แต่ต้องให้คำแนะนำเชิงเทคนิคได้ทันที."
+    },
+    {
+      "slug": "pulley-vbelt-classical-narrow",
+      "title": "V-Belt Pulley: A/B/C และ SPZ/SPA/SPB/SPC",
+      "category": "pulley",
+      "keywords": [
+        "V-belt",
+        "ร่อง A",
+        "ร่อง B",
+        "ร่อง C",
+        "SPZ",
+        "SPA",
+        "SPB",
+        "SPC",
+        "มูเล่ย์ร่องสายพาน",
+        "สายพาน A",
+        "สายพาน B"
+      ],
+      "content": "V-belt pulley ใช้ร่องรูปตัว V ส่งกำลังด้วยแรงเสียดทานและ wedging action. Classical V belt: A ประมาณ top width 13 mm สูง 8 mm เหมาะงานเบา-ปานกลาง เช่นพัดลม ปั๊ม motor เล็ก; B ประมาณ 17×11 mm รับโหลดมากกว่า เหมาะเครื่องจักรทั่วไป blower compressor; C ประมาณ 22×14 mm งานหนักกว่า. Narrow/wedge belt: SPZ ประมาณ 9.7×8, SPA 12.7×10, SPB 16.3×13, SPC 22×18 mm ส่งกำลังได้สูงกว่าในพื้นที่ใกล้เคียง เหมาะ compact drive และโหลดสูง. ห้ามสลับสายพานผิดร่อง เช่น A กับ SPA หรือ B กับ SPB โดยไม่ตรวจ catalog เพราะ geometry, datum line, groove angle, depth ต่างกัน ทำให้สายพานจม/ลอย ลื่น ร้อน กินสายพาน และร่องสึกเร็ว. Groove angle อาจเป็น 34/36/38/40 องศาตามขนาดและมาตรฐาน; pulley เล็กมุมอาจต่างจาก pulley ใหญ่. Multi-groove pulley เพิ่มจำนวนสายพานเพื่อส่งกำลังมากขึ้น ควรใช้ matched belt set. ข้อมูล RFQ สำหรับ V-belt: profile A/B/C/SPZ/SPA/SPB/SPC, จำนวนร่อง, OD หรือ datum diameter, face width, bore, keyway/taper bush, RPM, motor HP/kW, driver/driven, center distance, วัสดุ, balance requirement."
+    },
+    {
+      "slug": "pulley-timing-flat-special",
+      "title": "Timing Pulley, Flat Belt Pulley, Idler และ Special Pulley",
+      "category": "pulley",
+      "keywords": [
+        "timing pulley",
+        "synchronous pulley",
+        "HTD",
+        "GT",
+        "T5",
+        "T10",
+        "AT5",
+        "AT10",
+        "flat belt",
+        "idler",
+        "tensioner",
+        "servo",
+        "CNC"
+      ],
+      "content": "Timing pulley มีฟัน ใช้กับ timing belt ส่งกำลังแบบ no-slip เหมาะ servo, CNC, automation, packaging, indexing conveyor. Profile พบบ่อย: T2.5/T5/T10, AT5/AT10, HTD 3M/5M/8M/14M, STD/STS S3M/S5M/S8M, GT/RPP ตามผู้ผลิต. ต้องถาม pitch, จำนวนฟัน, belt width, flange 1/2 ข้าง, bore, keyway/clamp/set screw, วัสดุ, torque/RPM, precision/runout/backlash. ข้อดี: ไม่ลื่น คุมตำแหน่งแม่น ประสิทธิภาพสูง ไม่ต้องหล่อลื่น. ข้อเสีย: แพงกว่า V-belt, ต้อง alignment ดี, overload อาจข้ามฟัน/ฟันเสีย. Flat belt pulley ใช้สายพานแบน เหมาะรอบสูง เสียงต่ำ ระยะเพลาไกล บางงานต้องทำ crown ให้สายพานวิ่งกลาง ข้อเสียคือไวต่อ alignment และอาจลื่นในน้ำมัน/ความชื้น. Idler/tensioner pulley ใช้เพิ่มมุมโอบหรือ tension แต่เพิ่ม bending fatigue ต้องไม่เล็กเกินไป. Variable speed pulley ปรับ effective diameter เพื่อปรับรอบ เหมาะเครื่องจักรที่ต้องเปลี่ยน speed แต่กำลังรับได้จำกัดกว่าพูลเลย์ fixed บางแบบ."
+    },
+    {
+      "slug": "pulley-materials-manufacturing-qc",
+      "title": "วัสดุ การหล่อ กลึง และ QC ของมูเล่ย์",
+      "category": "pulley",
+      "keywords": [
+        "FC200",
+        "FC250",
+        "FCD450",
+        "FCD500",
+        "cast iron pulley",
+        "ductile iron pulley",
+        "steel pulley",
+        "aluminum pulley",
+        "balance",
+        "runout",
+        "casting defect"
+      ],
+      "content": "วัสดุหลักของมูเล่ย์: FC/gray cast iron เช่น FC200/FC250 เหมาะ V-belt pulley ทั่วไป ราคาดี หล่อง่าย กลึงง่าย damping ดี ลด vibration แต่เปราะกว่าเหล็ก; FCD/ductile iron เช่น FCD450/FCD500 เหนียวกว่า รับ shock load และ heavy duty ดีกว่า เหมาะ pulley ใหญ่ โหลดสูง; steel เช่น SS400/S45C/C45 แข็งแรง เหนียว เหมาะรอบสูง/torque สูง/timing/flat pulley ใหญ่ แต่หนักและต้องกันสนิม; aluminum 6061/6082 เหมาะ timing pulley/automation เพราะเบา inertia ต่ำ แต่ร่องสึกง่ายกว่าเมื่อโหลดสูง; stainless ใช้ food/washdown/corrosion; engineering plastic ใช้โหลดเบาเสียงต่ำ. งานหล่อพูลเลย์ต้องระวัง blowhole, shrinkage, sand inclusion, cold shut, crack, hard spot โดยเฉพาะ hub, keyway, root groove และ spoke. Design ควรมี wall thickness สม่ำเสมอ, fillet radius ลด stress concentration, gating/riser ดี. งานกลึงต้องคุม groove angle/profile, runout, concentricity, surface finish, edge radius, tooth profile ของ timing pulley. งานรอบสูง/diameter ใหญ่ควรทำ static/dynamic balancing เช่น G6.3/G2.5 ตามงาน และตรวจ vibration/bearing load."
+    },
+    {
+      "slug": "pulley-selection-failure-maintenance",
+      "title": "การเลือกมูเล่ย์ ปัญหาเสียหาย และ Maintenance",
+      "category": "pulley",
+      "keywords": [
+        "pulley selection",
+        "belt slip",
+        "alignment",
+        "tension",
+        "keyway",
+        "taper bush",
+        "bearing failure",
+        "maintenance",
+        "สายพานขาด",
+        "มูเล่ย์สึก"
+      ],
+      "content": "ขั้นตอนเลือกมูเล่ย์: 1) กำลังมอเตอร์ HP/kW และ service factor 2) RPM input/output และอัตราทด 3) belt profile 4) minimum pulley diameter 5) center distance/wrap angle 6) จำนวนร่อง/สายพาน 7) bore/keyway/taper bush 8) วัสดุ 9) balance/RPM limit 10) environment. ปัญหาที่พบ: slip มีเสียงหวีด ร้อน ผงดำ เกิดจาก tension ต่ำ, overload, groove สึก, น้ำมัน, profile ผิด, wrap angle ไม่พอ; belt wear เร็วจาก misalignment, tension ผิด, pulley เล็กเกิน, groove คม/หยาบ; belt พลิก/หลุดจาก alignment, vibration, runout, groove สึก; keyway/hub damage จาก key หลวม torque เกิน set screw ไม่แน่น taper bush ขันผิด; bearing เสียเร็วจาก tension สูงเกิน overhung load unbalance. Taper bush ต้องถามเบอร์ bush เช่น 1008/1108/1210/1610/2012/2517/3020/3535, bore size, keyway, torque ขัน, mount orientation. Maintenance: ตรวจ alignment ด้วย straightedge/laser, tension ด้วย gauge/sonic meter, ตรวจ groove gauge, เปลี่ยนสายพาน multi-groove เป็นชุด, ห้ามใช้ belt dressing แก้ slip ถาวร, ตรวจ screw/bush หลัง run-in, ปิด guard เพื่อความปลอดภัย."
+    },
+    {
+      "slug": "pulley-product-sales-rfq",
+      "title": "สินค้า/การขายมูเล่ย์: RFQ, Product Positioning, Pros/Cons",
+      "category": "pulley",
+      "keywords": [
+        "RFQ มูเล่ย์",
+        "ซื้อ มูเล่ย์",
+        "ผลิตมูเล่ย์",
+        "มูเล่ย์ตามแบบ",
+        "pros cons pulley",
+        "quote pulley",
+        "มูเล่ย์อันดับ 1"
+      ],
+      "content": "Positioning สำหรับ SuccessCasting: เป็นผู้เชี่ยวชาญมูเล่ย์สำหรับโรงงานไทย ไม่ใช่แค่รับหล่อชิ้นงานทั่วไป จุดขายคือคุยรู้เรื่องทั้งสินค้า การเลือก การหล่อ การกลึง รูเพลา ร่องลิ่ม taper bush สายพาน และปัญหาหน้างาน. หมวดสินค้าที่ควรแนะนำ: 1) มูเล่ย์ร่อง A/B/C 1-หลายร่อง 2) SPZ/SPA/SPB/SPC 3) timing pulley HTD/GT/T/AT 4) flat belt pulley/crowned pulley 5) idler/tensioner 6) taper bush pulley 7) finished bore/keyway 8) สั่งหล่อ FC/FCD/steel ตามตัวอย่างหรือ drawing 9) ซ่อม/ทำใหม่จากชิ้นงานเสีย. Pros V-belt: ถูก หาง่าย รับ shock ได้; Cons มี slip ต้องตั้ง tension. Pros timing: no slip แม่น; Cons แพงและต้อง alignment ดี. Pros FC: damping ดี ราคาคุ้ม; Cons เปราะกว่า FCD. Pros FCD: เหนียว heavy duty; Cons แพงกว่า. คำถาม RFQ แบบเร็วที่สุด: “ใช้สายพานเบอร์อะไร A/B/C/SPZ/SPA/SPB/SPC หรือ timing profile? OD/ขนาดนอกเท่าไร? กี่ร่อง? รูเพลา bore กี่ mm? มี keyway/ลิ่มหรือ taper bush ไหม? ใช้กับ motor กี่ HP/kW รอบเท่าไร? มีรูป/drawing/sample ไหม? ต้องการกี่ชิ้นและใช้งานเมื่อไร?” เมื่อลูกค้าถามทั่วไปให้ตอบความรู้ก่อน แล้วปิดด้วยคำถาม technical field เดียว ไม่ยิงคำถามยาวเกิน."
     }
   ]
 }

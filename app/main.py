@@ -97,6 +97,25 @@ def configured_url(name: str) -> str:
     return ""
 
 
+
+
+def public_url_env(*names: str, default: str = "") -> str:
+    for name in names:
+        value = (os.getenv(name, "") or "").strip()
+        if value.startswith("https://"):
+            return value
+    return default
+
+
+def marketplace_channels() -> dict[str, dict[str, str]]:
+    return {
+        "facebook": {"label": "Facebook", "url": public_url_env("SUCCESSCASTING_FACEBOOK_MARKETPLACE_URL", "PUBLIC_FACEBOOK_MARKETPLACE_URL", "FACEBOOK_MARKETPLACE_URL", "SUCCESSCASTING_FACEBOOK_PAGE_URL", "PUBLIC_FACEBOOK_PAGE_URL", default="https://www.facebook.com/marketplace/search/?query=success%20casting%20pulley")},
+        "instagram": {"label": "Instagram", "url": public_url_env("SUCCESSCASTING_INSTAGRAM_URL", "PUBLIC_INSTAGRAM_PROFILE_URL", "INSTAGRAM_PROFILE_URL", default="https://www.instagram.com/")},
+        "shopee": {"label": "Shopee", "url": public_url_env("SUCCESSCASTING_SHOPEE_URL", "PUBLIC_SHOPEE_STORE_URL", "SHOPEE_STORE_URL", default="https://shopee.co.th/search?keyword=%E0%B8%A1%E0%B8%B9%E0%B9%80%E0%B8%A5%E0%B9%88%E0%B8%A2%E0%B9%8C%20pulley")},
+        "lazada": {"label": "Lazada", "url": public_url_env("SUCCESSCASTING_LAZADA_URL", "PUBLIC_LAZADA_STORE_URL", "LAZADA_STORE_URL", default="https://www.lazada.co.th/catalog/?q=pulley%20%E0%B8%A1%E0%B8%B9%E0%B9%80%E0%B8%A5%E0%B9%88%E0%B8%A2%E0%B9%8C")},
+        "tiktok": {"label": "TikTok", "url": public_url_env("SUCCESSCASTING_TIKTOK_SHOP_URL", "PUBLIC_TIKTOK_SHOP_URL", "TIKTOK_SHOP_URL", "SUCCESSCASTING_TIKTOK_URL", default="https://www.tiktok.com/search?q=pulley%20%E0%B8%A1%E0%B8%B9%E0%B9%80%E0%B8%A5%E0%B9%88%E0%B8%A2%E0%B9%8C")},
+    }
+
 def channel_status() -> dict[str, Any]:
     line_url = configured_url("LINE_OA_URL")
     line_basic_id = configured_url("_LINEBot_BASIC_ID") or configured_url("LINEBOT_BASIC_ID") or configured_url("LINE_BOT_BASIC_ID")
@@ -477,6 +496,7 @@ def healthz() -> dict[str, Any]:
 def dashboard() -> str:
     health = healthz()
     channels = channel_status()
+    markets = marketplace_channels()
     html = HOME_TEMPLATE.read_text(encoding="utf-8")
     replacements = {
         "__STATUS__": str(health["status"]),
@@ -489,6 +509,11 @@ def dashboard() -> str:
         "__TELEGRAM_URL__": str(channels["telegram"].get("url", "/connect/telegram")),
         "__INSTAGRAM_URL__": str(channels["instagram"].get("url", "/connect/instagram")),
         "__EMAIL_URL__": str(channels["email"].get("url", "mailto:jack0841117211@gmail.com")),
+        "__FACEBOOK_MARKET_URL__": markets["facebook"]["url"],
+        "__INSTAGRAM_URL_PUBLIC__": markets["instagram"]["url"],
+        "__SHOPEE_URL__": markets["shopee"]["url"],
+        "__LAZADA_URL__": markets["lazada"]["url"],
+        "__TIKTOK_URL__": markets["tiktok"]["url"],
     }
     for key, value in replacements.items():
         html = html.replace(key, value)
@@ -654,8 +679,10 @@ def tokenize_for_knowledge(text: str) -> list[str]:
     base = (text or "").lower()
     tokens = re.findall(r"[a-z0-9._+\-/]{2,}|[ก-๙]{2,}", base)
     synonyms = {
-        "มู่เลย์": ["pulley", "ร่อง", "สายพาน", "v-belt", "belt", "bore", "keyway"],
-        "pulley": ["มู่เลย์", "ร่อง", "สายพาน", "v-belt", "bore", "keyway"],
+        "มู่เลย์": ["pulley", "มูเล่ย์", "มูเล่ย", "ร่อง", "สายพาน", "v-belt", "belt", "bore", "keyway"],
+        "pulley": ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "ร่อง", "สายพาน", "v-belt", "bore", "keyway"],
+        "มูเล่ย์": ["pulley", "มู่เลย์", "มูเล่ย", "ร่อง", "สายพาน", "v-belt", "bore", "keyway"],
+        "มูเล่ย": ["pulley", "มู่เลย์", "มูเล่ย์", "ร่อง", "สายพาน", "v-belt", "bore", "keyway"],
         "ร่อง": ["มู่เลย์", "pulley", "สายพาน", "a", "b"],
         "เหล็กหล่อ": ["fc", "fcd", "gray", "ductile", "cast iron"],
         "fc": ["เหล็กหล่อเทา", "gray", "cast iron"],
@@ -1006,9 +1033,13 @@ def extract_quote_slots(payload: AISalesChat) -> dict[str, Any]:
     if qty: slots["quantity"] = qty.group(0)
     elif any(w in lower for w in ["จำนวน", "กี่ชิ้น"]): slots["quantity"] = "mentioned"
     if any(w in lower for w in ["รูป", "แบบ", "drawing", "ไฟล์", "ตัวอย่าง", "sketch", "ถ่าย"]): slots["drawing_or_photo"] = True
-    groove = re.search(r"(?:ร่อง\s*)?([ab])(?:\s*ร่อง)?\b", lower)
-    if groove and any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "สายพาน", "ร่อง"]):
-        slots["pulley_groove"] = groove.group(1).upper()
+    narrow_profile = re.search(r"\b(spz|spa|spb|spc)\b", lower)
+    if narrow_profile and any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "สายพาน", "ร่อง"]):
+        slots["pulley_groove"] = narrow_profile.group(1).upper()
+    else:
+        groove = re.search(r"(?:ร่อง\s*)?([ab])(?:\s*ร่อง)?\b", lower)
+        if groove and any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "สายพาน", "ร่อง"]):
+            slots["pulley_groove"] = groove.group(1).upper()
     if any(w in lower for w in ["keyway", "ลิ่ม", "รูเพลา", "bore", "set screw", "taper bush"]):
         slots["pulley_mounting"] = True
     if any(w in lower for w in ["rpm", "รอบ", "มอเตอร์", "motor", "kw", "hp", "แรงม้า", "โหลด", "สายพาน"]):
@@ -1618,25 +1649,39 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
     contact = (readiness.get("slots") or {}).get("contact") or {}
     job_context = (readiness.get("slots") or {}).get("job_context") or (readiness.get("slots") or {}).get("work_item") or "งานหล่อชิ้นนี้"
     current_is_pulley = any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "ร่อง", "สายพาน"])
-    current_asks_types = current_is_pulley and any(w in lower for w in ["แบบไหน", "ชนิด", "ประเภท", "อะไร", "มี", "บ้าง"])
-    current_has_specific_pulley = current_is_pulley and any(w in lower for w in ["ร่อง", "120", "mm", "a", "b", "ต้องการ"])
-    if current_asks_types:
+    current_asks_types = current_is_pulley and any(w in lower for w in ["แบบไหน", "ชนิด", "ประเภท", "มีกี่", "มีอะไร", "มีแบบ", "บ้าง"])
+    current_has_specific_pulley = current_is_pulley and any(w in lower for w in ["ร่อง", "spz", "spa", "spb", "spc", "taper", "bush", "keyway", "รูเพลา", "hp", "kw", "rpm", "mm", "ต้องการ"])
+    current_has_failure = current_is_pulley and any(w in lower for w in ["กินข้าง", "ขาด", "สึก", "ลื่น", "เสียง", "หวีด", "ร้อน", "หลุด", "เสีย", "สั่น", "vibration"])
+    if current_has_failure:
         answer = (
-            "มู่เลย์ที่คุยงานหล่อ/ผลิตใหม่หลัก ๆ แบ่งตามการใช้งานครับ:\n"
-            "1) มู่เลย์ร่อง A — ใช้กับสายพาน A งานเบาถึงปานกลาง ขนาดเล็กกว่า\n"
-            "2) มู่เลย์ร่อง B — สายพาน B ใหญ่กว่า ส่งกำลังได้มากกว่า เหมาะโหลดสูงกว่า\n"
-            "3) มู่เลย์หลายร่อง — ใช้หลายเส้นเมื่อโหลดมากหรือต้องการลดการลื่น\n"
-            "4) มู่เลย์ตามตัวอย่าง/drawing — ระบุ OD, ความกว้าง, รูเพลา bore, keyway/ลิ่ม หรือ taper bush แล้วเลือกวัสดุ FC/FCD ตามโหลดจริง\n\n"
-            "ถ้าจะให้ประเมินราคา ส่งรูปหรือ drawing ได้เลยครับ แล้วบอก OD/ร่อง A หรือ B/รูเพลา/จำนวนชิ้น"
+            "อาการสายพานมูเล่ย์กินข้าง/ขาดบ่อย มักไม่ได้เกิดจากสายพานอย่างเดียวครับ จุดที่ต้องไล่เช็กคือ:\n"
+            "1) Alignment เพลา/หน้ามูเล่ย์เยื้องหรือเอียง — ทำให้กินข้างและวิ่งชนขอบ\n"
+            "2) Tension สูงหรือต่ำเกิน — ต่ำจะลื่น/ร้อน สูงจะกิน bearing และสายพานแตกเร็ว\n"
+            "3) ร่องมูเล่ย์สึกหรือ profile ผิด — สายพานจม/ลอย ไม่แตะด้านข้างร่องถูกต้อง\n"
+            "4) OD เล็กเกิน minimum pulley diameter — สายพานงอมาก ร้อนและแตก\n"
+            "5) Runout/unbalance หรือ bearing/shaft มีปัญหา — สั่นและกินสายพาน\n"
+            "6) น้ำมัน ฝุ่น ความร้อน หรือ overload/shock load\n\n"
+            "ถ่ายรูปหน้าร่องมูเล่ย์ + บอกสายพานเบอร์อะไร, OD, กี่ร่อง, รอบ/HP และอาการเสีย ผมจะช่วยชี้จุดแก้ให้ก่อนเสนอทำใหม่ครับ"
+        )
+    elif current_asks_types:
+        answer = (
+            "Success Casting โฟกัสมูเล่ย์เป็น product expert ครับ แบ่งสินค้า/งานให้เลือกแบบนี้:\n"
+            "1) V-belt pulley ร่อง A/B/C — A งานเบา-กลาง, B รับโหลดมากกว่า, C งานหนักขึ้น\n"
+            "2) Wedge pulley SPZ/SPA/SPB/SPC — ส่งกำลังสูงกว่าในพื้นที่กะทัดรัด เหมาะเครื่องจักรโรงงาน\n"
+            "3) Timing pulley HTD/GT/T/AT — ไม่มี slip ใช้กับ servo, CNC, automation\n"
+            "4) Flat belt / crowned pulley — รอบสูง วิ่งเงียบ แต่ต้องตั้ง alignment ดี\n"
+            "5) Idler / tensioner / variable speed pulley — เพิ่มมุมโอบ ปรับ tension หรือปรับรอบ\n"
+            "6) งานสั่งหล่อ-กลึงตามแบบ — FC damping ดีราคาคุ้ม, FCD เหนียวกว่าเหมาะโหลดสูง, steel แข็งแรง, aluminum เบา inertia ต่ำ\n\n"
+            "ถ้าจะเลือกให้ถูก ขอแค่ belt profile, OD/PD, จำนวนร่อง, รูเพลา bore, keyway หรือ taper bush, motor HP/RPM และรูป/drawing ครับ"
         )
         if first_missing in {"name", "phone", "line_or_email"}:
             answer += "\n\nเดี๋ยวผมบันทึก RFQ ให้ต่อ ขอ" + ({"name":"ชื่อผู้ติดต่อ", "phone":"เบอร์โทร", "line_or_email":"LINE หรืออีเมล"}.get(first_missing, "ข้อมูลติดต่อ")) + "ด้วยครับ"
     elif current_has_specific_pulley:
         groove = (readiness.get("slots") or {}).get("pulley_groove") or ("A" if re.search(r"ร่อง\s*a|\ba\b", lower) else "B" if re.search(r"ร่อง\s*b|\bb\b", lower) else "")
         answer = (
-            f"รับโจทย์มู่เลย์{('ร่อง ' + groove) if groove else ''} {((readiness.get('slots') or {}).get('size_or_weight') or '').strip()} แล้วครับ\n"
-            "ถ้าเป็นร่อง A จะใช้กับสายพาน A งานเบาถึงปานกลาง; ร่อง B จะใหญ่กว่าและส่งกำลังได้มากกว่า ดังนั้นต้องไม่สลับร่องกับสายพานจริง\n\n"
-            "ข้อมูลที่ต้องใช้เพื่อเสนอราคาแม่น ๆ คือ OD/เส้นผ่านศูนย์กลางนอก, ความกว้าง, จำนวนร่อง, รูเพลา bore, keyway/ลิ่มหรือ taper bush, วัสดุที่ต้องการเช่น FC/FCD, จำนวนชิ้น และรูป/drawing"
+            f"รับโจทย์มูเล่ย์{('ร่อง ' + groove) if groove else ''} {((readiness.get('slots') or {}).get('size_or_weight') or '').strip()} แล้วครับ\n"
+            "ผมจะตีความแบบช่างส่งกำลัง: ต้องจับคู่ร่องกับสายพานให้ตรง profile ก่อนเสมอ — A/B/C ห้ามสลับกับ SPZ/SPA/SPB โดยไม่เช็ก catalog เพราะร่อง/มุม/เส้น datum ต่างกันและจะกินสายพาน\n\n"
+            "ถ้าเป็นงานหล่อ-กลึงใหม่: FC เหมาะงานทั่วไป damping ดี, FCD เหมาะ shock load/โหลดสูง, steel เหมาะรอบสูงหรือ torque สูง, aluminum เหมาะงานเบา/automation. ข้อมูลเสนอราคาที่ต้องใช้คือ OD/PD, ความกว้าง, จำนวนร่อง, bore, keyway/taper bush, RPM/HP, จำนวน และรูป/drawing"
         )
         next_detail = "รูเพลา bore เท่าไร และมี keyway/ลิ่ม หรือ taper bush ไหมครับ?" if not (readiness.get("slots") or {}).get("pulley_mounting") else "ต้องการวัสดุ FC/FCD หรือมีตัวอย่างเดิมไหมครับ?"
         if first_missing in {"name", "phone", "line_or_email"}:
