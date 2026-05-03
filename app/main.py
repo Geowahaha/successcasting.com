@@ -1630,7 +1630,8 @@ def upsert_ai_session_and_memory(session_id: str, payload: AISalesChat, customer
 def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dict[str, Any] | None = None) -> dict[str, Any]:
     brain = ai_sales_brain()
     old_slots = (memory or {}).get("quote_slots", {}) if memory else {}
-    slots = merge_slots(old_slots, extract_quote_slots(payload))
+    current_slots = extract_quote_slots(payload)
+    slots = merge_slots(old_slots, current_slots)
     readiness = readiness_from_slots(slots, intent, score)
     msg = payload.message.strip()
     lower = msg.lower()
@@ -1638,20 +1639,17 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
     if customer_name:
         customer_name = re.sub(r"^(?:ผม|ดิฉัน|ฉัน|ชื่อ|คุณ|นาย|นางสาว|นาง)\s*", "", str(customer_name)).strip()
     memory_cue = ""
-    if memory and customer_name:
+    if memory and customer_name and not memory.get("_same_session"):
         memory_cue = f"ยินดีต้อนรับกลับครับ คุณ{customer_name}"
-    llm_answer = llm_sales_reply(payload, intent, score, readiness, brain, memory)
-    if llm_answer:
-        if memory_cue:
-            llm_answer = memory_cue + "\n\n" + llm_answer
-        return {"answer": llm_answer, "intent": intent, "lead_score": score, "quote_readiness": readiness, "next_questions": brain["questions"][:4], "cta": "ฝากชื่อ เบอร์ หรือ LINE เพื่อให้ทีมขายติดตามและออกเลขอ้างอิง", "brain_version": brain.get("version", "llm"), "mode": "llm", "memory_cue": memory_cue}
     first_missing = (readiness.get("missing") or [""])[0]
     contact = (readiness.get("slots") or {}).get("contact") or {}
     job_context = (readiness.get("slots") or {}).get("job_context") or (readiness.get("slots") or {}).get("work_item") or "งานหล่อชิ้นนี้"
-    current_is_pulley = any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "ร่อง", "สายพาน"])
+    current_is_pulley = any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "ร่อง", "ร้อง", "สายพาน", "belt"])
     current_asks_types = current_is_pulley and any(w in lower for w in ["แบบไหน", "ชนิด", "ประเภท", "มีกี่", "มีอะไร", "มีแบบ", "บ้าง"])
-    current_has_specific_pulley = current_is_pulley and any(w in lower for w in ["ร่อง", "spz", "spa", "spb", "spc", "taper", "bush", "keyway", "รูเพลา", "hp", "kw", "rpm", "mm", "ต้องการ"])
+    current_has_specific_pulley = current_is_pulley and any(w in lower for w in ["ร่อง", "ร้อง", "spz", "spa", "spb", "spc", "taper", "bush", "keyway", "รูเพลา", "hp", "kw", "rpm", "mm", "ต้องการ"])
     current_has_failure = current_is_pulley and any(w in lower for w in ["กินข้าง", "ขาด", "สึก", "ลื่น", "เสียง", "หวีด", "ร้อน", "หลุด", "เสีย", "สั่น", "vibration"])
+    current_asks_ab_difference = current_is_pulley and re.search(r"(?:ร่อง|ร้อง)?\s*a", lower) and re.search(r"(?:ร่อง|ร้อง)?\s*b", lower) and any(w in lower for w in ["ต่าง", "แตกต่าง", "เทียบ", "compare", "กับ"])
+    current_is_rice_mill = any(w in lower for w in ["โรงสี", "สีข้าว", "rice mill", "rice"])
     if current_has_failure:
         answer = (
             "อาการสายพานมูเล่ย์กินข้าง/ขาดบ่อย มักไม่ได้เกิดจากสายพานอย่างเดียวครับ จุดที่ต้องไล่เช็กคือ:\n"
@@ -1663,8 +1661,28 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
             "6) น้ำมัน ฝุ่น ความร้อน หรือ overload/shock load\n\n"
             "ถ่ายรูปหน้าร่องมูเล่ย์ + บอกสายพานเบอร์อะไร, OD, กี่ร่อง, รอบ/HP และอาการเสีย ผมจะช่วยชี้จุดแก้ให้ก่อนเสนอทำใหม่ครับ"
         )
-    elif current_asks_types:
+    elif current_asks_ab_difference:
         answer = (
+            "ร่อง A กับร่อง B ต่างกันหลัก ๆ ที่ขนาดหน้าตัดสายพานและกำลังที่รับได้ครับ\n"
+            "1) ร่อง A — สายพานเล็กกว่า เหมาะโหลดเบา-กลาง, มอเตอร์ไม่ใหญ่มาก, พื้นที่เครื่องจำกัด\n"
+            "2) ร่อง B — สายพานใหญ่กว่า หน้าสัมผัสมากกว่า รับ torque/โหลดกระชากได้ดีกว่า เหมาะงานโรงงานหรือเครื่องจักรหนักกว่า\n"
+            "3) ห้ามเอาสายพาน A ไปใส่ร่อง B หรือกลับกันโดยไม่เช็ก catalog เพราะสายพานจะจม/ลอยผิดตำแหน่ง ทำให้ลื่น ร้อน กินข้าง และขาดเร็ว\n"
+            "4) เวลาเลือกต้องดู HP/RPM, OD/PD, จำนวนร่อง, ระยะศูนย์เพลา, service factor และสภาพฝุ่น/ความชื้นของงานจริง\n\n"
+            "ถ้าเป็นโรงสีข้าว ส่วนใหญ่จะเจองานโหลดต่อเนื่อง ฝุ่นเยอะ และมี shock load เป็นช่วง ๆ — ร่อง B หรือหลายร่องมักเหมาะกว่าร่อง A ในจุดกำลังสูง แต่ต้องคำนวณตาม HP/RPM จริงครับ"
+        )
+    elif current_asks_types:
+        if current_is_rice_mill:
+            answer = (
+                "มูเล่ย์ที่ใช้ในโรงสีข้าวมักเป็นงานส่งกำลังต่อเนื่อง ฝุ่นเยอะ และมีโหลดกระชากบางช่วง จึงเจอบ่อยเป็นกลุ่มนี้ครับ:\n"
+                "1) V-belt pulley ร่อง B หรือหลายร่อง — ใช้กับ elevator, blower, conveyor, husker/whitener ที่ต้องรับโหลดกลาง-หนัก\n"
+                "2) ร่อง A — ใช้กับชุดเล็ก/โหลดเบากว่า เช่น auxiliary drive หรือเครื่องย่อยส่วนที่ HP ไม่สูง\n"
+                "3) SPB/SPA wedge pulley — เหมาะจุดที่ต้องส่งกำลังสูงกว่าในพื้นที่จำกัด หรืออยากลดจำนวนสายพาน\n"
+                "4) Flat/crowned pulley — พบในสายพานลำเลียงบางจุด ต้องตั้ง alignment ดีมาก\n"
+                "5) Idler/tensioner pulley — ใช้เพิ่มมุมโอบและปรับความตึงสายพาน\n\n"
+                "วัสดุที่นิยมคือ FC เพราะ damping ดีและคุ้มราคา; ถ้าโหลดกระชาก/กระแทกมากใช้ FCD; ถ้ารอบสูงมากหรือ torque สูงพิเศษค่อยพิจารณา steel. ข้อมูลที่ใช้เลือกให้แม่นคือ HP/RPM, OD/PD, ร่อง A/B/SPB, จำนวนร่อง, bore/keyway/taper bush และรูปหน้างานครับ"
+            )
+        else:
+            answer = (
             "Success Casting โฟกัสมูเล่ย์เป็น product expert ครับ แบ่งสินค้า/งานให้เลือกแบบนี้:\n"
             "1) V-belt pulley ร่อง A/B/C — A งานเบา-กลาง, B รับโหลดมากกว่า, C งานหนักขึ้น\n"
             "2) Wedge pulley SPZ/SPA/SPB/SPC — ส่งกำลังสูงกว่าในพื้นที่กะทัดรัด เหมาะเครื่องจักรโรงงาน\n"
@@ -1677,9 +1695,10 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
         if first_missing in {"name", "phone", "line_or_email"}:
             answer += "\n\nเดี๋ยวผมบันทึก RFQ ให้ต่อ ขอ" + ({"name":"ชื่อผู้ติดต่อ", "phone":"เบอร์โทร", "line_or_email":"LINE หรืออีเมล"}.get(first_missing, "ข้อมูลติดต่อ")) + "ด้วยครับ"
     elif current_has_specific_pulley:
-        groove = (readiness.get("slots") or {}).get("pulley_groove") or ("A" if re.search(r"ร่อง\s*a|\ba\b", lower) else "B" if re.search(r"ร่อง\s*b|\bb\b", lower) else "")
+        groove = (current_slots or {}).get("pulley_groove") or ("A" if re.search(r"(?:ร่อง|ร้อง)\s*a|\ba\b", lower) else "B" if re.search(r"(?:ร่อง|ร้อง)\s*b|\bb\b", lower) else "")
+        current_size = ((current_slots or {}).get("size_or_weight") or "").strip()
         answer = (
-            f"รับโจทย์มูเล่ย์{('ร่อง ' + groove) if groove else ''} {((readiness.get('slots') or {}).get('size_or_weight') or '').strip()} แล้วครับ\n"
+            f"รับโจทย์มูเล่ย์{('ร่อง ' + groove) if groove else ''}{(' ' + current_size) if current_size else ''} แล้วครับ\n"
             "ผมจะตีความแบบช่างส่งกำลัง: ต้องจับคู่ร่องกับสายพานให้ตรง profile ก่อนเสมอ — A/B/C ห้ามสลับกับ SPZ/SPA/SPB โดยไม่เช็ก catalog เพราะร่อง/มุม/เส้น datum ต่างกันและจะกินสายพาน\n\n"
             "ถ้าเป็นงานหล่อ-กลึงใหม่: FC เหมาะงานทั่วไป damping ดี, FCD เหมาะ shock load/โหลดสูง, steel เหมาะรอบสูงหรือ torque สูง, aluminum เหมาะงานเบา/automation. ข้อมูลเสนอราคาที่ต้องใช้คือ OD/PD, ความกว้าง, จำนวนร่อง, bore, keyway/taper bush, RPM/HP, จำนวน และรูป/drawing"
         )
@@ -1688,7 +1707,14 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
             answer += "\n\n" + next_detail + " หลังจากนั้นผมจะบันทึกให้ฝ่ายขายประเมินต่อครับ"
         else:
             answer += "\n\n" + next_detail
-    elif not readiness.get("missing"):
+    else:
+        llm_answer = llm_sales_reply(payload, intent, score, readiness, brain, memory)
+        if llm_answer:
+            if memory_cue:
+                llm_answer = memory_cue + "\n\n" + llm_answer
+            return {"answer": llm_answer, "intent": intent, "lead_score": score, "quote_readiness": readiness, "next_questions": brain["questions"][:4], "cta": "ฝากชื่อ เบอร์ หรือ LINE เพื่อให้ทีมขายติดตามและออกเลขอ้างอิง", "brain_version": brain.get("version", "llm"), "mode": "llm", "memory_cue": memory_cue}
+        answer = None
+    if answer is None and not readiness.get("missing"):
         item = (readiness.get("slots") or {}).get("job_context") or job_context
         answer = f"ข้อมูลหลักครบสำหรับเปิด lead แล้วครับ: {item}"
         details = []
@@ -1698,7 +1724,7 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
         if details:
             answer += "\n" + " • ".join(details)
         answer += "\n\nผมบันทึกข้อมูลไว้ในระบบแล้ว ฝ่ายขายใช้เลขอ้างอิงนี้ติดตามต่อได้ ถ้ามีรูปหรือ drawing ส่งทาง LINE @305idxid ได้เลยครับ"
-    elif first_missing in {"name", "phone", "line_or_email"}:
+    elif answer is None and first_missing in {"name", "phone", "line_or_email"}:
         is_pulley_contact = any(w in str(job_context).lower() for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "สายพาน", "ร่อง"])
         if is_pulley_contact:
             base = (
@@ -1715,16 +1741,16 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
             answer = base + f"\n\nขอเบอร์โทรของ{who}ด้วยครับ?"
         else:
             answer = base + "\n\nขอ LINE ID หรืออีเมลสำหรับส่งรายละเอียดต่อครับ?"
-    elif any(w in lower for w in ["hello", "hi", "สวัสดี", "ดีครับ", "ดีค่ะ"]):
+    elif answer is None and any(w in lower for w in ["hello", "hi", "สวัสดี", "ดีครับ", "ดีค่ะ"]):
         answer = "สวัสดีครับ ผมช่วยคุยเรื่องงานหล่อและเก็บข้อมูลให้ฝ่ายขายเสนอราคาได้ครับ ต้องการให้ช่วยเรื่องงานหล่ออะไรครับ?"
-    elif intent == "urgent_repair":
+    elif answer is None and intent == "urgent_repair":
         answer = "งานซ่อม/ชิ้นส่วนแตก/สึกถือเป็นงานเร่งครับ ส่งรูปชิ้นงาน ขนาดคร่าว ๆ จำนวน และวัสดุเดิมมาได้เลย ถ้ายังไม่รู้เกรดวัสดุ ทีมจะช่วยประเมินจากการใช้งานจริง เช่น รับแรงกระแทก ทนสึก หรือทนความร้อน"
-    elif intent in {"quote_or_sales", "technical_quote"}:
+    elif answer is None and intent in {"quote_or_sales", "technical_quote"}:
         answer = "ขอใบเสนอราคาได้ครับ เพื่อประเมินเร็วที่สุด กรุณาส่ง 1) แบบหรือรูป 2) ขนาด/น้ำหนัก 3) วัสดุหรือการใช้งาน 4) จำนวน 5) วันที่ต้องการใช้งาน งาน 1 ชิ้นขึ้นไปสามารถคุยได้"
-    elif intent == "technical_question":
+    elif answer is None and intent == "technical_question":
         mats = ", ".join(brain["materials"][:8])
         answer = f"Success Casting รับงานหล่อหลายกลุ่ม เช่น {mats} การเลือกวัสดุควรดูโหลด, การสึก, ความร้อน, สารเคมี และชิ้นงานเดิม ถ้าส่งรูป/แบบมา AI จะช่วยจัดข้อมูลให้ทีมประเมินต่อได้"
-    elif intent == "contact_request":
+    elif answer is None and intent == "contact_request":
         c = brain["contacts"]
         if first_missing and first_missing not in {"name", "phone", "line_or_email"}:
             ask_map = {
@@ -1738,7 +1764,7 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
             answer = ask_map.get(first_missing, "รับช่องทางติดต่อแล้วครับ ขอรายละเอียดงานเพิ่มอีกนิดเพื่อให้ประเมินราคาแม่นขึ้นครับ")
         else:
             answer = f"ติดต่อทีมได้ทันที: โทร {c['phone']} หรือ LINE {c['line']} ถ้าฝากชื่อ/เบอร์/LINE ในช่องนี้ ระบบจะออกเลขอ้างอิงและบันทึกประวัติลูกค้าให้ครับ"
-    else:
+    elif answer is None:
         docs = retrieve_ai_knowledge(" ".join([msg, str(slots.get("job_context", "")), str(slots.get("work_item", ""))]), limit=2)
         is_pulley = any("pulley" in d.get("slug", "") for d in docs) or any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "ร่อง", "สายพาน"])
         if is_pulley:
@@ -1854,6 +1880,8 @@ def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
     # Important: returning-customer memory may contain an old RFQ/job. Use it for identity/contact only;
     # active quote slots must come from the current session/current message so the agent answers the latest question immediately.
     memory_before = dict(session_memory or {}) if session_memory else {}
+    if memory_before:
+        memory_before["_same_session"] = True
     if customer_memory:
         memory_before.setdefault("customer_id", known_customer_id)
         memory_before["customer"] = customer_memory.get("customer", {"customer_id": known_customer_id})
