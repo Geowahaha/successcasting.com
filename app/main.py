@@ -6,6 +6,7 @@ from email.message import EmailMessage
 import sqlite3
 import csv
 import hashlib
+import base64
 import hmac
 import mimetypes
 from io import StringIO
@@ -388,6 +389,20 @@ def init_db() -> None:
                 actor TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS line_sources (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_type TEXT NOT NULL DEFAULT '',
+                source_id TEXT NOT NULL DEFAULT '',
+                user_id TEXT NOT NULL DEFAULT '',
+                group_id TEXT NOT NULL DEFAULT '',
+                room_id TEXT NOT NULL DEFAULT '',
+                display_name TEXT NOT NULL DEFAULT '',
+                last_message TEXT NOT NULL DEFAULT '',
+                raw_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                UNIQUE(source_type, source_id)
+            );
             CREATE TABLE IF NOT EXISTS staff_users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
@@ -576,6 +591,10 @@ class QuoteRecordIn(BaseModel):
     validity_days: int = 7
     terms: str = ""
     notes: str = ""
+
+
+class LineTestNotify(BaseModel):
+    message: str = "SuccessCasting LINE notify test"
 
 
 class ProductionStatusUpdate(BaseModel):
@@ -1140,18 +1159,65 @@ def generate_quote_pdf(quote: dict[str, Any], rfq: dict[str, Any] | None = None)
         return path
 
 
-def send_line_notify(message: str) -> dict[str, Any]:
-    token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "").strip()
-    to = os.getenv("LINE_NOTIFY_TO") or os.getenv("LINE_SALES_GROUP_ID") or os.getenv("LINE_USER_ID") or ""
-    if not token or not to:
-        return {"status": "skipped", "reason": "LINE_CHANNEL_ACCESS_TOKEN or LINE_NOTIFY_TO missing"}
-    body = json.dumps({"to": to, "messages": [{"type": "text", "text": message[:4500]}]}, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request("https://api.line.me/v2/bot/message/push", data=body, headers={"content-type": "application/json", "authorization": f"Bearer {token}"}, method="POST")
+def env_first(*names: str) -> str:
+    for name in names:
+        value = os.getenv(name, "")
+        if value:
+            return value.strip()
+    return ""
+
+
+def line_channel_token() -> str:
+    return env_first(
+        "LINE_CHANNEL_ACCESS_TOKEN",
+        "successcasting_LINEChannel_access_token_longlived",
+        "successcasting_LINEChannel_access_token_long-lived",
+        "SUCCESSCASTING_LINECHANNEL_ACCESS_TOKEN_LONGLIVED",
+    )
+
+
+def line_notify_target() -> str:
+    return env_first("LINE_NOTIFY_TO", "LINE_SALES_GROUP_ID", "LINE_GROUP_ID", "LINE_USER_ID")
+
+
+def line_channel_secret() -> str:
+    return env_first("LINE_CHANNEL_SECRET", "successcasting_LINEChannel_secret")
+
+
+def line_basic_id() -> str:
+    return env_first("LINE_BOT_BASIC_ID", "LINEBOT_BASIC_ID", "_LINEBot_BASIC_ID", "successcasting_LINEBot_BASIC_ID")
+
+
+def line_api_request(path: str, payload: dict[str, Any]) -> dict[str, Any]:
+    token = line_channel_token()
+    if not token:
+        return {"status": "skipped", "reason": "LINE channel access token missing"}
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.line.me/v2/bot" + path,
+        data=body,
+        headers={"content-type": "application/json", "authorization": f"Bearer {token}", "user-agent": "SuccessCastingFactory/1.0"},
+        method="POST",
+    )
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return {"status": "sent", "http_status": resp.status}
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            raw = resp.read().decode("utf-8", "ignore")
+            return {"status": "sent", "http_status": resp.status, "response": raw[:300]}
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode("utf-8", "ignore")[:500]
+        return {"status": "failed", "http_status": exc.code, "error": raw or str(exc)}
     except Exception as exc:
-        return {"status": "failed", "error": f"{type(exc).__name__}: {str(exc)[:180]}"}
+        return {"status": "failed", "error": f"{type(exc).__name__}: {str(exc)[:240]}"}
+
+
+def send_line_notify(message: str) -> dict[str, Any]:
+    token = line_channel_token()
+    to = line_notify_target()
+    if not token:
+        return {"status": "skipped", "reason": "LINE_CHANNEL_ACCESS_TOKEN missing"}
+    if not to:
+        return {"status": "skipped", "reason": "LINE_NOTIFY_TO/LINE_SALES_GROUP_ID/LINE_USER_ID missing; add OA to sales group and capture/set groupId"}
+    return line_api_request("/message/push", {"to": to, "messages": [{"type": "text", "text": message[:4500]}]})
 
 def hash_password(password: str) -> str:
     salt = os.getenv("ADMIN_PASSWORD_SALT", "successcasting-local-salt")
@@ -1278,7 +1344,7 @@ def notify_hot_rfq(rfq_id: str, status: str, priority: str, summary: str, next_a
     line_result = send_line_notify(message)
     with db() as conn:
         conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (rfq_id, "sales_notify_email", target_email, email_status, email_error, now_iso()))
-        conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (rfq_id, "line_sales_notify", os.getenv("LINE_NOTIFY_TO", ""), line_result.get("status", "skipped"), line_result.get("error", line_result.get("reason", "")), now_iso()))
+        conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (rfq_id, "line_sales_notify", line_notify_target(), line_result.get("status", "skipped"), line_result.get("error", line_result.get("reason", "")), now_iso()))
         conn.execute("INSERT INTO error_log(source,message,payload_json,created_at) VALUES(?,?,?,?)", ("sales-notify", message[:500], jdump({"rfq_id": rfq_id, "email_status": email_status, "line_status": line_result.get("status")}), now_iso()))
     return {"status": "queued", "email_status": email_status, "line_status": line_result.get("status")}
 
@@ -1898,6 +1964,67 @@ def admin_update_rfq(rfq_id: str, payload: AdminRFQUpdate, request: Request) -> 
             raise HTTPException(404, "rfq not found")
     return {"status": "ok", "rfq": dict(row), "updated": True}
 
+
+
+@app.get("/api/admin/line/status")
+def admin_line_status(request: Request) -> dict[str, Any]:
+    require_admin(request, {"admin", "sales"})
+    with db() as conn:
+        sources = [dict(r) for r in conn.execute("SELECT source_type,source_id,user_id,group_id,room_id,display_name,last_message,updated_at FROM line_sources ORDER BY updated_at DESC LIMIT 20").fetchall()]
+        recent = [dict(r) for r in conn.execute("SELECT channel,destination,status,error,created_at FROM outbound_messages WHERE channel LIKE 'line%' ORDER BY id DESC LIMIT 10").fetchall()]
+    target = line_notify_target()
+    return {
+        "status": "ready",
+        "token_configured": bool(line_channel_token()),
+        "channel_secret_configured": bool(line_channel_secret()),
+        "target_configured": bool(target),
+        "target_hint": (target[:2] + "***" + target[-2:]) if len(target) > 6 else ("configured" if target else "missing"),
+        "basic_id": line_basic_id(),
+        "sources": sources,
+        "recent_notifications": recent,
+        "setup_note": "If target is missing, add the LINE OA to the sales group and send any message; /webhooks/line will capture groupId, then set LINE_NOTIFY_TO or LINE_SALES_GROUP_ID in .env.",
+    }
+
+
+@app.post("/api/admin/line/test")
+def admin_line_test(payload: LineTestNotify, request: Request) -> dict[str, Any]:
+    require_admin(request, {"admin", "sales"})
+    msg = (payload.message or "SuccessCasting LINE notify test")[:1000]
+    result = send_line_notify("[SuccessCasting TEST]\n" + msg)
+    with db() as conn:
+        conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", ("line_test", "line_sales_notify", line_notify_target(), result.get("status", "skipped"), result.get("error", result.get("reason", "")), now_iso()))
+    return {"status": result.get("status"), "line": result}
+
+
+@app.post("/webhooks/line")
+async def line_webhook(request: Request) -> dict[str, Any]:
+    body = await request.body()
+    secret = line_channel_secret()
+    if secret:
+        signature = request.headers.get("x-line-signature", "")
+        digest = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).digest()
+        expected = base64.b64encode(digest).decode("ascii")
+        if not hmac.compare_digest(signature, expected):
+            raise HTTPException(403, "invalid LINE signature")
+    payload = json.loads(body.decode("utf-8") or "{}")
+    events = payload.get("events") or []
+    captured = []
+    with db() as conn:
+        for ev in events:
+            source = ev.get("source") or {}
+            st = source.get("type", "")
+            uid = source.get("userId", "")
+            gid = source.get("groupId", "")
+            rid = source.get("roomId", "")
+            sid = gid or rid or uid
+            text = ((ev.get("message") or {}).get("text") or ev.get("type") or "")[:300]
+            if sid:
+                conn.execute(
+                    "INSERT INTO line_sources(source_type,source_id,user_id,group_id,room_id,last_message,raw_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(source_type,source_id) DO UPDATE SET user_id=excluded.user_id, group_id=excluded.group_id, room_id=excluded.room_id, last_message=excluded.last_message, raw_json=excluded.raw_json, updated_at=excluded.updated_at",
+                    (st, sid, uid, gid, rid, text, jdump(ev), now_iso(), now_iso()),
+                )
+                captured.append({"type": st, "source_id": sid[:3] + "***" + sid[-3:] if len(sid) > 8 else "captured"})
+    return {"status": "ok", "events": len(events), "captured": captured}
 
 @app.get("/admin/sales", response_class=HTMLResponse)
 def admin_sales_dashboard(request: Request) -> str:
