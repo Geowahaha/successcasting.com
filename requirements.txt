@@ -4,3 +4,6 @@ pydantic==2.10.4
 python-dotenv==1.0.1
 python-multipart==0.0.20
 pymupdf==1.25.1
+pillow==11.1.0
+pytesseract==0.3.13
+reportlab==4.2.5

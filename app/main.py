@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -364,6 +364,30 @@ def init_db() -> None:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS production_jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job_id TEXT NOT NULL UNIQUE,
+                rfq_id TEXT NOT NULL DEFAULT '',
+                quote_id TEXT NOT NULL DEFAULT '',
+                quote_number TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'quoted',
+                current_stage TEXT NOT NULL DEFAULT 'quoted',
+                owner TEXT NOT NULL DEFAULT '',
+                due_date TEXT NOT NULL DEFAULT '',
+                notes TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS production_status_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job_id TEXT NOT NULL DEFAULT '',
+                rfq_id TEXT NOT NULL DEFAULT '',
+                from_stage TEXT NOT NULL DEFAULT '',
+                to_stage TEXT NOT NULL DEFAULT '',
+                note TEXT NOT NULL DEFAULT '',
+                actor TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS staff_users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
@@ -551,6 +575,13 @@ class QuoteRecordIn(BaseModel):
     lead_time: str = ""
     validity_days: int = 7
     terms: str = ""
+    notes: str = ""
+
+
+class ProductionStatusUpdate(BaseModel):
+    status: str
+    owner: str = ""
+    due_date: str = ""
     notes: str = ""
 
 
@@ -1050,6 +1081,78 @@ def make_quote_number() -> str:
     return "SCQ-" + datetime.now(timezone.utc).strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:4].upper()
 
 
+def make_job_id() -> str:
+    return "job_" + uuid.uuid4().hex[:10]
+
+
+def quote_pdf_path(quote_number: str) -> Path:
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", quote_number)[:80]
+    return UPLOAD_ROOT / "quotes" / f"{safe}.pdf"
+
+
+def generate_quote_pdf(quote: dict[str, Any], rfq: dict[str, Any] | None = None) -> Path:
+    path = quote_pdf_path(quote.get("quote_number") or quote.get("quote_id") or make_quote_number())
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.pdfgen import canvas
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+        font_name = "DejaVuSans"
+        if Path(font_path).exists():
+            pdfmetrics.registerFont(TTFont(font_name, font_path))
+        c = canvas.Canvas(str(path), pagesize=A4)
+        w, h = A4
+        y = h - 48
+        c.setFont(font_name, 18); c.drawString(42, y, "Success Casting Quotation"); y -= 28
+        c.setFont(font_name, 10); c.drawString(42, y, "บริษัท ซัคเซสเน็ทเวิร์ค จำกัด | 084-111-7211 | LINE @305idxid"); y -= 32
+        rows = [
+            ("Quote No", quote.get("quote_number", "")),
+            ("RFQ", quote.get("rfq_id", "")),
+            ("Status", quote.get("status", "draft")),
+            ("Material", quote.get("material", "")),
+            ("Quantity", quote.get("quantity", "")),
+            ("Total", str(quote.get("total_price", ""))),
+            ("Lead time", quote.get("lead_time", "")),
+            ("Validity", str(quote.get("validity_days", "")) + " days"),
+        ]
+        if rfq:
+            rows.insert(2, ("Work", rfq.get("work_item") or rfq.get("summary", "")))
+        c.setFont(font_name, 11)
+        for k, v in rows:
+            c.drawString(48, y, str(k) + ":")
+            c.drawString(150, y, str(v)[:90])
+            y -= 22
+            if y < 90:
+                c.showPage(); c.setFont(font_name, 11); y = h - 50
+        y -= 12
+        c.drawString(48, y, "Terms/Notes:"); y -= 18
+        text = c.beginText(60, y); text.setFont(font_name, 10)
+        for line in re.split(r"\n|(?<=\.)\s+", ((quote.get("terms", "") + "\n" + quote.get("notes", "")).strip() or "ราคานี้เป็น draft สำหรับฝ่ายขายตรวจสอบก่อนส่งลูกค้า")[:1200]):
+            text.textLine(line[:110])
+        c.drawText(text)
+        c.save()
+        return path
+    except Exception:
+        # Minimal valid text fallback if reportlab is unavailable.
+        path.write_text(json.dumps({"quote": quote, "rfq": rfq or {}}, ensure_ascii=False, indent=2), encoding="utf-8")
+        return path
+
+
+def send_line_notify(message: str) -> dict[str, Any]:
+    token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "").strip()
+    to = os.getenv("LINE_NOTIFY_TO") or os.getenv("LINE_SALES_GROUP_ID") or os.getenv("LINE_USER_ID") or ""
+    if not token or not to:
+        return {"status": "skipped", "reason": "LINE_CHANNEL_ACCESS_TOKEN or LINE_NOTIFY_TO missing"}
+    body = json.dumps({"to": to, "messages": [{"type": "text", "text": message[:4500]}]}, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request("https://api.line.me/v2/bot/message/push", data=body, headers={"content-type": "application/json", "authorization": f"Bearer {token}"}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return {"status": "sent", "http_status": resp.status}
+    except Exception as exc:
+        return {"status": "failed", "error": f"{type(exc).__name__}: {str(exc)[:180]}"}
+
 def hash_password(password: str) -> str:
     salt = os.getenv("ADMIN_PASSWORD_SALT", "successcasting-local-salt")
     return hashlib.sha256((salt + "::" + password).encode("utf-8")).hexdigest()
@@ -1133,6 +1236,7 @@ def extract_text_from_document(path: Path, content_type: str) -> tuple[str, str,
                 import pytesseract
                 from PIL import Image
                 text = pytesseract.image_to_string(Image.open(path), lang=os.getenv("OCR_TESSERACT_LANG", "tha+eng"))[:8000]
+                meta["ocr_engine"] = "tesseract"
                 return ("extracted" if text.strip() else "needs_manual_review"), text, meta
             except Exception as exc:
                 meta["image_ocr_error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
@@ -1171,10 +1275,12 @@ def notify_hot_rfq(rfq_id: str, status: str, priority: str, summary: str, next_a
     email_status, email_error = ("skipped", "SALES_NOTIFY_EMAIL missing")
     if target_email:
         email_status, email_error = send_email_receipt(target_email, f"SuccessCasting Hot RFQ {rfq_id}", message)
+    line_result = send_line_notify(message)
     with db() as conn:
         conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (rfq_id, "sales_notify_email", target_email, email_status, email_error, now_iso()))
-        conn.execute("INSERT INTO error_log(source,message,payload_json,created_at) VALUES(?,?,?,?)", ("sales-notify", message[:500], jdump({"rfq_id": rfq_id, "email_status": email_status}), now_iso()))
-    return {"status": "queued", "email_status": email_status}
+        conn.execute("INSERT INTO outbound_messages(customer_id,channel,destination,status,error,created_at) VALUES(?,?,?,?,?,?)", (rfq_id, "line_sales_notify", os.getenv("LINE_NOTIFY_TO", ""), line_result.get("status", "skipped"), line_result.get("error", line_result.get("reason", "")), now_iso()))
+        conn.execute("INSERT INTO error_log(source,message,payload_json,created_at) VALUES(?,?,?,?)", ("sales-notify", message[:500], jdump({"rfq_id": rfq_id, "email_status": email_status, "line_status": line_result.get("status")}), now_iso()))
+    return {"status": "queued", "email_status": email_status, "line_status": line_result.get("status")}
 
 def make_rfq_id() -> str:
     return "rfq_" + uuid.uuid4().hex[:10]
@@ -1326,6 +1432,9 @@ def sales_admin_overview(limit: int = 80) -> dict[str, Any]:
             "open_handoffs": conn.execute("SELECT COUNT(*) c FROM handoff_tickets WHERE status='open'").fetchone()["c"],
             "customers": conn.execute("SELECT COUNT(*) c FROM customers").fetchone()["c"],
             "agent_tasks": conn.execute("SELECT COUNT(*) c FROM agent_tasks").fetchone()["c"],
+            "documents": conn.execute("SELECT COUNT(*) c FROM uploaded_documents").fetchone()["c"],
+            "quotes": conn.execute("SELECT COUNT(*) c FROM quote_records").fetchone()["c"],
+            "production_jobs": conn.execute("SELECT COUNT(*) c FROM production_jobs").fetchone()["c"],
         }
         rfqs = conn.execute(
             """
@@ -1823,6 +1932,53 @@ def admin_login(payload: AdminLogin) -> Response:
     return resp
 
 
+@app.post("/api/ai-sales/documents")
+async def ai_sales_upload_document(request: Request, file: UploadFile = File(...), session_id: str = Form(""), rfq_id: str = Form(""), customer_id: str = Form("")) -> dict[str, Any]:
+    session_id = (session_id or "").strip()
+    rfq_id = (rfq_id or "").strip()
+    if not file.filename:
+        raise HTTPException(422, "filename required")
+    with db() as conn:
+        rfq = None
+        if rfq_id:
+            rfq = conn.execute("SELECT * FROM rfq_requests WHERE rfq_id=?", (rfq_id,)).fetchone()
+        if not rfq and session_id:
+            rfq = conn.execute("SELECT * FROM rfq_requests WHERE session_id=? ORDER BY id DESC LIMIT 1", (session_id,)).fetchone()
+        if not rfq:
+            raise HTTPException(404, "send a chat message first so the system can create an RFQ")
+        rfq_id = rfq["rfq_id"]
+        customer_id = customer_id or rfq["customer_id"] or ""
+        session_id = session_id or rfq["session_id"] or ""
+    # reuse same storage/extraction logic without requiring admin token
+    safe_name = re.sub(r"[^A-Za-z0-9ก-๙._-]+", "_", file.filename)[:120]
+    doc_id = make_document_id()
+    target_dir = UPLOAD_ROOT / rfq_id
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / f"{doc_id}_{safe_name}"
+    content = await file.read()
+    if len(content) > int(os.getenv("MAX_UPLOAD_BYTES", "15728640")):
+        raise HTTPException(413, "file too large")
+    target.write_bytes(content)
+    ctype = file.content_type or mimetypes.guess_type(str(target))[0] or "application/octet-stream"
+    ocr_status, text, meta = extract_text_from_document(target, ctype)
+    seen = now_iso()
+    with db() as conn:
+        rfq = conn.execute("SELECT customer_id,session_id,slots_json,missing_json,status,priority,summary,next_action FROM rfq_requests WHERE rfq_id=?", (rfq_id,)).fetchone()
+        conn.execute("INSERT INTO uploaded_documents(document_id,rfq_id,customer_id,session_id,original_filename,storage_path,content_type,size_bytes,ocr_status,extracted_text,extracted_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", (doc_id, rfq_id, customer_id, session_id, file.filename, str(target), ctype, len(content), ocr_status, text, jdump(meta), seen))
+        slots = load_json_safe(rfq["slots_json"], {}) if rfq else {}
+        slots["drawing_or_photo"] = True
+        if text:
+            tl = text.lower()
+            if any(x in tl for x in ["fc", "fcd", "sus", "เหล็ก", "cast iron", "steel"]): slots["material"] = slots.get("material") or "from_document"
+            if re.search(r"\d+\s*(mm|cm|kg|กก)", tl): slots["size_or_weight"] = slots.get("size_or_weight") or "from_document"
+            if any(x in tl for x in ["bore", "keyway", "รูเพลา", "ลิ่ม", "taper"]): slots["pulley_mounting"] = True
+        score2, status2, missing2 = score_rfq_advanced({"score": 0, "slots": slots, "missing_labels": load_json_safe(rfq["missing_json"], []) if rfq else []}, True)
+        next_action = "ลูกค้าแนบไฟล์แล้ว: ฝ่ายขาย/วิศวกรตรวจ drawing/OCR" if status2 != "quote_ready" else "ข้อมูลพร้อมขึ้นใบเสนอราคา: ตรวจไฟล์แนบและออก quote number"
+        conn.execute("UPDATE rfq_requests SET slots_json=?, missing_json=?, readiness_score=MAX(readiness_score,?), status=CASE WHEN status IN ('quoted','won','lost','closed') THEN status ELSE ? END, next_action=?, updated_at=? WHERE rfq_id=?", (jdump(slots), jdump(missing2), score2, status2, next_action, seen, rfq_id))
+        conn.execute("INSERT INTO agent_tasks(task_type,related_entity_type,related_entity_id,agent_name,input_payload,output_payload,confidence_score,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?)", ("customer_document_upload_ocr", "rfq", rfq_id, "successcasting-document-agent", jdump({"document_id": doc_id, "filename": file.filename}), jdump({"ocr_status": ocr_status, "chars": len(text)}), score2, "completed", seen, seen))
+    return {"status": "ok", "document_id": doc_id, "rfq_id": rfq_id, "ocr_status": ocr_status, "extracted_chars": len(text), "next_action": next_action}
+
+
 @app.post("/api/admin/rfqs/{rfq_id}/documents")
 async def admin_upload_rfq_document(rfq_id: str, request: Request, file: UploadFile = File(...), session_id: str = Form(""), customer_id: str = Form("")) -> dict[str, Any]:
     require_admin(request, {"admin", "sales", "engineer"})
@@ -1877,7 +2033,45 @@ def admin_create_quote(rfq_id: str, payload: QuoteRecordIn, request: Request) ->
             raise HTTPException(404, "rfq not found")
         conn.execute("INSERT INTO quote_records(quote_id,rfq_id,quote_number,status,material,quantity,unit_price,total_price,lead_time,validity_days,terms,notes,created_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (quote_id, rfq_id, qnum, payload.status or "draft", payload.material, payload.quantity, float(payload.unit_price or 0), total, payload.lead_time, int(payload.validity_days or 7), payload.terms, payload.notes, staff.get("username", "admin"), seen, seen))
         conn.execute("UPDATE rfq_requests SET quote_number=?, status=?, next_action=?, updated_at=? WHERE rfq_id=?", (qnum, "quoted" if payload.status in {"sent", "approved"} else "quote_ready", "ตรวจ/ส่งใบเสนอราคาให้ลูกค้า", seen, rfq_id))
-    return {"status": "ok", "quote_id": quote_id, "quote_number": qnum, "rfq_id": rfq_id}
+        rfq_row = conn.execute("SELECT * FROM rfq_requests WHERE rfq_id=?", (rfq_id,)).fetchone()
+        qrow = {"quote_id": quote_id, "rfq_id": rfq_id, "quote_number": qnum, "status": payload.status or "draft", "material": payload.material, "quantity": payload.quantity, "unit_price": float(payload.unit_price or 0), "total_price": total, "lead_time": payload.lead_time, "validity_days": int(payload.validity_days or 7), "terms": payload.terms, "notes": payload.notes}
+        pdf_path = generate_quote_pdf(qrow, dict(rfq_row) if rfq_row else {})
+        if payload.status in {"sent", "approved"}:
+            job_id = make_job_id()
+            conn.execute("INSERT INTO production_jobs(job_id,rfq_id,quote_id,quote_number,status,current_stage,owner,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)", (job_id, rfq_id, quote_id, qnum, "quoted", "quoted", staff.get("username", "admin"), seen, seen))
+            conn.execute("INSERT INTO production_status_log(job_id,rfq_id,from_stage,to_stage,note,actor,created_at) VALUES(?,?,?,?,?,?,?)", (job_id, rfq_id, "", "quoted", "Quote created", staff.get("username", "admin"), seen))
+    return {"status": "ok", "quote_id": quote_id, "quote_number": qnum, "rfq_id": rfq_id, "pdf_url": f"/api/admin/quotes/{quote_id}/pdf"}
+
+
+@app.get("/api/admin/quotes/{quote_id}/pdf")
+def admin_quote_pdf(quote_id: str, request: Request):
+    require_admin(request, {"admin", "sales"})
+    with db() as conn:
+        q = conn.execute("SELECT * FROM quote_records WHERE quote_id=?", (quote_id,)).fetchone()
+        if not q:
+            raise HTTPException(404, "quote not found")
+        rfq = conn.execute("SELECT * FROM rfq_requests WHERE rfq_id=?", (q["rfq_id"],)).fetchone()
+    path = generate_quote_pdf(dict(q), dict(rfq) if rfq else {})
+    if path.suffix.lower() == ".pdf":
+        return FileResponse(str(path), media_type="application/pdf", filename=path.name)
+    return FileResponse(str(path), media_type="application/json", filename=path.name)
+
+
+@app.patch("/api/admin/production/{job_id}")
+def admin_update_production(job_id: str, payload: ProductionStatusUpdate, request: Request) -> dict[str, Any]:
+    staff = require_admin(request, {"admin", "sales", "engineer"})
+    allowed = ["quoted", "approved", "pattern", "molding", "melting", "poured", "shakeout", "machining", "qc", "packed", "shipped", "paid", "closed", "on_hold", "cancelled"]
+    if payload.status not in allowed:
+        raise HTTPException(422, "invalid production status")
+    seen = now_iso()
+    with db() as conn:
+        row = conn.execute("SELECT * FROM production_jobs WHERE job_id=?", (job_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "job not found")
+        old = row["current_stage"]
+        conn.execute("UPDATE production_jobs SET status=?, current_stage=?, owner=COALESCE(NULLIF(?,''),owner), due_date=COALESCE(NULLIF(?,''),due_date), notes=COALESCE(NULLIF(?,''),notes), updated_at=? WHERE job_id=?", (payload.status, payload.status, payload.owner, payload.due_date, payload.notes, seen, job_id))
+        conn.execute("INSERT INTO production_status_log(job_id,rfq_id,from_stage,to_stage,note,actor,created_at) VALUES(?,?,?,?,?,?,?)", (job_id, row["rfq_id"], old, payload.status, payload.notes, staff.get("username", "admin"), seen))
+    return {"status": "ok", "job_id": job_id, "current_stage": payload.status}
 
 
 @app.get("/api/admin/rfqs/export.csv")
