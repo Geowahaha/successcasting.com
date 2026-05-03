@@ -17,7 +17,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -157,6 +157,34 @@ def send_email_receipt(to_email: str, subject: str, body: str) -> tuple[str, str
         return "sent", ""
     except Exception as exc:
         return "failed", f"{type(exc).__name__}: {str(exc)[:180]}"
+
+
+def seed_ai_improvement_skill(conn: sqlite3.Connection) -> None:
+    seen = now_iso()
+    rules = [
+        "review_every_customer_turn_after_response",
+        "latest_user_message_wins_over_stale_memory",
+        "detect_off_target_generic_or_repeated_contact_answers",
+        "flag_unsupported_price_delivery_warranty_or_certainty",
+        "never_promote_unverified_generated_facts_into_production_kb",
+        "store_research_needed_and_facts_required_when evidence is insufficient",
+        "box_knowledge_by_topic_for_fast_precise_retrieval",
+    ]
+    boxes = ["pulley", "material", "process", "rfq", "pricing_policy", "delivery_policy", "document_drawing", "maintenance_failure", "contact_sales", "general"]
+    conn.execute(
+        "INSERT INTO ai_agent_skills(skill_slug,agent_name,title,role_description,operating_rules_json,topic_boxes_json,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(skill_slug) DO UPDATE SET agent_name=excluded.agent_name,title=excluded.title,role_description=excluded.role_description,operating_rules_json=excluded.operating_rules_json,topic_boxes_json=excluded.topic_boxes_json,status='active',updated_at=excluded.updated_at",
+        (
+            "successcasting-ai-improvement-agent",
+            "successcasting-ai-improvement-agent",
+            "Answer Quality + Fact-Grounded KB Improvement Agent",
+            "Back-office agent that reviews every customer chat turn, detects weak/off-target/unsupported answers, and creates topic-boxed knowledge improvement suggestions without hallucinating facts.",
+            jdump(rules),
+            jdump(boxes),
+            "active",
+            seen,
+            seen,
+        ),
+    )
 
 
 def init_db() -> None:
@@ -304,6 +332,66 @@ def init_db() -> None:
                 source TEXT NOT NULL DEFAULT 'private_seed',
                 updated_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS ai_agent_skills (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                skill_slug TEXT NOT NULL UNIQUE,
+                agent_name TEXT NOT NULL DEFAULT '',
+                title TEXT NOT NULL DEFAULT '',
+                role_description TEXT NOT NULL DEFAULT '',
+                operating_rules_json TEXT NOT NULL DEFAULT '[]',
+                topic_boxes_json TEXT NOT NULL DEFAULT '[]',
+                status TEXT NOT NULL DEFAULT 'active',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS ai_improvement_reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL DEFAULT '',
+                customer_id TEXT NOT NULL DEFAULT '',
+                rfq_id TEXT NOT NULL DEFAULT '',
+                user_event_id INTEGER NOT NULL DEFAULT 0,
+                assistant_event_id INTEGER NOT NULL DEFAULT 0,
+                user_message TEXT NOT NULL DEFAULT '',
+                assistant_message TEXT NOT NULL DEFAULT '',
+                intent TEXT NOT NULL DEFAULT '',
+                answer_quality_score INTEGER NOT NULL DEFAULT 0,
+                relevance_score INTEGER NOT NULL DEFAULT 0,
+                grounding_score INTEGER NOT NULL DEFAULT 0,
+                completeness_score INTEGER NOT NULL DEFAULT 0,
+                hallucination_risk INTEGER NOT NULL DEFAULT 0,
+                off_target_risk INTEGER NOT NULL DEFAULT 0,
+                non_smart_risk INTEGER NOT NULL DEFAULT 0,
+                needs_human_review INTEGER NOT NULL DEFAULT 0,
+                topic_box TEXT NOT NULL DEFAULT 'general',
+                issue_tags_json TEXT NOT NULL DEFAULT '[]',
+                evidence_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS ai_knowledge_improvement_suggestions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                suggestion_id TEXT NOT NULL UNIQUE,
+                review_id INTEGER NOT NULL DEFAULT 0,
+                topic_box TEXT NOT NULL DEFAULT 'general',
+                slug TEXT NOT NULL DEFAULT '',
+                title TEXT NOT NULL DEFAULT '',
+                category TEXT NOT NULL DEFAULT 'general',
+                keywords_json TEXT NOT NULL DEFAULT '[]',
+                gap_summary TEXT NOT NULL DEFAULT '',
+                suggested_content TEXT NOT NULL DEFAULT '',
+                facts_required_json TEXT NOT NULL DEFAULT '[]',
+                source_event_ids_json TEXT NOT NULL DEFAULT '[]',
+                source TEXT NOT NULL DEFAULT 'ai_improvement_agent',
+                priority TEXT NOT NULL DEFAULT 'normal',
+                status TEXT NOT NULL DEFAULT 'pending_review',
+                confidence_score INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                approved_at TEXT NOT NULL DEFAULT '',
+                applied_doc_slug TEXT NOT NULL DEFAULT ''
+            );
+            CREATE INDEX IF NOT EXISTS idx_ai_improvement_reviews_session ON ai_improvement_reviews(session_id, created_at);
+            CREATE INDEX IF NOT EXISTS idx_ai_improvement_reviews_risk ON ai_improvement_reviews(needs_human_review, created_at);
+            CREATE INDEX IF NOT EXISTS idx_ai_kb_suggestions_status_topic ON ai_knowledge_improvement_suggestions(status, topic_box, priority, created_at);
             CREATE TABLE IF NOT EXISTS agent_tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 task_type TEXT NOT NULL,
@@ -448,6 +536,7 @@ def init_db() -> None:
                 ("SKU-DEMO-002", "Demo Product 2", 50, 5, now_iso()),
             ]
             conn.executemany("INSERT INTO products(sku,name,total_stock,safety_stock,updated_at) VALUES(?,?,?,?,?)", seed)
+        seed_ai_improvement_skill(conn)
 
 
 @app.on_event("startup")
@@ -735,6 +824,184 @@ def knowledge_context_for_llm(query: str) -> str:
     if not docs:
         return ""
     return "\n\n".join([f"[{d['category']}] {d['title']}: {d['content']}" for d in docs])[:4200]
+
+
+
+def ai_improvement_topic_box(text: str, intent: str = "") -> str:
+    t = (text or "").lower()
+    if any(x in t for x in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "สายพาน", "ร่อง", "spz", "spa", "spb", "spc", "taper", "bore", "keyway", "โรงสี"]):
+        if any(x in t for x in ["กินข้าง", "ขาด", "สึก", "ลื่น", "เสีย", "ซ่อม", "maintenance", "vibration"]):
+            return "maintenance_failure"
+        return "pulley"
+    if any(x in t for x in ["fc", "fcd", "sus", "stainless", "บรอนซ์", "ทองเหลือง", "อลู", "aluminum", "เหล็กหล่อ", "วัสดุ", "เกรด"]):
+        return "material"
+    if any(x in t for x in ["หล่อทราย", "sand", "pattern", "core", "แม่พิมพ์", "machining", "กลึง", "heat treatment"]):
+        return "process"
+    if any(x in t for x in ["ราคา", "กี่บาท", "ใบเสนอ", "quote", "rfq", "จำนวน", "เสนอราคา"]):
+        return "rfq"
+    if any(x in t for x in ["ส่ง", "lead time", "delivery", "เมื่อไร", "กี่วัน"]):
+        return "delivery_policy"
+    if any(x in t for x in ["drawing", "แบบ", "รูป", "ไฟล์", "pdf", "ocr"]):
+        return "document_drawing"
+    if any(x in t for x in ["โทร", "line", "ไลน์", "ติดต่อ", "email", "อีเมล"]):
+        return "contact_sales"
+    return "general"
+
+
+def _quality_tokens(text: str) -> set[str]:
+    return {t.lower() for t in tokenize_for_knowledge(text or "") if len(t.strip()) >= 2}
+
+
+def assess_answer_quality(user_message: str, assistant_message: str, intent: str = "") -> dict[str, Any]:
+    user_message = (user_message or "").strip()
+    assistant_message = (assistant_message or "").strip()
+    # Topic box follows the customer's latest question, not side effects in the answer text.
+    topic = ai_improvement_topic_box(user_message, intent)
+    docs = retrieve_ai_knowledge(user_message, limit=4)
+    u_tokens = _quality_tokens(user_message)
+    a_tokens = _quality_tokens(assistant_message)
+    overlap = len(u_tokens & a_tokens)
+    relevance = min(100, 35 + overlap * 12)
+    if topic != "general" and any(topic_word in assistant_message.lower() for topic_word in ["มู", "pulley", "ร่อง", "สายพาน", "fc", "fcd", "หล่อ", "drawing", "ราคา"]):
+        relevance = min(100, relevance + 15)
+    grounding = 35 if docs else 15
+    if docs:
+        kb_terms = set()
+        for d in docs:
+            kb_terms.update(_quality_tokens(" ".join([d.get("title", ""), d.get("category", ""), d.get("content", "")[:700]])))
+        grounding = min(100, 45 + len(a_tokens & kb_terms) * 5)
+    completeness = 60
+    if len(assistant_message) >= 180:
+        completeness += 15
+    if any(x in assistant_message for x in ["1)", "2)", "ข้อมูล", "ขอ", "ต้องดู", "ควร"]):
+        completeness += 10
+    if any(x in user_message.lower() for x in ["ต่าง", "แบบไหน", "ทำไม", "สาเหตุ", "วัสดุ", "เลือก"]):
+        if not any(x in assistant_message.lower() for x in ["ต่าง", "เพราะ", "เหมาะ", "สาเหตุ", "เลือก", "ข้อ"]):
+            completeness -= 25
+    completeness = max(0, min(100, completeness))
+    issue_tags: list[str] = []
+    hallucination_risk = 10
+    off_target_risk = max(0, 65 - relevance)
+    non_smart_risk = 15
+    low = assistant_message.lower()
+    user_low = user_message.lower()
+    if any(x in low for x in ["ราคา ", "บาท", "ส่งพรุ่งนี้", "ส่งได้แน่นอน", "รับประกัน", "certified", "ได้แน่นอน"]):
+        if not any(x in user_low for x in ["ราคา", "ส่ง", "รับประกัน", "certificate", "cert"]):
+            hallucination_risk += 25
+        if not any(x in low for x in ["ต้องมีแบบ", "ประเมิน", "ยังไม่", "ขอรูป", "ขนาด", "จำนวน"]):
+            hallucination_risk += 45
+            issue_tags.append("unsupported_price_delivery_or_certainty")
+    if any(x in user_low for x in ["ต่าง", "แบบไหน", "สาเหตุ", "เลือก", "ทำไม", "คืออะไร"]) and any(x in low for x in ["ขอเบอร์", "ฝากเบอร์", "ติดต่อทีม"]):
+        if len(assistant_message) < 260 or overlap < 2:
+            off_target_risk += 35
+            non_smart_risk += 35
+            issue_tags.append("repeated_contact_or_generic_answer")
+    if topic != "general" and overlap == 0:
+        off_target_risk += 25
+        issue_tags.append("ignored_latest_question")
+    if not docs and topic in {"pulley", "material", "process", "maintenance_failure"}:
+        grounding -= 10
+        issue_tags.append("no_kb_match")
+    if len(assistant_message) < 90 and len(user_message) > 20:
+        non_smart_risk += 25
+        issue_tags.append("too_short_for_technical_query")
+    if topic == "pulley" and any(x in user_low for x in ["โรงสี", "สีข้าว"]) and "โรงสี" not in assistant_message:
+        off_target_risk += 25
+        issue_tags.append("missing_industry_context")
+    hallucination_risk = max(0, min(100, hallucination_risk))
+    off_target_risk = max(0, min(100, off_target_risk))
+    non_smart_risk = max(0, min(100, non_smart_risk))
+    answer_quality = int(max(0, min(100, round((relevance + grounding + completeness) / 3 - max(hallucination_risk, off_target_risk, non_smart_risk) * 0.25))))
+    facts_required = []
+    if "unsupported_price_delivery_or_certainty" in issue_tags or any(x in user_low for x in ["ราคา", "ส่งเมื่อไร", "กี่วัน"]):
+        facts_required.extend(["drawing/photo", "material/grade", "quantity", "dimensions/weight", "machining scope", "required date"])
+    if topic == "pulley":
+        facts_required.extend(["belt profile", "OD/PD", "number of grooves", "bore/keyway/taper bush", "HP/RPM/load", "application environment"])
+    facts_required = list(dict.fromkeys(facts_required))[:10]
+    needs_review = int(answer_quality < 58 or hallucination_risk >= 60 or off_target_risk >= 60 or non_smart_risk >= 65)
+    if needs_review and "needs_human_review" not in issue_tags:
+        issue_tags.append("needs_human_review")
+    evidence = {
+        "topic_box": topic,
+        "token_overlap": overlap,
+        "kb_matches": [{"slug": d.get("slug"), "title": d.get("title"), "category": d.get("category"), "score": d.get("score")} for d in docs],
+        "facts_required": facts_required,
+        "principle": "facts_only_no_guessing; suggestions require admin approval before KB promotion",
+    }
+    gap_summary = ""
+    if needs_review:
+        gap_summary = "คำตอบอาจไม่ตรงคำถามหรือมีความเสี่ยงข้อมูลไม่พอ ต้องตรวจและเพิ่ม fact/KB เฉพาะเรื่องก่อนใช้ตอบครั้งต่อไป"
+    elif docs and answer_quality < 80:
+        gap_summary = "คำตอบใช้ได้แต่ควรเพิ่ม KB/ตัวอย่างเฉพาะทางให้ตอบได้ตรงและลึกขึ้น"
+    return {
+        "topic_box": topic,
+        "answer_quality_score": answer_quality,
+        "relevance_score": int(relevance),
+        "grounding_score": int(max(0, min(100, grounding))),
+        "completeness_score": int(completeness),
+        "hallucination_risk": hallucination_risk,
+        "off_target_risk": off_target_risk,
+        "non_smart_risk": non_smart_risk,
+        "needs_human_review": needs_review,
+        "issue_tags": issue_tags,
+        "evidence": evidence,
+        "gap_summary": gap_summary,
+        "facts_required": facts_required,
+    }
+
+
+def make_kb_suggestion_id() -> str:
+    return "kbimp_" + uuid.uuid4().hex[:12]
+
+
+def run_ai_improvement_agent_for_turn(session_id: str, user_event_id: int, assistant_event_id: int, customer_id: str = "", rfq_id: str = "") -> dict[str, Any]:
+    seen = now_iso()
+    try:
+        with db() as conn:
+            user_row = conn.execute("SELECT * FROM ai_sales_events WHERE id=?", (int(user_event_id or 0),)).fetchone()
+            assistant_row = conn.execute("SELECT * FROM ai_sales_events WHERE id=?", (int(assistant_event_id or 0),)).fetchone()
+            if not user_row or not assistant_row:
+                return {"status": "missing_events"}
+            user_message = user_row["message"] or ""
+            assistant_message = assistant_row["message"] or ""
+            intent = user_row["intent"] or assistant_row["intent"] or ""
+            review = assess_answer_quality(user_message, assistant_message, intent)
+            cur = conn.execute(
+                "INSERT INTO ai_improvement_reviews(session_id,customer_id,rfq_id,user_event_id,assistant_event_id,user_message,assistant_message,intent,answer_quality_score,relevance_score,grounding_score,completeness_score,hallucination_risk,off_target_risk,non_smart_risk,needs_human_review,topic_box,issue_tags_json,evidence_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (session_id or "", customer_id or "", rfq_id or "", int(user_event_id or 0), int(assistant_event_id or 0), user_message[:3000], assistant_message[:5000], intent, int(review["answer_quality_score"]), int(review["relevance_score"]), int(review["grounding_score"]), int(review["completeness_score"]), int(review["hallucination_risk"]), int(review["off_target_risk"]), int(review["non_smart_risk"]), int(review["needs_human_review"]), review["topic_box"], jdump(review["issue_tags"]), jdump(review["evidence"]), seen),
+            )
+            review_id = int(cur.lastrowid or 0)
+            suggestion_id = ""
+            should_suggest = bool(review["needs_human_review"] or review["answer_quality_score"] < 80 or "no_kb_match" in review.get("issue_tags", []))
+            if should_suggest:
+                suggestion_id = make_kb_suggestion_id()
+                topic = review["topic_box"]
+                title = f"Improve {topic}: answer {assistant_event_id}"
+                safe_slug = re.sub(r"[^a-z0-9ก-๙-]+", "-", f"aiimp-{topic}-{suggestion_id[-6:]}".lower()).strip("-")[:80]
+                facts = review["facts_required"] or ["verify domain facts before answering", "source from approved KB or engineering review"]
+                suggested = (
+                    f"Topic box: {topic}\n"
+                    f"Customer question: {user_message[:900]}\n"
+                    f"Observed answer issue tags: {', '.join(review['issue_tags']) or 'needs deeper factual answer'}\n"
+                    f"Facts required before final answer: {', '.join(facts)}\n"
+                    "Rule: do not invent price, lead time, material certainty, or performance claim without drawing/spec/source. Use this suggestion only after admin/engineer approval."
+                )
+                conn.execute(
+                    "INSERT OR IGNORE INTO ai_knowledge_improvement_suggestions(suggestion_id,review_id,topic_box,slug,title,category,keywords_json,gap_summary,suggested_content,facts_required_json,source_event_ids_json,source,priority,status,confidence_score,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (suggestion_id, review_id, topic, safe_slug, title, topic, jdump(sorted(list(_quality_tokens(user_message)))[:18]), review["gap_summary"] or "เพิ่มความรู้เฉพาะเรื่องเพื่อให้ตอบตรงคำถามและ fact-grounded", suggested, jdump(facts), jdump([user_event_id, assistant_event_id]), "ai_improvement_agent", "high" if review["needs_human_review"] else "normal", "pending_review", int(review["answer_quality_score"]), seen, seen),
+                )
+            conn.execute(
+                "INSERT INTO agent_tasks(task_type,related_entity_type,related_entity_id,agent_name,input_payload,output_payload,confidence_score,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                ("ai_answer_quality_review", "ai_sales_event", str(assistant_event_id), "successcasting-ai-improvement-agent", jdump({"session_id": session_id, "user_event_id": user_event_id, "assistant_event_id": assistant_event_id, "topic_box": review["topic_box"]}), jdump({"review_id": review_id, "suggestion_id": suggestion_id, "scores": {"quality": review["answer_quality_score"], "relevance": review["relevance_score"], "grounding": review["grounding_score"]}, "issues": review["issue_tags"]}), int(review["answer_quality_score"]), "needs_review" if review["needs_human_review"] else "completed", seen, seen),
+            )
+        return {"status": "ok", "review_id": review_id, "suggestion_id": suggestion_id, "topic_box": review["topic_box"]}
+    except Exception as exc:
+        try:
+            with db() as conn:
+                conn.execute("INSERT INTO error_log(source,message,payload_json,created_at) VALUES(?,?,?,?)", ("ai-improvement-agent", f"{type(exc).__name__}: {str(exc)[:220]}", jdump({"session_id": session_id, "user_event_id": user_event_id, "assistant_event_id": assistant_event_id}), now_iso()))
+        except Exception:
+            pass
+        return {"status": "error", "error": f"{type(exc).__name__}: {str(exc)[:120]}"}
 
 
 def ai_sales_brain() -> dict[str, Any]:
@@ -1553,6 +1820,9 @@ def sales_admin_overview(limit: int = 80) -> dict[str, Any]:
             "documents": conn.execute("SELECT COUNT(*) c FROM uploaded_documents").fetchone()["c"],
             "quotes": conn.execute("SELECT COUNT(*) c FROM quote_records").fetchone()["c"],
             "production_jobs": conn.execute("SELECT COUNT(*) c FROM production_jobs").fetchone()["c"],
+            "ai_reviews": conn.execute("SELECT COUNT(*) c FROM ai_improvement_reviews").fetchone()["c"],
+            "ai_reviews_need_human": conn.execute("SELECT COUNT(*) c FROM ai_improvement_reviews WHERE needs_human_review=1").fetchone()["c"],
+            "kb_suggestions_pending": conn.execute("SELECT COUNT(*) c FROM ai_knowledge_improvement_suggestions WHERE status='pending_review'").fetchone()["c"],
         }
         rfqs = conn.execute(
             """
@@ -1869,7 +2139,7 @@ def update_existing_customer_from_ai(customer_id: str, contact: dict[str, Any], 
 
 
 @app.post("/api/ai-sales/chat")
-def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
+def ai_sales_chat(payload: AISalesChat, background_tasks: BackgroundTasks) -> dict[str, Any]:
     session_id = payload.session_id.strip() or ("ai_" + uuid.uuid4().hex[:12])
     session_memory = load_session_memory(session_id)
     payload = enrich_payload_from_message(payload, session_memory)
@@ -1922,19 +2192,27 @@ def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
         reply["quote_readiness"] = memory_after["quote_readiness"]
     rfq = upsert_rfq_from_ai(session_id, known_customer_id, payload, intent, score, reply["quote_readiness"], reply["answer"])
     seen = now_iso()
+    user_event_id = 0
+    assistant_event_id = 0
     with db() as conn:
-        conn.execute(
+        user_cur = conn.execute(
             "INSERT INTO ai_sales_events(session_id,role,message,intent,lead_score,payload_json,created_at) VALUES(?,?,?,?,?,?,?)",
             (session_id, "user", payload.message.strip(), intent, score, jdump({"customer_id": known_customer_id, "visitor_id": payload.visitor_id, "current_page": payload.current_page, "has_contact": has_contact, "slots": reply.get("quote_readiness", {}).get("slots", {})}), seen),
         )
-        conn.execute(
+        user_event_id = int(user_cur.lastrowid or 0)
+        assistant_cur = conn.execute(
             "INSERT INTO ai_sales_events(session_id,role,message,intent,lead_score,payload_json,created_at) VALUES(?,?,?,?,?,?,?)",
             (session_id, "assistant", reply["answer"], intent, score, jdump({"cta": reply["cta"], "lead": lead, "memory_stage": memory_after.get("stage")}), seen),
         )
+        assistant_event_id = int(assistant_cur.lastrowid or 0)
         conn.execute(
             "INSERT INTO agent_tasks(task_type,related_entity_type,related_entity_id,agent_name,input_payload,output_payload,confidence_score,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
             ("technical_sales_reply", "ai_sales_session", session_id, "successcasting-ai-sales", jdump({"message": payload.message, "intent": intent, "readiness": reply.get("quote_readiness", {})}), jdump({"answer": reply.get("answer"), "mode": reply.get("mode"), "lead": lead}), int(score), "completed", seen, seen),
         )
+    try:
+        background_tasks.add_task(run_ai_improvement_agent_for_turn, session_id, user_event_id, assistant_event_id, known_customer_id or "", (rfq or {}).get("rfq_id", ""))
+    except Exception:
+        run_ai_improvement_agent_for_turn(session_id, user_event_id, assistant_event_id, known_customer_id or "", (rfq or {}).get("rfq_id", ""))
     customer_context = {
         "known": bool(known_customer_id),
         "customer_id": known_customer_id,
@@ -2064,6 +2342,61 @@ def admin_sales_overview(request: Request, limit: int = 80) -> dict[str, Any]:
         r["missing"] = load_json_safe(r.pop("missing_json", "[]"), [])
         r["slots"] = load_json_safe(r.pop("slots_json", "{}"), {})
     return data
+
+
+
+@app.get("/api/admin/ai-improvement/reviews")
+def admin_ai_improvement_reviews(request: Request, limit: int = 80) -> dict[str, Any]:
+    require_admin(request, {"admin", "sales", "engineer"})
+    limit = max(1, min(int(limit or 80), 200))
+    with db() as conn:
+        reviews = conn.execute("SELECT id,session_id,customer_id,rfq_id,user_event_id,assistant_event_id,intent,answer_quality_score,relevance_score,grounding_score,completeness_score,hallucination_risk,off_target_risk,non_smart_risk,needs_human_review,topic_box,issue_tags_json,evidence_json,created_at FROM ai_improvement_reviews ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+        suggestions = conn.execute("SELECT suggestion_id,review_id,topic_box,slug,title,category,gap_summary,facts_required_json,priority,status,confidence_score,created_at,updated_at,approved_at,applied_doc_slug FROM ai_knowledge_improvement_suggestions ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+        skills = conn.execute("SELECT skill_slug,agent_name,title,role_description,operating_rules_json,topic_boxes_json,status,updated_at FROM ai_agent_skills WHERE skill_slug='successcasting-ai-improvement-agent'").fetchall()
+    def review_dict(r: sqlite3.Row) -> dict[str, Any]:
+        d = dict(r)
+        d["issue_tags"] = load_json_safe(d.pop("issue_tags_json", "[]"), [])
+        d["evidence"] = load_json_safe(d.pop("evidence_json", "{}"), {})
+        d["customer_id_masked"] = mask_contact(d.pop("customer_id", ""), "customer_id")
+        return d
+    def suggestion_dict(r: sqlite3.Row) -> dict[str, Any]:
+        d = dict(r)
+        d["facts_required"] = load_json_safe(d.pop("facts_required_json", "[]"), [])
+        return d
+    def skill_dict(r: sqlite3.Row) -> dict[str, Any]:
+        d = dict(r)
+        d["operating_rules"] = load_json_safe(d.pop("operating_rules_json", "[]"), [])
+        d["topic_boxes"] = load_json_safe(d.pop("topic_boxes_json", "[]"), [])
+        return d
+    return {"status": "ready", "agent": "successcasting-ai-improvement-agent", "reviews": [review_dict(r) for r in reviews], "suggestions": [suggestion_dict(r) for r in suggestions], "skills": [skill_dict(r) for r in skills]}
+
+
+@app.post("/api/admin/ai-improvement/suggestions/{suggestion_id}/approve")
+def admin_approve_ai_kb_suggestion(suggestion_id: str, request: Request) -> dict[str, Any]:
+    require_admin(request, {"admin", "engineer"})
+    seen = now_iso()
+    with db() as conn:
+        row = conn.execute("SELECT * FROM ai_knowledge_improvement_suggestions WHERE suggestion_id=?", (suggestion_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "suggestion not found")
+        if row["status"] == "approved" and row["applied_doc_slug"]:
+            return {"status": "already_approved", "doc_slug": row["applied_doc_slug"]}
+        slug = row["slug"] or re.sub(r"[^a-z0-9ก-๙-]+", "-", f"aiimp-{row['topic_box']}-{suggestion_id[-6:]}".lower()).strip("-")[:80]
+        conn.execute("INSERT INTO ai_knowledge_documents(slug,title,category,keywords_json,content,source,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(slug) DO UPDATE SET title=excluded.title, category=excluded.category, keywords_json=excluded.keywords_json, content=excluded.content, source=excluded.source, updated_at=excluded.updated_at", (slug, row["title"], row["category"] or row["topic_box"], row["keywords_json"], row["suggested_content"], "ai_improvement_approved", seen))
+        conn.execute("UPDATE ai_knowledge_improvement_suggestions SET status='approved', approved_at=?, updated_at=?, applied_doc_slug=? WHERE suggestion_id=?", (seen, seen, slug, suggestion_id))
+        conn.execute("INSERT INTO agent_tasks(task_type,related_entity_type,related_entity_id,agent_name,input_payload,output_payload,confidence_score,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?)", ("ai_kb_suggestion_approved", "ai_knowledge_improvement_suggestion", suggestion_id, "successcasting-ai-improvement-agent", jdump({"suggestion_id": suggestion_id}), jdump({"applied_doc_slug": slug}), int(row["confidence_score"] or 0), "completed", seen, seen))
+    return {"status": "approved", "suggestion_id": suggestion_id, "doc_slug": slug}
+
+
+@app.post("/api/admin/ai-improvement/suggestions/{suggestion_id}/reject")
+def admin_reject_ai_kb_suggestion(suggestion_id: str, request: Request) -> dict[str, Any]:
+    require_admin(request, {"admin", "engineer"})
+    seen = now_iso()
+    with db() as conn:
+        cur = conn.execute("UPDATE ai_knowledge_improvement_suggestions SET status='rejected', updated_at=? WHERE suggestion_id=?", (seen, suggestion_id))
+        if cur.rowcount == 0:
+            raise HTTPException(404, "suggestion not found")
+    return {"status": "rejected", "suggestion_id": suggestion_id}
 
 
 @app.patch("/api/admin/rfqs/{rfq_id}")
