@@ -740,7 +740,7 @@ def classify_sales_intent(text: str) -> tuple[str, int]:
     score = 12
     intent = "general"
     hot_words = ["ราคา", "quote", "ใบเสนอ", "เสนอราคา", "ด่วน", "สั่ง", "ผลิต", "หล่อ", "จำนวน", "กี่บาท", "delivery", "ส่งของ", "ติดต่อ", "โทร", "line", "ไลน์"]
-    casting_parts = ["มู่เลย์", "pulley", "เฟือง", "gear", "ใบพัด", "impeller", "เพลา", "bushing", "ปลอก", "ลูกล้อ", "ฝาครอบ", "housing", "bracket"]
+    casting_parts = ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "เฟือง", "gear", "ใบพัด", "impeller", "เพลา", "bushing", "ปลอก", "ลูกล้อ", "ฝาครอบ", "housing", "bracket"]
     tech_words = ["วัสดุ", "เกรด", "fc", "fcd", "sus", "บรอนซ์", "ทองเหลือง", "อลู", "เหล็ก", "ทนสึก", "แบบ", "drawing", "ขนาด", "mm", "cm", "kg"] + casting_parts
     if any(w in t for w in hot_words) or any(w in t for w in casting_parts):
         intent, score = "quote_or_sales", 72
@@ -765,13 +765,18 @@ def extract_contact_from_text(text: str) -> dict[str, str]:
     line_label = re.search(r"(?:line|ไลน์)\s*[:=]?\s*@?([A-Za-z0-9._\-]{3,40})", raw, re.I)
     if line_label:
         found["line_id"] = normalize_contact("line_id", line_label.group(1))
+    explicit_name = re.search(r"(?:^|\s)(?:ผมชื่อ|ดิฉันชื่อ|ฉันชื่อ|ชื่อ|คุณ)\s*([ก-๙A-Za-z][ก-๙A-Za-z._\-]{1,39})(?:\s|$)", raw, re.I)
+    if explicit_name:
+        cand = explicit_name.group(1).strip(" ,.;:()[]{}")
+        if not any(w in cand.lower() for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "งาน", "หล่อ"]):
+            found["name"] = cand
     cleaned = raw
     for value in [email.group(0) if email else "", phone.group(0) if phone else ""]:
         if value:
             cleaned = cleaned.replace(value, " ")
     cleaned = re.sub(r"(?:line|ไลน์)\s*[:=]?\s*@?[A-Za-z0-9._\-]{3,40}", " ", cleaned, flags=re.I)
     tokens = [t for t in re.split(r"\s+", cleaned.strip()) if t]
-    stop = {"ต้องการ", "ขอ", "ราคา", "ใบเสนอราคา", "งาน", "หล่อ", "มู่เลย์", "pulley", "เหล็ก", "จำนวน", "ชิ้น", "mm", "cm", "หรือ", "และ", "ครับ", "ค่ะ"}
+    stop = {"ต้องการ", "ขอ", "ราคา", "ใบเสนอราคา", "งาน", "หล่อ", "มู่เลย์", "pulley", "เหล็ก", "จำนวน", "ชิ้น", "mm", "cm", "หรือ", "และ", "ครับ", "ค่ะ", "มี", "แบบไหน", "อะไร", "บ้าง", "ต้องการ", "ฉัน", "ผม"}
     if not found.get("name") and (found.get("phone") or found.get("email") or found.get("line_id")) and tokens:
         # First short Thai/Latin token before contact is usually the customer's name/nickname.
         first = tokens[0].strip(" ,.;:()[]{}")
@@ -801,8 +806,9 @@ def enrich_payload_from_message(payload: AISalesChat, session_memory: dict[str, 
         first_missing = (previous_readiness.get("missing") or [""])[0]
         bare = re.sub(r"[\s,.;:()\[\]{}]+", " ", msg).strip()
         has_contact_pattern = bool(extract_contact_from_text(msg).get("phone") or extract_contact_from_text(msg).get("email") or re.search(r"(?:line|ไลน์)", msg, re.I))
-        looks_like_job = any(w in msg.lower() for w in ["หล่อ", "มู่เลย์", "pulley", "เฟือง", "ขนาด", "mm", "cm", "ราคา", "วัสดุ", "ชิ้น"])
-        if first_missing == "name" and not data.get("name") and bare and len(bare) <= 40 and not has_contact_pattern and not looks_like_job and not re.search(r"\d", bare):
+        looks_like_job = any(w in msg.lower() for w in ["หล่อ", "มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "เฟือง", "ขนาด", "mm", "cm", "ราคา", "วัสดุ", "ชิ้น", "ร่อง", "สายพาน"])
+        looks_like_question = any(w in msg.lower() for w in ["แบบไหน", "อะไร", "ยังไง", "เท่าไร", "กี่", "มี", "ไหม", "หรือ"])
+        if first_missing == "name" and not data.get("name") and bare and len(bare) <= 40 and not has_contact_pattern and not looks_like_job and not looks_like_question and not re.search(r"\d", bare):
             data["name"] = re.sub(r"^(?:ผม|ดิฉัน|ฉัน|ชื่อ|คุณ|นาย|นางสาว|นาง)\s*", "", bare).strip()
         elif first_missing == "line_or_email" and not data.get("line_id") and not data.get("email") and re.fullmatch(r"@?[A-Za-z][A-Za-z0-9._\-]{2,39}", bare):
             data["line_id"] = bare.lstrip("@")
@@ -984,7 +990,7 @@ def extract_quote_slots(payload: AISalesChat) -> dict[str, Any]:
     if email: contact["email"] = email
     if line_id: contact["line_id"] = line_id
     if contact: slots["contact"] = contact
-    part_words = ["มู่เลย์", "pulley", "เฟือง", "gear", "ใบพัด", "impeller", "เพลา", "bushing", "ปลอก", "ลูกล้อ", "housing", "bracket"]
+    part_words = ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "เฟือง", "gear", "ใบพัด", "impeller", "เพลา", "bushing", "ปลอก", "ลูกล้อ", "housing", "bracket"]
     for w in part_words:
         if w in lower:
             slots["work_item"] = w
@@ -1001,7 +1007,7 @@ def extract_quote_slots(payload: AISalesChat) -> dict[str, Any]:
     elif any(w in lower for w in ["จำนวน", "กี่ชิ้น"]): slots["quantity"] = "mentioned"
     if any(w in lower for w in ["รูป", "แบบ", "drawing", "ไฟล์", "ตัวอย่าง", "sketch", "ถ่าย"]): slots["drawing_or_photo"] = True
     groove = re.search(r"(?:ร่อง\s*)?([ab])(?:\s*ร่อง)?\b", lower)
-    if groove and any(w in lower for w in ["มู่เลย์", "pulley", "สายพาน", "ร่อง"]):
+    if groove and any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "สายพาน", "ร่อง"]):
         slots["pulley_groove"] = groove.group(1).upper()
     if any(w in lower for w in ["keyway", "ลิ่ม", "รูเพลา", "bore", "set screw", "taper bush"]):
         slots["pulley_mounting"] = True
@@ -1029,7 +1035,7 @@ def merge_slots(old_slots: dict[str, Any], new_slots: dict[str, Any]) -> dict[st
 
 def readiness_from_slots(slots: dict[str, Any], intent: str, score: int) -> dict[str, Any]:
     contact = slots.get("contact") or {}
-    is_pulley = "มู่เลย์" in str(slots.get("job_context", "")).lower() or str(slots.get("work_item", "")).lower() == "มู่เลย์" or str(slots.get("work_item", "")).lower() == "pulley"
+    is_pulley = any(w in str(slots.get("job_context", "")).lower() for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley"]) or str(slots.get("work_item", "")).lower() in {"มู่เลย์", "มูเล่ย์", "มูเล่ย"} or str(slots.get("work_item", "")).lower() == "pulley"
     checks = {
         "name": bool(contact.get("name")),
         "phone": bool(contact.get("phone")),
@@ -1611,7 +1617,33 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
     first_missing = (readiness.get("missing") or [""])[0]
     contact = (readiness.get("slots") or {}).get("contact") or {}
     job_context = (readiness.get("slots") or {}).get("job_context") or (readiness.get("slots") or {}).get("work_item") or "งานหล่อชิ้นนี้"
-    if not readiness.get("missing"):
+    current_is_pulley = any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "ร่อง", "สายพาน"])
+    current_asks_types = current_is_pulley and any(w in lower for w in ["แบบไหน", "ชนิด", "ประเภท", "อะไร", "มี", "บ้าง"])
+    current_has_specific_pulley = current_is_pulley and any(w in lower for w in ["ร่อง", "120", "mm", "a", "b", "ต้องการ"])
+    if current_asks_types:
+        answer = (
+            "มู่เลย์ที่คุยงานหล่อ/ผลิตใหม่หลัก ๆ แบ่งตามการใช้งานครับ:\n"
+            "1) มู่เลย์ร่อง A — ใช้กับสายพาน A งานเบาถึงปานกลาง ขนาดเล็กกว่า\n"
+            "2) มู่เลย์ร่อง B — สายพาน B ใหญ่กว่า ส่งกำลังได้มากกว่า เหมาะโหลดสูงกว่า\n"
+            "3) มู่เลย์หลายร่อง — ใช้หลายเส้นเมื่อโหลดมากหรือต้องการลดการลื่น\n"
+            "4) มู่เลย์ตามตัวอย่าง/drawing — ระบุ OD, ความกว้าง, รูเพลา bore, keyway/ลิ่ม หรือ taper bush แล้วเลือกวัสดุ FC/FCD ตามโหลดจริง\n\n"
+            "ถ้าจะให้ประเมินราคา ส่งรูปหรือ drawing ได้เลยครับ แล้วบอก OD/ร่อง A หรือ B/รูเพลา/จำนวนชิ้น"
+        )
+        if first_missing in {"name", "phone", "line_or_email"}:
+            answer += "\n\nเดี๋ยวผมบันทึก RFQ ให้ต่อ ขอ" + ({"name":"ชื่อผู้ติดต่อ", "phone":"เบอร์โทร", "line_or_email":"LINE หรืออีเมล"}.get(first_missing, "ข้อมูลติดต่อ")) + "ด้วยครับ"
+    elif current_has_specific_pulley:
+        groove = (readiness.get("slots") or {}).get("pulley_groove") or ("A" if re.search(r"ร่อง\s*a|\ba\b", lower) else "B" if re.search(r"ร่อง\s*b|\bb\b", lower) else "")
+        answer = (
+            f"รับโจทย์มู่เลย์{('ร่อง ' + groove) if groove else ''} {((readiness.get('slots') or {}).get('size_or_weight') or '').strip()} แล้วครับ\n"
+            "ถ้าเป็นร่อง A จะใช้กับสายพาน A งานเบาถึงปานกลาง; ร่อง B จะใหญ่กว่าและส่งกำลังได้มากกว่า ดังนั้นต้องไม่สลับร่องกับสายพานจริง\n\n"
+            "ข้อมูลที่ต้องใช้เพื่อเสนอราคาแม่น ๆ คือ OD/เส้นผ่านศูนย์กลางนอก, ความกว้าง, จำนวนร่อง, รูเพลา bore, keyway/ลิ่มหรือ taper bush, วัสดุที่ต้องการเช่น FC/FCD, จำนวนชิ้น และรูป/drawing"
+        )
+        next_detail = "รูเพลา bore เท่าไร และมี keyway/ลิ่ม หรือ taper bush ไหมครับ?" if not (readiness.get("slots") or {}).get("pulley_mounting") else "ต้องการวัสดุ FC/FCD หรือมีตัวอย่างเดิมไหมครับ?"
+        if first_missing in {"name", "phone", "line_or_email"}:
+            answer += "\n\n" + next_detail + " หลังจากนั้นผมจะบันทึกให้ฝ่ายขายประเมินต่อครับ"
+        else:
+            answer += "\n\n" + next_detail
+    elif not readiness.get("missing"):
         item = (readiness.get("slots") or {}).get("job_context") or job_context
         answer = f"ข้อมูลหลักครบสำหรับเปิด lead แล้วครับ: {item}"
         details = []
@@ -1622,7 +1654,7 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
             answer += "\n" + " • ".join(details)
         answer += "\n\nผมบันทึกข้อมูลไว้ในระบบแล้ว ฝ่ายขายใช้เลขอ้างอิงนี้ติดตามต่อได้ ถ้ามีรูปหรือ drawing ส่งทาง LINE @305idxid ได้เลยครับ"
     elif first_missing in {"name", "phone", "line_or_email"}:
-        is_pulley_contact = any(w in str(job_context).lower() for w in ["มู่เลย์", "pulley", "สายพาน", "ร่อง"])
+        is_pulley_contact = any(w in str(job_context).lower() for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "สายพาน", "ร่อง"])
         if is_pulley_contact:
             base = (
                 f"รับเรื่อง {job_context} ไว้ครับ มู่เลย์ต้องดูร่องสายพานให้ตรงกับงานจริง: "
@@ -1663,7 +1695,7 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
             answer = f"ติดต่อทีมได้ทันที: โทร {c['phone']} หรือ LINE {c['line']} ถ้าฝากชื่อ/เบอร์/LINE ในช่องนี้ ระบบจะออกเลขอ้างอิงและบันทึกประวัติลูกค้าให้ครับ"
     else:
         docs = retrieve_ai_knowledge(" ".join([msg, str(slots.get("job_context", "")), str(slots.get("work_item", ""))]), limit=2)
-        is_pulley = any("pulley" in d.get("slug", "") for d in docs) or any(w in lower for w in ["มู่เลย์", "pulley", "ร่อง", "สายพาน"])
+        is_pulley = any("pulley" in d.get("slug", "") for d in docs) or any(w in lower for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "ร่อง", "สายพาน"])
         if is_pulley:
             prefix = f"รับข้อมูล {job_context} แล้วครับ มู่เลย์ต้องดูให้ตรงกับสายพานและการใช้งานจริง โดยร่อง A ใช้กับสายพาน A งานเบาถึงปานกลาง ส่วนร่อง B ใหญ่กว่าและส่งกำลังได้มากกว่า ห้ามสลับ A/B เพราะจะลื่นและกินสายพานได้"
             ask_map = {
@@ -1773,13 +1805,25 @@ def ai_sales_chat(payload: AISalesChat) -> dict[str, Any]:
     intent, score = classify_sales_intent(payload.message)
     session_customer_id = session_memory.get("customer_id", "") if session_memory else ""
     known_customer_id = session_customer_id or find_customer_id_from_payload(payload)
-    memory_before = load_customer_memory(known_customer_id) if known_customer_id else session_memory
-    if memory_before and session_memory and session_memory.get("quote_slots"):
-        merged_session_slots = merge_slots(memory_before.get("quote_slots", {}), session_memory.get("quote_slots", {}))
-        memory_before = dict(memory_before)
-        memory_before["quote_slots"] = merged_session_slots
+    customer_memory = load_customer_memory(known_customer_id) if known_customer_id else None
+    # Important: returning-customer memory may contain an old RFQ/job. Use it for identity/contact only;
+    # active quote slots must come from the current session/current message so the agent answers the latest question immediately.
+    memory_before = dict(session_memory or {}) if session_memory else {}
+    if customer_memory:
+        memory_before.setdefault("customer_id", known_customer_id)
+        memory_before["customer"] = customer_memory.get("customer", {"customer_id": known_customer_id})
+        session_slots = dict(memory_before.get("quote_slots") or {})
+        cust_contact = (customer_memory.get("quote_slots") or {}).get("contact") or {}
+        if cust_contact:
+            active_contact = dict(session_slots.get("contact") or {})
+            for ck, cv in cust_contact.items():
+                active_contact.setdefault(ck, cv)
+            session_slots["contact"] = active_contact
+        memory_before["quote_slots"] = session_slots
         if not memory_before.get("summary"):
-            memory_before["summary"] = session_memory.get("summary", "")
+            memory_before["summary"] = "ลูกค้าเดิม: ใช้ข้อมูลติดต่อเดิมได้ แต่ต้องตีความคำถามล่าสุดก่อน"
+    elif not memory_before:
+        memory_before = None
     reply = build_sales_reply(payload, intent, score, memory_before)
     lead = None
     contact = reply.get("quote_readiness", {}).get("slots", {}).get("contact", {})
