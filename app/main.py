@@ -568,17 +568,95 @@ class Product(BaseModel):
     safety_stock: int = 0
 
 
+def scalar_count(conn: sqlite3.Connection, query: str, params: tuple[Any, ...] = ()) -> int:
+    row = conn.execute(query, params).fetchone()
+    if not row:
+        return 0
+    try:
+        return int(row["c"] or 0)
+    except (KeyError, TypeError, ValueError):
+        return int(row[0] or 0)
+
+
+def base_health_counts(conn: sqlite3.Connection) -> dict[str, int]:
+    return {
+        "orders": scalar_count(conn, "SELECT COUNT(*) c FROM orders"),
+        "products": scalar_count(conn, "SELECT COUNT(*) c FROM products"),
+        "stock_events": scalar_count(conn, "SELECT COUNT(*) c FROM stock_ledger"),
+        "customers": scalar_count(conn, "SELECT COUNT(*) c FROM customers"),
+        "interactions": scalar_count(conn, "SELECT COUNT(*) c FROM interactions"),
+    }
+
+
 @app.get("/healthz")
 def healthz() -> dict[str, Any]:
     with db() as conn:
-        counts = {
-            "orders": conn.execute("SELECT COUNT(*) c FROM orders").fetchone()["c"],
-            "products": conn.execute("SELECT COUNT(*) c FROM products").fetchone()["c"],
-            "stock_events": conn.execute("SELECT COUNT(*) c FROM stock_ledger").fetchone()["c"],
-            "customers": conn.execute("SELECT COUNT(*) c FROM customers").fetchone()["c"],
-            "interactions": conn.execute("SELECT COUNT(*) c FROM interactions").fetchone()["c"],
-        }
+        counts = base_health_counts(conn)
     return {"status": "ok", "mode": CONNECTORS_MODE, "db": str(DB_PATH), "counts": counts}
+
+
+@app.get("/api/ops/health")
+def ops_health() -> dict[str, Any]:
+    """Public-safe operational health for Blutenstein/SuccessCasting monitoring.
+
+    This endpoint intentionally exposes only aggregate counts and configuration
+    booleans. It does not return customer PII, tokens, raw env values, or lead
+    message content, so Hermes/n8n/Cloudflare monitors can poll it safely.
+    """
+    now = datetime.now(timezone.utc)
+    since_24h = (now - timedelta(hours=24)).isoformat()
+    with db() as conn:
+        counts = base_health_counts(conn)
+        rfq_total = scalar_count(conn, "SELECT COUNT(*) c FROM rfq_requests")
+        open_handoffs = scalar_count(conn, "SELECT COUNT(*) c FROM handoff_tickets WHERE status='open'")
+        pending_tasks = scalar_count(conn, "SELECT COUNT(*) c FROM agent_tasks WHERE status NOT IN ('completed','closed','done')")
+        error_24h = scalar_count(conn, "SELECT COUNT(*) c FROM error_log WHERE created_at>=?", (since_24h,))
+        security_24h = scalar_count(conn, "SELECT COUNT(*) c FROM security_log WHERE created_at>=?", (since_24h,))
+        ai_events_24h = scalar_count(conn, "SELECT COUNT(*) c FROM ai_sales_events WHERE created_at>=?", (since_24h,))
+        rfq_24h = scalar_count(conn, "SELECT COUNT(*) c FROM rfq_requests WHERE created_at>=?", (since_24h,))
+        quotes_24h = scalar_count(conn, "SELECT COUNT(*) c FROM quote_records WHERE created_at>=?", (since_24h,))
+        uploads_24h = scalar_count(conn, "SELECT COUNT(*) c FROM uploaded_documents WHERE created_at>=?", (since_24h,))
+        urgent_rfqs = scalar_count(conn, "SELECT COUNT(*) c FROM rfq_requests WHERE priority IN ('urgent','high') AND status NOT IN ('closed','won','lost','completed')")
+    channels = channel_status()
+    ai_gateway_url = (os.getenv("AI_SALES_CLOUDFLARE_AI_GATEWAY_URL") or os.getenv("CLOUDFLARE_AI_GATEWAY_URL") or os.getenv("CF_AI_GATEWAY_URL") or "").strip()
+    llm_key_ready = bool((os.getenv("AI_SALES_GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("AI_SALES_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY") or "").strip())
+    status = "ok"
+    risks: list[str] = []
+    if error_24h >= int(os.getenv("OPS_ERROR_24H_WARN", "25")):
+        status = "degraded"
+        risks.append("error_log_24h_high")
+    if security_24h >= int(os.getenv("OPS_SECURITY_24H_WARN", "100")):
+        status = "degraded"
+        risks.append("security_log_24h_high")
+    if not llm_key_ready:
+        status = "degraded"
+        risks.append("llm_key_not_configured")
+    return {
+        "status": status,
+        "generated_at": now.isoformat(),
+        "mode": CONNECTORS_MODE,
+        "counts": counts,
+        "sales_pipeline": {
+            "rfq_total": rfq_total,
+            "rfq_new_24h": rfq_24h,
+            "quotes_new_24h": quotes_24h,
+            "uploads_new_24h": uploads_24h,
+            "open_handoffs": open_handoffs,
+            "urgent_open_rfqs": urgent_rfqs,
+            "pending_agent_tasks": pending_tasks,
+            "ai_events_24h": ai_events_24h,
+        },
+        "signals_24h": {"errors": error_24h, "security_events": security_24h},
+        "integrations": {
+            "line": bool(channels.get("line", {}).get("configured")),
+            "telegram": bool(channels.get("telegram", {}).get("configured")),
+            "instagram": bool(channels.get("instagram", {}).get("configured")),
+            "email": bool(channels.get("email", {}).get("configured")),
+            "llm": llm_key_ready,
+            "cloudflare_ai_gateway": bool(ai_gateway_url),
+        },
+        "risks": risks,
+    }
 
 
 @app.get("/", response_class=HTMLResponse)
