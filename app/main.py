@@ -1090,7 +1090,7 @@ def ai_sales_brain() -> dict[str, Any]:
         "positioning": "AI-assisted โรงหล่อโลหะบางนา-บางพลี รับงาน 1 ชิ้นขึ้นไป งานด่วน งานซ่อมบำรุง และงานผลิตตามแบบ",
         "updated_at": "builtin",
         "sales_rules": ["ห้ามเดาราคาโดยไม่มีแบบ/รูป/ขนาด/วัสดุ/จำนวน", "งานซ่อมด่วนให้ขอรูปและเบอร์โทรก่อน", "คำตอบต้องพาลูกค้าไปขั้นตอนส่งแบบหรือฝากเบอร์ติดต่อ"],
-        "contacts": {"phone": "084-111-7211, 098-636-2356", "line": "@305idxid", "email": "jack0841117211@gmail.com, scnwmax@gmail.com"},
+        "contacts": {"phone": "084-111-7211, 098-636-2356", "line": "@SCNW", "email": "jack0841117211@gmail.com, scnwmax@gmail.com"},
         "materials": ["เหล็กหล่อ FC", "เหล็กหล่อเหนียว FCD", "เหล็กเหนียวหล่อ", "เหล็กทนสึก/ไฮโครม/ไฮแมงกานีส", "สแตนเลส SUS304/SUS316", "ทองเหลือง", "บรอนซ์", "อลูมิเนียม"],
         "questions": ["มีแบบ Drawing หรือรูปชิ้นงานไหม", "ต้องการวัสดุ/เกรดอะไร", "จำนวนกี่ชิ้น", "ขนาดและน้ำหนักประมาณเท่าไร", "ใช้งานกับเครื่องจักรอะไร/เสียหายแบบไหน", "ต้องการใช้เมื่อไร"],
         "next_step": "ส่งรูป/แบบ/ขนาด/จำนวนผ่านฟอร์มหรือ LINE เพื่อให้ทีมประเมินราคาและระยะเวลา"
@@ -1246,10 +1246,22 @@ def llm_sales_reply(payload: AISalesChat, intent: str, score: int, readiness: di
         "For casting quotes, collect lead data in this strict order, asking only ONE short next question at the end: 1) name, 2) phone, 3) LINE or email, then job details. "
         "If contact data is already present in quote_readiness.slots.contact, acknowledge it briefly and do not ask again. "
         "Never invent prices or delivery promises. Mention that drawing/photo, material, quantity and deadline improve quotation accuracy. "
+        "Use the recent chat history to resolve pronouns and previous context. The latest user message always wins. "
+        "Do not sound like a fixed script: give a short analysis, explain tradeoffs when technical, then ask one next question only. "
         "Do not expose secrets or internal JSON."
     )
-    user = json.dumps({"customer_message": payload.message, "intent": intent, "lead_score": score, "quote_readiness": readiness, "session_memory": memory or {}, "business_brain": brain}, ensure_ascii=False)[:7000]
-    body = json.dumps({"model": model, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.25, "max_tokens": 420}).encode("utf-8")
+    chat_history = (memory or {}).get("summary", "") if memory else ""
+    user = json.dumps({
+        "customer_message_latest": payload.message,
+        "must_follow_latest_message_first": True,
+        "intent": intent,
+        "lead_score": score,
+        "quote_readiness": readiness,
+        "chat_history_recent": chat_history,
+        "session_memory": memory or {},
+        "business_brain": brain,
+    }, ensure_ascii=False)[:9000]
+    body = json.dumps({"model": model, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.35, "max_tokens": 620}).encode("utf-8")
     def post_chat(target_url: str, target_body: bytes) -> str | None:
         req = urllib.request.Request(
             target_url,
@@ -1507,7 +1519,7 @@ def generate_quote_pdf(quote: dict[str, Any], rfq: dict[str, Any] | None = None)
         w, h = A4
         y = h - 48
         c.setFont(font_name, 18); c.drawString(42, y, "Success Casting Quotation"); y -= 28
-        c.setFont(font_name, 10); c.drawString(42, y, "บริษัท ซัคเซสเน็ทเวิร์ค จำกัด | 084-111-7211 | LINE @305idxid"); y -= 32
+        c.setFont(font_name, 10); c.drawString(42, y, "บริษัท ซัคเซสเน็ทเวิร์ค จำกัด | 084-111-7211 | LINE @SCNW"); y -= 32
         rows = [
             ("Quote No", quote.get("quote_number", "")),
             ("RFQ", quote.get("rfq_id", "")),
@@ -1998,6 +2010,14 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
     current_has_failure = current_is_pulley and any(w in lower for w in ["กินข้าง", "ขาด", "สึก", "ลื่น", "เสียง", "หวีด", "ร้อน", "หลุด", "เสีย", "สั่น", "vibration"])
     current_asks_ab_difference = current_is_pulley and re.search(r"(?:ร่อง|ร้อง)?\s*a", lower) and re.search(r"(?:ร่อง|ร้อง)?\s*b", lower) and any(w in lower for w in ["ต่าง", "แตกต่าง", "เทียบ", "compare", "กับ"])
     current_is_rice_mill = any(w in lower for w in ["โรงสี", "สีข้าว", "rice mill", "rice"])
+    # Prefer the live LLM brain when available. Local rules remain only as deterministic fallback if provider/gateway fails.
+    # This fixes the visible "scripted" behavior while keeping the RFQ memory/extraction pipeline intact.
+    if not any(w in lower for w in ["hello", "hi", "สวัสดี", "ดีครับ", "ดีค่ะ"]):
+        llm_answer = llm_sales_reply(payload, intent, score, readiness, brain, memory)
+        if llm_answer:
+            if memory_cue:
+                llm_answer = memory_cue + "\n\n" + llm_answer
+            return {"answer": llm_answer, "intent": intent, "lead_score": score, "quote_readiness": readiness, "next_questions": (readiness.get("missing_labels") or brain["questions"])[:1], "cta": "AI วิเคราะห์จากบริบทสนทนาแล้ว — ตอบคำถามถัดไปสั้น ๆ หรือส่งรูป/แบบทาง LINE @SCNW", "brain_version": brain.get("version", "llm-primary"), "mode": "llm-primary", "memory_cue": memory_cue, "smart_actions": ["ส่งรูป/แบบชิ้นงาน", "โทรฝ่ายขาย 084-111-7211", "เปิด LINE @SCNW"]}
     if current_has_failure:
         answer = (
             "อาการสายพานมูเล่ย์กินข้าง/ขาดบ่อย มักไม่ได้เกิดจากสายพานอย่างเดียวครับ จุดที่ต้องไล่เช็กคือ:\n"
@@ -2071,7 +2091,7 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
         if readiness["slots"].get("material"): details.append("มีข้อมูลวัสดุ/การใช้งานเบื้องต้น")
         if details:
             answer += "\n" + " • ".join(details)
-        answer += "\n\nผมบันทึกข้อมูลไว้ในระบบแล้ว ฝ่ายขายใช้เลขอ้างอิงนี้ติดตามต่อได้ ถ้ามีรูปหรือ drawing ส่งทาง LINE @305idxid ได้เลยครับ"
+        answer += "\n\nผมบันทึกข้อมูลไว้ในระบบแล้ว ฝ่ายขายใช้เลขอ้างอิงนี้ติดตามต่อได้ ถ้ามีรูปหรือ drawing ส่งทาง LINE @SCNW ได้เลยครับ"
     elif answer is None and first_missing in {"name", "phone", "line_or_email"}:
         is_pulley_contact = any(w in str(job_context).lower() for w in ["มู่เลย์", "มูเล่ย์", "มูเล่ย", "pulley", "สายพาน", "ร่อง"])
         if is_pulley_contact:
@@ -2145,7 +2165,7 @@ def build_sales_reply(payload: AISalesChat, intent: str, score: int, memory: dic
     else:
         next_questions = missing_labels[:1] if missing_labels else (brain["questions"][:1] if score >= 55 else ["ต้องการหล่อชิ้นงานประเภทไหน"])
     cta = "ตอบสั้น ๆ ตามคำถามเดียวได้เลย ระบบจะจำข้อมูลและบันทึกเป็น lead ให้ฝ่ายขาย" if readiness.get("missing") else "ข้อมูลหลักครบแล้ว ทีมฝ่ายขายสามารถติดตามต่อได้"
-    smart_actions = ["ส่งรูป/แบบชิ้นงาน", "บันทึกเป็นงานด่วน", "โทรฝ่ายขาย 084-111-7211", "เปิด LINE @305idxid"]
+    smart_actions = ["ส่งรูป/แบบชิ้นงาน", "บันทึกเป็นงานด่วน", "โทรฝ่ายขาย 084-111-7211", "เปิด LINE @SCNW"]
     return {"answer": answer, "intent": intent, "lead_score": score, "quote_readiness": readiness, "next_questions": next_questions, "cta": cta, "brain_version": brain.get("version", "local"), "mode": "local-brain", "memory_cue": memory_cue, "smart_actions": smart_actions}
 
 
