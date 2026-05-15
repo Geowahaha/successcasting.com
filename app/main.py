@@ -1927,13 +1927,23 @@ def telegram_chat_id() -> str:
     return env_first("TELEGRAM_CHAT_ID", "TG_CHAT_ID", "successcasting_Telegram_ID", "SUCCESSCASTING_TELEGRAM_CHAT_ID")
 
 
-def send_telegram_notify(message: str) -> dict[str, Any]:
-    token = telegram_bot_token()
-    chat_id = telegram_chat_id()
+def discover_telegram_chat_id(token: str) -> str:
     if not token:
-        return {"status": "skipped", "reason": "TELEGRAM_BOT_TOKEN/TG_BOT_TOKEN missing"}
-    if not chat_id:
-        return {"status": "skipped", "reason": "TELEGRAM_CHAT_ID/TG_CHAT_ID missing"}
+        return ""
+    try:
+        with urllib.request.urlopen(f"https://api.telegram.org/bot{token}/getUpdates", timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8", "ignore"))
+        for item in reversed(data.get("result", [])):
+            msg = item.get("message") or item.get("channel_post") or item.get("edited_message") or {}
+            chat = msg.get("chat") or {}
+            if chat.get("id"):
+                return str(chat["id"])
+    except Exception:
+        return ""
+    return ""
+
+
+def _telegram_send(token: str, chat_id: str, message: str) -> dict[str, Any]:
     body = json.dumps({"chat_id": chat_id, "text": message[:3900], "disable_web_page_preview": True}, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         f"https://api.telegram.org/bot{token}/sendMessage",
@@ -1941,12 +1951,34 @@ def send_telegram_notify(message: str) -> dict[str, Any]:
         headers={"content-type": "application/json", "user-agent": "SuccessCastingFactory/1.0"},
         method="POST",
     )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        raw = resp.read().decode("utf-8", "ignore")[:300]
+        return {"status": "sent", "http_status": resp.status, "response": raw}
+
+
+def send_telegram_notify(message: str) -> dict[str, Any]:
+    token = telegram_bot_token()
+    chat_id = telegram_chat_id()
+    if not token:
+        return {"status": "skipped", "reason": "TELEGRAM_BOT_TOKEN/TG_BOT_TOKEN missing"}
+    if not chat_id:
+        chat_id = discover_telegram_chat_id(token)
+    if not chat_id:
+        return {"status": "skipped", "reason": "Telegram chat not linked yet; send /start to the bot or add it to the target group"}
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            raw = resp.read().decode("utf-8", "ignore")[:300]
-            return {"status": "sent", "http_status": resp.status, "response": raw}
+        return _telegram_send(token, chat_id, message)
     except urllib.error.HTTPError as exc:
         raw = exc.read().decode("utf-8", "ignore")[:500]
+        if exc.code == 400 and "chat not found" in raw.lower():
+            discovered = discover_telegram_chat_id(token)
+            if discovered and discovered != chat_id:
+                try:
+                    result = _telegram_send(token, discovered, message)
+                    result["discovered_chat"] = True
+                    return result
+                except Exception as retry_exc:
+                    return {"status": "failed", "http_status": exc.code, "error": raw or str(exc), "retry_error": f"{type(retry_exc).__name__}: {str(retry_exc)[:160]}"}
+            return {"status": "skipped", "http_status": exc.code, "reason": "Telegram chat not found; send /start to @Success2001_bot or add bot to the group, then rerun"}
         return {"status": "failed", "http_status": exc.code, "error": raw or str(exc)}
     except Exception as exc:
         return {"status": "failed", "error": f"{type(exc).__name__}: {str(exc)[:240]}"}
