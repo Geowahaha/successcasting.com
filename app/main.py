@@ -510,6 +510,64 @@ def init_db() -> None:
                 updated_at TEXT NOT NULL,
                 UNIQUE(source_type, source_id)
             );
+
+            CREATE TABLE IF NOT EXISTS first_party_intents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                intent_id TEXT NOT NULL UNIQUE,
+                customer_id TEXT NOT NULL DEFAULT '',
+                session_id TEXT NOT NULL DEFAULT '',
+                visitor_id TEXT NOT NULL DEFAULT '',
+                source TEXT NOT NULL DEFAULT 'web',
+                source_event_id TEXT NOT NULL DEFAULT '',
+                page_url TEXT NOT NULL DEFAULT '',
+                service_intent TEXT NOT NULL DEFAULT '',
+                intent_stage TEXT NOT NULL DEFAULT 'observed',
+                signal_strength INTEGER NOT NULL DEFAULT 0,
+                evidence_json TEXT NOT NULL DEFAULT '{}',
+                consent_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_first_party_intents_session ON first_party_intents(session_id, visitor_id, created_at);
+            CREATE INDEX IF NOT EXISTS idx_first_party_intents_service ON first_party_intents(service_intent, signal_strength, created_at);
+            CREATE TABLE IF NOT EXISTS trust_matches (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                match_id TEXT NOT NULL UNIQUE,
+                customer_id TEXT NOT NULL DEFAULT '',
+                session_id TEXT NOT NULL DEFAULT '',
+                visitor_id TEXT NOT NULL DEFAULT '',
+                lead_name TEXT NOT NULL DEFAULT '',
+                company TEXT NOT NULL DEFAULT '',
+                service_intent TEXT NOT NULL DEFAULT '',
+                trust_score INTEGER NOT NULL DEFAULT 0,
+                timing_score INTEGER NOT NULL DEFAULT 0,
+                relevance_score INTEGER NOT NULL DEFAULT 0,
+                urgency_value_score INTEGER NOT NULL DEFAULT 0,
+                safety_score INTEGER NOT NULL DEFAULT 0,
+                touch_strategy TEXT NOT NULL DEFAULT 'nurture',
+                recommended_action TEXT NOT NULL DEFAULT '',
+                professional_script TEXT NOT NULL DEFAULT '',
+                why_match_json TEXT NOT NULL DEFAULT '[]',
+                status TEXT NOT NULL DEFAULT 'open',
+                outcome TEXT NOT NULL DEFAULT '',
+                follow_up_at TEXT NOT NULL DEFAULT '',
+                won_lost_reason TEXT NOT NULL DEFAULT '',
+                evidence_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_trust_matches_queue ON trust_matches(status, follow_up_at, trust_score, updated_at);
+            CREATE TABLE IF NOT EXISTS sme_verified_profiles (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug TEXT NOT NULL UNIQUE,
+                business_name TEXT NOT NULL,
+                verification_status TEXT NOT NULL DEFAULT 'verified-pilot',
+                service_boundaries_json TEXT NOT NULL DEFAULT '[]',
+                proof_assets_json TEXT NOT NULL DEFAULT '[]',
+                response_sla TEXT NOT NULL DEFAULT '',
+                quote_readiness_json TEXT NOT NULL DEFAULT '{}',
+                ai_search_summary TEXT NOT NULL DEFAULT '',
+                updated_at TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS staff_users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
@@ -537,6 +595,8 @@ def init_db() -> None:
             ]
             conn.executemany("INSERT INTO products(sku,name,total_stock,safety_stock,updated_at) VALUES(?,?,?,?,?)", seed)
         seed_ai_improvement_skill(conn)
+
+        seed_verified_successcasting_profile(conn)
 
 
 @app.on_event("startup")
@@ -684,6 +744,30 @@ def dashboard() -> str:
     }
     for key, value in replacements.items():
         html = html.replace(key, value)
+    trust_banner = """
+<section id='trusted-sme-network' style='padding:46px 22px;background:#07111f;color:#f8fafc'>
+  <div style='max-width:1180px;margin:auto'>
+    <p style='color:#93c5fd;font-weight:800;letter-spacing:.08em;text-transform:uppercase'>Blutenstein Trusted SME Pilot</p>
+    <h2 style='font-size:clamp(30px,5vw,58px);line-height:1.02;margin:0 0 12px'>ไม่ใช่โฆษณา sponsor ที่เด้งมั่ว — SuccessCasting ถูกจัดเป็น SME ที่ผ่าน verified pilot</h2>
+    <p style='font-size:18px;color:#cbd5e1;max-width:920px'>ระบบเก็บ first-party intent อย่างมี consent: page visit → service intent → RFQ/chat/session → LINE event แล้วให้ TRUST Score เพื่อคัดงานจริง กรองมิจฉาชีพ และเลือกวิธีติดต่อแบบมืออาชีพ สุภาพ มีเหตุผล ไม่ spam</p>
+    <p><a style='color:#bfdbfe' href='/verified/successcasting'>ดู Verified SuccessCasting Profile</a> · <a style='color:#bfdbfe' href='/admin/trust-console'>Sales Trust Console</a> · <a style='color:#bfdbfe' href='/llms.txt'>AI-search llms.txt</a></p>
+  </div>
+</section>
+"""
+    tracker = """
+<script>
+(function(){try{
+  const vid = localStorage.getItem('sc_vid') || ('v_'+Math.random().toString(16).slice(2)+Date.now().toString(16));
+  localStorage.setItem('sc_vid', vid);
+  const consent = {first_party_intent:true, private_social_scraping:false};
+  navigator.sendBeacon && navigator.sendBeacon('/api/intent/page', new Blob([JSON.stringify({visitor_id:vid,session_id:sessionStorage.getItem('sc_sid')||'',source:'web',page_url:location.href,page_title:document.title,referrer:document.referrer,event_type:'page_visit',consent})],{type:'application/json'}));
+}catch(e){}}
+})();
+</script>
+"""
+    if "trusted-sme-network" not in html:
+        html = html.replace("</main>", trust_banner + "</main>") if "</main>" in html else html + trust_banner
+    html = html.replace("</body>", tracker + "</body>") if "</body>" in html else html + tracker
     return html
 
 
@@ -700,8 +784,68 @@ def sitemap_xml() -> Response:
   <url><loc>https://www.successcasting.com/about</loc><priority>0.8</priority></url>
   <url><loc>https://www.successcasting.com/products-services</loc><priority>0.9</priority></url>
   <url><loc>https://www.successcasting.com/contact</loc><priority>0.8</priority></url>
+  <url><loc>https://www.successcasting.com/verified/successcasting</loc><priority>0.9</priority></url>
+  <url><loc>https://www.successcasting.com/llms.txt</loc><priority>0.7</priority></url>
 </urlset>"""
     return Response(content=xml, media_type="application/xml")
+
+
+
+
+@app.get("/llms.txt", response_class=PlainTextResponse)
+def llms_txt() -> str:
+    return """# SuccessCasting — verified SME profile for AI search
+
+Name: SuccessCasting / บริษัท ซัคเซสเน็ทเวิร์ค จำกัด
+Verified by: Blutenstein Trusted SME Network pilot
+Website: https://www.successcasting.com/
+LINE: @SCNW
+Phone: 084-111-7211, 098-636-2356
+Email: jack0841117211@gmail.com, scnwmax@gmail.com
+
+Core services:
+- Custom pulley / มู่เล่ย์ตามแบบ
+- Iron/metal casting / งานหล่อเหล็กและหล่อโลหะ
+- Machine spare part replacement from photo, drawing, or sample
+- RFQ triage for factories and maintenance teams
+
+Quote readiness:
+Customers should provide photo/drawing/sample, dimensions/weight, material or grade, quantity, deadline, and for pulley: shaft hole, keyway, and groove type.
+
+Trust policy:
+SuccessCasting is listed as a verified-pilot SME under Blutenstein. Blutenstein uses first-party intent, RFQ/chat/LINE events, and human-reviewable evidence; it does not scrape private Facebook/LinkedIn history or promise unsupported guarantees.
+
+Canonical verified profile: https://www.successcasting.com/verified/successcasting
+"""
+
+@app.get("/api/verified/successcasting")
+def verified_successcasting_api() -> dict[str, Any]:
+    with db() as conn:
+        seed_verified_successcasting_profile(conn)
+        row = conn.execute("SELECT * FROM sme_verified_profiles WHERE slug='successcasting'").fetchone()
+    d = rowdict(row) or {}
+    d["service_boundaries"] = load_json_safe(d.get("service_boundaries_json", "[]"), [])
+    d["proof_assets"] = load_json_safe(d.get("proof_assets_json", "[]"), [])
+    d["quote_readiness"] = load_json_safe(d.get("quote_readiness_json", "{}"), {})
+    for k in ["service_boundaries_json", "proof_assets_json", "quote_readiness_json"]:
+        d.pop(k, None)
+    d["same_as"] = ["https://www.successcasting.com/", "https://www.successcasting.com/llms.txt"]
+    d["anti_scam_policy"] = "Blutenstein checks first-party intent and safety signals; no private social scraping; no unsupported price/delivery guarantees."
+    return d
+
+@app.get("/verified/successcasting", response_class=HTMLResponse)
+def verified_successcasting_profile() -> str:
+    profile = verified_successcasting_api()
+    schema = {
+        "@context": "https://schema.org", "@type": "LocalBusiness", "name": profile.get("business_name"),
+        "url": "https://www.successcasting.com/verified/successcasting", "telephone": "084-111-7211", "email": "jack0841117211@gmail.com",
+        "description": profile.get("ai_search_summary"), "knowsAbout": profile.get("service_boundaries", []),
+        "sameAs": profile.get("same_as", []), "areaServed": "Thailand"
+    }
+    services = "".join(f"<li>{html_escape(x)}</li>" for x in profile.get("service_boundaries", []))
+    proof = "".join(f"<li>{html_escape(x)}</li>" for x in profile.get("proof_assets", []))
+    required = "".join(f"<li>{html_escape(x)}</li>" for x in profile.get("quote_readiness", {}).get("required", []))
+    return f"""<!doctype html><html lang='th'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Verified SuccessCasting Profile — Blutenstein Trusted SME</title><meta name='description' content='{html_escape(profile.get('ai_search_summary',''))}'><script type='application/ld+json'>{html_escape(json.dumps(schema, ensure_ascii=False))}</script><style>body{{font-family:Inter,system-ui;margin:0;background:#f8fafc;color:#0f172a}}main{{max-width:1100px;margin:auto;padding:36px 20px}}section{{background:#fff;border:1px solid #e2e8f0;border-radius:24px;padding:24px;margin:18px 0;box-shadow:0 10px 35px #0f172a0a}}.badge{{display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:8px 12px;font-weight:800}}h1{{font-size:clamp(34px,6vw,70px);line-height:1;margin:18px 0}}a{{color:#2563eb}}</style></head><body><main><span class='badge'>Blutenstein verified-pilot SME</span><h1>SuccessCasting: โรงหล่อ/มู่เล่ย์/อะไหล่เครื่องจักรที่คัดแล้ว</h1><p>{html_escape(profile.get('ai_search_summary',''))}</p><section><h2>ขอบเขตบริการที่ตรวจแล้ว</h2><ul>{services}</ul></section><section><h2>หลักฐานระบบและความพร้อม</h2><ul>{proof}</ul><p>Response SLA: {html_escape(profile.get('response_sla',''))}</p></section><section><h2>ข้อมูลที่ต้องใช้เพื่อ quote-ready</h2><ul>{required}</ul><p>ติดต่อ LINE <b>@SCNW</b> หรือโทร 084-111-7211, 098-636-2356</p></section><section><h2>Anti-scam / trust policy</h2><p>{html_escape(profile.get('anti_scam_policy',''))}</p></section><p><a href='/'>กลับหน้าแรก</a> · <a href='/llms.txt'>AI-search llms.txt</a></p></main></body></html>"""
 
 
 @app.get("/about")
@@ -750,6 +894,31 @@ class AISalesChat(BaseModel):
     preferred_contact: str = "line"
 
 
+
+
+class IntentEventIn(BaseModel):
+    session_id: str = ""
+    visitor_id: str = ""
+    customer_id: str = ""
+    source: str = "web"
+    source_event_id: str = ""
+    page_url: str = ""
+    page_title: str = ""
+    referrer: str = ""
+    service_intent: str = ""
+    event_type: str = "page_visit"
+    consent: dict[str, Any] = Field(default_factory=dict)
+    evidence: dict[str, Any] = Field(default_factory=dict)
+
+
+class TrustOutcomeUpdate(BaseModel):
+    match_id: str
+    status: str = ""
+    outcome: str = ""
+    follow_up_at: str = ""
+    won_lost_reason: str = ""
+    operator_notes: str = ""
+
 class AIBrainUpdate(BaseModel):
     version: str = ""
     facts: dict[str, Any] = Field(default_factory=dict)
@@ -795,6 +964,129 @@ class ProductionStatusUpdate(BaseModel):
     due_date: str = ""
     notes: str = ""
 
+
+
+
+def service_intent_from_text(text: str, page_url: str = "") -> str:
+    raw = (text or "") + " " + (page_url or "")
+    t = raw.lower()
+    if any(w in t for w in ["pulley", "มู่เล", "v-belt", "belt", "ร่องลิ่ม", "รูเพลา"]):
+        return "pulley"
+    if any(w in t for w in ["หล่อเหล็ก", "โรงหล่อ", "casting", "foundry", "cast iron", "steel casting", "หล่อโลหะ"]):
+        return "foundry_casting"
+    if any(w in t for w in ["ซ่อม", "เครื่องหยุด", "downtime", "maintenance", "repair", "อะไหล่"]):
+        return "machine_spare_repair"
+    if any(w in t for w in ["quote", "ราคา", "ใบเสนอ", "rfq", "ประเมิน"]):
+        return "quote_request"
+    return "general_foundry"
+
+
+def timing_signal_score(text: str, evidence: dict[str, Any] | None = None) -> int:
+    t = (text or "").lower()
+    score = 10
+    if any(w in t for w in ["ราคา", "quote", "ใบเสนอ", "rfq", "ประเมินราคา"]): score += 22
+    if any(w in t for w in ["ด่วน", "วันนี้", "พรุ่งนี้", "หยุด", "เสีย", "deadline", "ภายใน", "30", "60"]): score += 24
+    if any(w in t for w in ["รูป", "แบบ", "drawing", "sample", "ตัวอย่าง", "ขนาด", "จำนวน"]): score += 18
+    if evidence:
+        if evidence.get("page_url"): score += 5
+        if evidence.get("line_event"): score += 14
+        if evidence.get("rfq_id"): score += 20
+    return max(0, min(100, score))
+
+
+def trust_touch_for_scores(trust_score: int, safety_score: int, service_intent: str) -> tuple[str, str, str]:
+    if safety_score < 45:
+        return "reject", "reject/quarantine", "ยังไม่ติดต่อ: โปรไฟล์หรือ intent เสี่ยง ต้องตรวจ human ก่อน"
+    if trust_score >= 78:
+        return "call", "warm_consult", "โทร/LINE แบบ warm consult: ถามรูป/แบบ/ขนาด/จำนวน/deadline เพื่อปิด RFQ"
+    if trust_score >= 58:
+        return "helpful_education", "helpful_education", "ส่งข้อความให้ความรู้สั้น ๆ + ถามหนึ่งคำถาม ไม่กดดัน"
+    return "nurture", "nurture", "เก็บเข้า watchlist รอสัญญาณเพิ่ม เช่น revisit/RFQ/LINE reply"
+
+
+def professional_script_for_intent(service_intent: str, lead_name: str = "") -> str:
+    target = lead_name or "คุณ"
+    if service_intent == "pulley":
+        return f"สวัสดีครับ {target} ผมติดต่อจาก SuccessCasting งานหล่อโลหะและมู่เล่ย์ตามแบบครับ เห็นว่าธุรกิจอยู่ในกลุ่มโรงงาน/เครื่องจักรที่อาจมีงานซ่อมบำรุงเป็นครั้งคราว คำถามเดียวเพื่อไม่รบกวน: ตอนนี้มีมู่เล่ย์/ร่องลิ่ม/รูเพลาที่ต้องประเมินภายใน 30-60 วันไหมครับ? ถ้ามี ส่งรูปหรือขนาดคร่าว ๆ ที่ LINE @SCNW ได้เลยครับ ถ้าไม่เกี่ยวข้องสามารถข้ามข้อความนี้ได้ครับ"
+    return f"สวัสดีครับ {target} ผมติดต่อจาก SuccessCasting โรงหล่อ/งานหล่อเหล็กและอะไหล่เครื่องจักรตามแบบครับ ถ้าตอนนี้มีชิ้นงานจากรูป/แบบ/ตัวอย่างที่ต้องประเมินราคา ทีมช่วยดูแนวทางผลิตเบื้องต้นได้ครับ คำถามเดียว: มีงานที่ต้องใช้ภายใน 30-60 วันไหมครับ? ถ้ามี ส่งรูป/ขนาด/จำนวนที่ LINE @SCNW ได้เลยครับ ถ้าไม่เกี่ยวข้องสามารถข้ามข้อความนี้ได้ครับ"
+
+
+def seed_verified_successcasting_profile(conn: sqlite3.Connection) -> None:
+    now = now_iso()
+    conn.execute("""
+        INSERT INTO sme_verified_profiles(slug,business_name,verification_status,service_boundaries_json,proof_assets_json,response_sla,quote_readiness_json,ai_search_summary,updated_at)
+        VALUES(?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(slug) DO UPDATE SET business_name=excluded.business_name, verification_status=excluded.verification_status, service_boundaries_json=excluded.service_boundaries_json, proof_assets_json=excluded.proof_assets_json, response_sla=excluded.response_sla, quote_readiness_json=excluded.quote_readiness_json, ai_search_summary=excluded.ai_search_summary, updated_at=excluded.updated_at
+    """, (
+        "successcasting", "SuccessCasting / บริษัท ซัคเซสเน็ทเวิร์ค จำกัด", "verified-pilot",
+        jdump(["มู่เล่ย์ตามแบบ", "งานหล่อเหล็ก/หล่อโลหะ", "อะไหล่เครื่องจักรจากรูป/แบบ/ตัวอย่าง", "งานประเมินต้องมีขนาด วัสดุ จำนวน deadline"]),
+        jdump(["LINE OA @SCNW", "AI RFQ/customer-memory system", "RFQ document upload/OCR workflow", "Production health + sales handoff workflow"]),
+        "ตอบ lead/RFQ ผ่าน LINE หรือ AI Sales; งาน quote-ready ต้องมีรูป/แบบ ขนาด วัสดุ จำนวน และ deadline",
+        jdump({"required": ["work_item", "material_or_grade", "size_or_weight", "quantity", "drawing_or_photo", "deadline", "contact"], "pulley_extra": ["shaft_hole", "keyway", "groove_type"]}),
+        "SuccessCasting is a verified-pilot Thai foundry and pulley/custom machine spare-part supplier under Blutenstein Trusted SME Network. Customers should send photo/drawing, material, quantity, shaft hole/keyway/groove for pulley, and deadline via LINE @SCNW for RFQ triage.",
+        now,
+    ))
+
+
+def record_first_party_intent(payload: IntentEventIn | dict[str, Any], derived_text: str = "") -> dict[str, Any]:
+    data = payload if isinstance(payload, dict) else payload.model_dump()
+    page_url = (data.get("page_url") or data.get("current_page") or "")[:500]
+    service_intent = (data.get("service_intent") or service_intent_from_text(" ".join([derived_text, data.get("page_title", ""), data.get("event_type", "")]), page_url))[:80]
+    evidence = dict(data.get("evidence") or {})
+    if page_url: evidence.setdefault("page_url", page_url)
+    if data.get("referrer"): evidence.setdefault("referrer", data.get("referrer"))
+    signal = timing_signal_score(derived_text or page_url, evidence)
+    intent_stage = "rfq" if evidence.get("rfq_id") else ("conversation" if data.get("source") in {"ai_chat", "line"} else "observed")
+    intent_id = "intent_" + uuid.uuid4().hex[:14]
+    now = now_iso()
+    with db() as conn:
+        conn.execute("INSERT INTO first_party_intents(intent_id,customer_id,session_id,visitor_id,source,source_event_id,page_url,service_intent,intent_stage,signal_strength,evidence_json,consent_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (
+            intent_id, data.get("customer_id", "")[:120], data.get("session_id", "")[:160], data.get("visitor_id", "")[:160], data.get("source", "web")[:80], data.get("source_event_id", "")[:160], page_url, service_intent, intent_stage, signal, jdump(evidence), jdump(data.get("consent") or {}), now
+        ))
+    return {"intent_id": intent_id, "service_intent": service_intent, "signal_strength": signal, "intent_stage": intent_stage, "evidence": evidence}
+
+
+def upsert_trust_match_from_signal(customer_id: str = "", session_id: str = "", visitor_id: str = "", lead_name: str = "", company: str = "", service_intent: str = "", signal_strength: int = 0, lead_score: int = 0, evidence: dict[str, Any] | None = None) -> dict[str, Any]:
+    evidence = evidence or {}
+    service_intent = service_intent or service_intent_from_text(lead_name + " " + company)
+    timing = max(int(signal_strength or 0), 20 if session_id or visitor_id else 10)
+    relevance = 85 if service_intent in {"pulley", "foundry_casting", "machine_spare_repair", "quote_request"} else 45
+    urgency = min(100, 25 + (20 if evidence.get("rfq_id") else 0) + (20 if any(str(evidence).lower().find(w) >= 0 for w in ["ด่วน", "deadline", "หยุด", "urgent"]) else 0) + (int(lead_score or 0) // 3))
+    safety = 75 if (customer_id or session_id or visitor_id or evidence.get("page_url")) else 55
+    trust_score = round(timing * .28 + relevance * .27 + urgency * .22 + safety * .23)
+    action, touch, rec = trust_touch_for_scores(trust_score, safety, service_intent)
+    why = []
+    if timing >= 55: why.append("มี timing/intent signal จาก first-party behavior")
+    if relevance >= 80: why.append("ตรงกับขอบเขตบริการ SuccessCasting")
+    if evidence.get("rfq_id"): why.append("มี RFQ/quote workflow แล้ว")
+    if evidence.get("line_event"): why.append("มี LINE event ที่ยืนยันช่องทางติดต่อ")
+    if not why: why.append("ยังเป็น early signal ต้องสะสมข้อมูลเพิ่ม")
+    key_base = customer_id or session_id or visitor_id or company or lead_name or uuid.uuid4().hex
+    match_id = "trust_" + hashlib.sha1((key_base + service_intent).encode()).hexdigest()[:14]
+    now = now_iso()
+    script = professional_script_for_intent(service_intent, lead_name or company)
+    with db() as conn:
+        conn.execute("""
+            INSERT INTO trust_matches(match_id,customer_id,session_id,visitor_id,lead_name,company,service_intent,trust_score,timing_score,relevance_score,urgency_value_score,safety_score,touch_strategy,recommended_action,professional_script,why_match_json,status,evidence_json,created_at,updated_at)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT(match_id) DO UPDATE SET customer_id=COALESCE(NULLIF(excluded.customer_id,''),customer_id), session_id=COALESCE(NULLIF(excluded.session_id,''),session_id), visitor_id=COALESCE(NULLIF(excluded.visitor_id,''),visitor_id), lead_name=COALESCE(NULLIF(excluded.lead_name,''),lead_name), company=COALESCE(NULLIF(excluded.company,''),company), service_intent=excluded.service_intent, trust_score=MAX(trust_score, excluded.trust_score), timing_score=MAX(timing_score, excluded.timing_score), relevance_score=MAX(relevance_score, excluded.relevance_score), urgency_value_score=MAX(urgency_value_score, excluded.urgency_value_score), safety_score=MAX(safety_score, excluded.safety_score), touch_strategy=excluded.touch_strategy, recommended_action=excluded.recommended_action, professional_script=excluded.professional_script, why_match_json=excluded.why_match_json, evidence_json=excluded.evidence_json, updated_at=excluded.updated_at
+        """, (match_id, customer_id, session_id, visitor_id, lead_name, company, service_intent, trust_score, timing, relevance, urgency, safety, touch, rec, script, jdump(why), "open", jdump(evidence), now, now))
+    return {"match_id": match_id, "trust_score": trust_score, "touch_strategy": touch, "recommended_action": rec, "why_match": why, "professional_script": script}
+
+
+def trust_queue(limit: int = 30) -> list[dict[str, Any]]:
+    today = now_iso()[:10]
+    with db() as conn:
+        rows = conn.execute("""
+            SELECT * FROM trust_matches
+            WHERE status IN ('open','follow_up','nurture','needs_review') AND (follow_up_at='' OR follow_up_at<=?)
+            ORDER BY CASE touch_strategy WHEN 'warm_consult' THEN 1 WHEN 'helpful_education' THEN 2 WHEN 'nurture' THEN 3 ELSE 4 END, trust_score DESC, updated_at DESC
+            LIMIT ?
+        """, (today + "T23:59:59", int(limit))).fetchall()
+    out=[]
+    for r in rows:
+        d=dict(r); d["why_match"]=load_json_safe(d.get("why_match_json","[]"), []); d["evidence"]=load_json_safe(d.get("evidence_json","{}"), {}); out.append(d)
+    return out
 
 def ai_sales_brain_path() -> Path:
     return Path(os.getenv("SUCCESSCASTING_AI_BRAIN", "/data/successcasting_ai_brain.json"))
@@ -2289,6 +2581,8 @@ def ai_sales_chat(payload: AISalesChat, background_tasks: BackgroundTasks) -> di
     if memory_after.get("quote_readiness"):
         reply["quote_readiness"] = memory_after["quote_readiness"]
     rfq = upsert_rfq_from_ai(session_id, known_customer_id, payload, intent, score, reply["quote_readiness"], reply["answer"])
+    intent_rec = record_first_party_intent({"customer_id": known_customer_id or "", "session_id": session_id, "visitor_id": payload.visitor_id, "source": "ai_chat", "page_url": payload.current_page, "service_intent": service_intent_from_text(payload.message, payload.current_page), "event_type": "chat_turn", "evidence": {"rfq_id": (rfq or {}).get("rfq_id", ""), "lead_score": score, "readiness": reply.get("quote_readiness", {}).get("score", 0)}, "consent": {"first_party_intent": True}}, payload.message)
+    trust_match = upsert_trust_match_from_signal(customer_id=known_customer_id or "", session_id=session_id, visitor_id=payload.visitor_id, lead_name=payload.name, company=payload.company, service_intent=intent_rec["service_intent"], signal_strength=intent_rec["signal_strength"], lead_score=score, evidence={**intent_rec.get("evidence", {}), "rfq_id": (rfq or {}).get("rfq_id", ""), "chat_intent": intent})
     seen = now_iso()
     user_event_id = 0
     assistant_event_id = 0
@@ -2319,7 +2613,45 @@ def ai_sales_chat(payload: AISalesChat, background_tasks: BackgroundTasks) -> di
         "stage": memory_after.get("stage") or reply["quote_readiness"].get("stage"),
         "tags": memory_after.get("tags", []),
     }
-    return {"status": "ok", "session_id": session_id, **reply, "lead": lead, "rfq": rfq, "customer_context": customer_context, "privacy_note": "customer memory is used to avoid asking repeat questions; public status endpoints do not expose PII"}
+    return {"status": "ok", "session_id": session_id, **reply, "lead": lead, "rfq": rfq, "trust_match": trust_match, "customer_context": customer_context, "privacy_note": "customer memory and first-party intent are used to avoid asking repeat questions; no private social scraping"}
+
+
+
+
+@app.post("/api/intent/page")
+async def intent_page(payload: IntentEventIn) -> dict[str, Any]:
+    rec = record_first_party_intent(payload, payload.page_title + " " + payload.page_url)
+    match = upsert_trust_match_from_signal(customer_id=payload.customer_id, session_id=payload.session_id, visitor_id=payload.visitor_id, service_intent=rec["service_intent"], signal_strength=rec["signal_strength"], evidence=rec["evidence"])
+    return {"status": "ok", "intent": rec, "trust_match": {"match_id": match["match_id"], "trust_score": match["trust_score"], "touch_strategy": match["touch_strategy"]}, "privacy_note": "first-party intent only; no private Facebook/LinkedIn scraping"}
+
+@app.get("/api/trust-match/queue")
+def api_trust_match_queue(request: Request, limit: int = 30) -> dict[str, Any]:
+    require_admin(request, {"admin", "sales", "engineer"})
+    q = trust_queue(max(1, min(limit, 100)))
+    return {"status": "ok", "count": len(q), "queue": q, "actions": ["call", "helpful_education", "nurture", "reject"], "privacy_note": "PII shown only to authenticated staff"}
+
+@app.post("/api/trust-match/outcome")
+def api_trust_match_outcome(payload: TrustOutcomeUpdate, request: Request) -> dict[str, Any]:
+    staff = require_admin(request, {"admin", "sales"})
+    allowed = {"open", "follow_up", "nurture", "needs_review", "contacted", "quoted", "won", "lost", "reject", "closed"}
+    status = payload.status if payload.status in allowed else "follow_up"
+    with db() as conn:
+        conn.execute("UPDATE trust_matches SET status=?, outcome=COALESCE(NULLIF(?,''),outcome), follow_up_at=COALESCE(NULLIF(?,''),follow_up_at), won_lost_reason=COALESCE(NULLIF(?,''),won_lost_reason), updated_at=? WHERE match_id=?", (status, payload.outcome, payload.follow_up_at, payload.won_lost_reason or payload.operator_notes, now_iso(), payload.match_id))
+        row = conn.execute("SELECT * FROM trust_matches WHERE match_id=?", (payload.match_id,)).fetchone()
+        conn.execute("INSERT INTO agent_tasks(task_type,related_entity_type,related_entity_id,agent_name,input_payload,output_payload,confidence_score,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?)", ("trust_match_outcome_update", "trust_match", payload.match_id, staff.get("username", "sales"), jdump(payload.model_dump()), jdump(rowdict(row) or {}), 80, "completed", now_iso(), now_iso()))
+    return {"status": "ok", "match": rowdict(row)}
+
+@app.get("/admin/trust-console", response_class=HTMLResponse)
+def admin_trust_console(request: Request) -> str:
+    try:
+        require_admin(request, {"admin", "sales", "engineer"})
+    except HTTPException:
+        return """<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Trust Console Login</title><style>body{font-family:Inter,system-ui;background:#07111f;color:#e5eefb;display:grid;place-items:center;min-height:100vh}.box{max-width:520px;background:#111b2e;border:1px solid #263a5e;border-radius:22px;padding:28px}input,button{width:100%;box-sizing:border-box;padding:14px;border-radius:12px;margin-top:12px;background:#07111f;color:#fff;border:1px solid #334155}button{background:#2563eb;border:0;font-weight:800}</style></head><body><form class='box' onsubmit="location.href='/admin/trust-console?token='+encodeURIComponent(this.token.value);return false"><h1>SuccessCasting Trust Console</h1><p>สำหรับทีมขาย: วันนี้ควรติดต่อใคร ทำไม พูดว่าอะไร และ follow-up เมื่อไร</p><input name='token' type='password' placeholder='Admin token'><button>Open</button></form></body></html>"""
+    q = trust_queue(80)
+    rows=[]
+    for m in q:
+        rows.append(f"<tr><td><b>{html_escape(m.get('lead_name') or m.get('company') or m.get('match_id'))}</b><br><small>{html_escape(m.get('match_id',''))}</small></td><td><b>{html_escape(m.get('trust_score'))}</b><br>{html_escape(m.get('touch_strategy'))}<br><small>{html_escape(m.get('service_intent',''))}</small></td><td>{html_escape('; '.join(m.get('why_match',[])[:4]))}</td><td>{html_escape(m.get('recommended_action',''))}<br><small>{html_escape(m.get('professional_script','')[:280])}</small></td><td>{html_escape(m.get('follow_up_at') or 'today')}<br>{html_escape(m.get('status',''))}</td></tr>")
+    return f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>SuccessCasting Trust Console</title><style>body{{font-family:Inter,system-ui;background:#f8fafc;color:#0f172a;margin:0}}header{{background:#07111f;color:white;padding:28px}}main{{max-width:1400px;margin:auto;padding:24px}}section{{background:white;border:1px solid #e2e8f0;border-radius:22px;overflow:hidden}}table{{width:100%;border-collapse:collapse}}th,td{{padding:14px;border-bottom:1px solid #e2e8f0;text-align:left;vertical-align:top}}th{{background:#f1f5f9;color:#64748b;text-transform:uppercase;font-size:12px}}small{{color:#64748b}}</style></head><body><header><h1>SuccessCasting Trust Console</h1><p>Actionable queue: โทรรายนี้ / ส่ง helpful education / รอ signal / reject เพื่อป้องกัน spam และมิจฉาชีพ</p><p><a style='color:#bfdbfe' href='/verified/successcasting'>Verified profile</a> · <a style='color:#bfdbfe' href='/api/trust-match/queue'>Queue API</a></p></header><main><section><table><thead><tr><th>Lead/Customer</th><th>TRUST</th><th>Why</th><th>Action + script</th><th>Follow-up</th></tr></thead><tbody>{''.join(rows) or '<tr><td colspan=5>No trust matches yet. Page visits/chat/RFQ/LINE events will create them.</td></tr>'}</tbody></table></section></main></body></html>"""
 
 
 @app.get("/api/ai-sales/brain")
@@ -2594,6 +2926,11 @@ async def line_webhook(request: Request) -> dict[str, Any]:
                     (st, sid, uid, gid, rid, text, jdump(ev), now_iso(), now_iso()),
                 )
                 captured.append({"type": st, "source_id": sid[:3] + "***" + sid[-3:] if len(sid) > 8 else "captured"})
+                try:
+                    rec = record_first_party_intent({"session_id": sid, "visitor_id": uid or sid, "source": "line", "source_event_id": ev.get("webhookEventId", ""), "page_url": "line://successcasting", "service_intent": service_intent_from_text(text), "event_type": ev.get("type", "line_event"), "evidence": {"line_event": True, "source_type": st, "text_preview": text[:80]}, "consent": {"line_user_message": True}}, text)
+                    upsert_trust_match_from_signal(session_id=sid, visitor_id=uid or sid, service_intent=rec["service_intent"], signal_strength=rec["signal_strength"], evidence=rec["evidence"])
+                except Exception:
+                    pass
             reply_token = ev.get("replyToken", "")
             if reply_token and ev.get("type") in {"message", "follow", "join"}:
                 line_reply_message(reply_token, "SuccessCasting เชื่อมต่อ LINE OA แล้วครับ ✅ ระบบจะใช้ช่องทางนี้แจ้งฝ่ายขายเมื่อมี RFQ/hot lead และรับข้อความจากลูกค้าได้")
