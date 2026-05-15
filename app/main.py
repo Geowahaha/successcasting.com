@@ -745,12 +745,10 @@ def dashboard() -> str:
     for key, value in replacements.items():
         html = html.replace(key, value)
     trust_banner = """
-<section id='trusted-sme-network' style='padding:46px 22px;background:#07111f;color:#f8fafc'>
-  <div style='max-width:1180px;margin:auto'>
-    <p style='color:#93c5fd;font-weight:800;letter-spacing:.08em;text-transform:uppercase'>Blutenstein Trusted SME Pilot</p>
-    <h2 style='font-size:clamp(30px,5vw,58px);line-height:1.02;margin:0 0 12px'>ไม่ใช่โฆษณา sponsor ที่เด้งมั่ว — SuccessCasting ถูกจัดเป็น SME ที่ผ่าน verified pilot</h2>
-    <p style='font-size:18px;color:#cbd5e1;max-width:920px'>ระบบเก็บ first-party intent อย่างมี consent: page visit → service intent → RFQ/chat/session → LINE event แล้วให้ TRUST Score เพื่อคัดงานจริง กรองมิจฉาชีพ และเลือกวิธีติดต่อแบบมืออาชีพ สุภาพ มีเหตุผล ไม่ spam</p>
-    <p><a style='color:#bfdbfe' href='/verified/successcasting'>ดู Verified SuccessCasting Profile</a> · <a style='color:#bfdbfe' href='/admin/trust-console'>Sales Trust Console</a> · <a style='color:#bfdbfe' href='/llms.txt'>AI-search llms.txt</a></p>
+<section id='trusted-sme-network' style='padding:28px 22px;background:#07111f;color:#f8fafc'>
+  <div style='max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap'>
+    <h2 style='font-size:clamp(24px,4vw,42px);line-height:1.05;margin:0'>Trusted SME verified</h2>
+    <p style='margin:0;color:#93c5fd;font-weight:900;letter-spacing:.04em'>by Blutenstein</p>
   </div>
 </section>
 """
@@ -1919,6 +1917,39 @@ def send_line_notify(message: str) -> dict[str, Any]:
     if not to:
         return {"status": "skipped", "reason": "LINE_NOTIFY_TO/LINE_SALES_GROUP_ID/LINE_USER_ID missing; add OA to sales group and capture/set groupId"}
     return line_api_request("/message/push", {"to": to, "messages": [{"type": "text", "text": message[:4500]}]})
+
+
+def telegram_bot_token() -> str:
+    return env_first("TELEGRAM_BOT_TOKEN", "TG_BOT_TOKEN", "SUCCESSCASTING_TELEGRAM_BOT_TOKEN")
+
+
+def telegram_chat_id() -> str:
+    return env_first("TELEGRAM_CHAT_ID", "TG_CHAT_ID", "successcasting_Telegram_ID", "SUCCESSCASTING_TELEGRAM_CHAT_ID")
+
+
+def send_telegram_notify(message: str) -> dict[str, Any]:
+    token = telegram_bot_token()
+    chat_id = telegram_chat_id()
+    if not token:
+        return {"status": "skipped", "reason": "TELEGRAM_BOT_TOKEN/TG_BOT_TOKEN missing"}
+    if not chat_id:
+        return {"status": "skipped", "reason": "TELEGRAM_CHAT_ID/TG_CHAT_ID missing"}
+    body = json.dumps({"chat_id": chat_id, "text": message[:3900], "disable_web_page_preview": True}, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=body,
+        headers={"content-type": "application/json", "user-agent": "SuccessCastingFactory/1.0"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            raw = resp.read().decode("utf-8", "ignore")[:300]
+            return {"status": "sent", "http_status": resp.status, "response": raw}
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode("utf-8", "ignore")[:500]
+        return {"status": "failed", "http_status": exc.code, "error": raw or str(exc)}
+    except Exception as exc:
+        return {"status": "failed", "error": f"{type(exc).__name__}: {str(exc)[:240]}"}
 
 def hash_password(password: str) -> str:
     salt = os.getenv("ADMIN_PASSWORD_SALT", "successcasting-local-salt")
