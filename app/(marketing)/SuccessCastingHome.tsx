@@ -207,7 +207,7 @@ const text = (pair: TextPair, lang: Lang) => pair[lang === "th" ? 0 : 1];
 
 const socialLinks = [
   { name: "Facebook", href: "https://www.facebook.com/profile.php?id=61589947250816", icon: "facebook", className: "border-[#1877f2] bg-[#1877f2] text-white hover:bg-[#0f5fc7]" },
-  { name: "TikTok", href: "https://www.tiktok.com/@suphan.casting", icon: "tiktok", className: "border-zinc-700 bg-black text-white hover:bg-zinc-900" },
+  { name: "TikTok", href: "https://www.tiktok.com/@success_casting", icon: "tiktok", className: "border-zinc-700 bg-black text-white hover:bg-zinc-900" },
   { name: "LINE", href: lineUrl, icon: "line", className: "border-[#06c755] bg-[#06c755] text-white hover:bg-[#05a948]" },
   { name: "Message", href: "mailto:scnwmax@gmail.com", icon: "mail", className: "border-[#00b900] bg-[#00b900] text-white hover:bg-[#009f00]" },
   { name: "Call", href: phoneHref, icon: "phone", className: "border-[#c72127] bg-[#c72127] text-white hover:bg-[#a91920]" },
