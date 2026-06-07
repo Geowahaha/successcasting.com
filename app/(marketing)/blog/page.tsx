@@ -79,7 +79,7 @@ export default function BlogFaqPage() {
           </Link>
           <nav className="flex gap-4 text-sm text-zinc-300">
             <Link href="/products" className="hover:text-white">สินค้า/บริการ</Link>
-            <Link href="/contact" className="hover:text-white">ติดต่อ</Link>
+            <Link href="/#contact" className="hover:text-white">ติดต่อ</Link>
           </nav>
         </div>
       </header>

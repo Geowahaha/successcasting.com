@@ -36,10 +36,9 @@ export async function SiteHeader() {
 
   const nav = [
     { href: "/", label: tr.nav.home },
-    { href: "/services", label: tr.nav.services },
     { href: "/products", label: tr.nav.portfolio },
-    { href: "/about", label: tr.nav.about },
-    { href: "/contact", label: tr.nav.contactUs },
+    { href: "/blog", label: "FAQ" },
+    { href: "/#contact", label: tr.nav.contactUs },
   ];
 
   return (
