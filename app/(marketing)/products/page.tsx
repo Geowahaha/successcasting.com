@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import ProductsPageClient from "./ProductsPageClient";
+import { MATERIAL_PAGES } from "@/lib/seo/materials";
 
 // Short CDN cache so deploys propagate within ~1 min (avoids 1-year s-maxage / manual purge).
 export const revalidate = 60;
@@ -150,6 +152,51 @@ export default function ProductsPage() {
   return (
     <>
       <ProductsPageClient />
+
+      {/* Per-material SEO landing pages — gives Google a clear "index" with
+          internal links to the 7 dedicated material pages. */}
+      <section
+        id="materials-index"
+        aria-label="วัสดุที่รับหล่อ — รายละเอียดแต่ละชนิด"
+        className="bg-[#0e0e0e] px-4 py-16 text-zinc-100 sm:px-6 lg:px-8"
+      >
+        <div className="mx-auto max-w-6xl">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8b84b]">
+            รายละเอียดวัสดุ
+          </p>
+          <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
+            วัสดุที่รับหล่อ — เลือกดูตามชนิดเหล็ก
+          </h2>
+          <p className="mt-3 max-w-3xl leading-7 text-zinc-300">
+            แต่ละหน้ามีรายละเอียดเกรด มาตรฐานอ้างอิง คุณสมบัติทางเทคนิค
+            และการใช้งานจริงแยกตามชนิดของเหล็ก
+          </p>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {MATERIAL_PAGES.map((m) => (
+              <Link
+                key={m.slug}
+                href={`/products/${m.slug}`}
+                className="group flex flex-col rounded-xl border border-white/10 bg-[#1c1b1b] p-5 transition hover:border-[#e8b84b]/50 hover:bg-[#222]"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#e8b84b]">
+                  {m.standard}
+                </p>
+                <h3 className="mt-1.5 text-lg font-bold text-white group-hover:text-[#e8b84b]">
+                  {m.family}
+                </h3>
+                <p className="mt-2 text-sm text-zinc-400">
+                  {m.grades.slice(0, 4).join(" · ")}
+                </p>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#e8b84b] group-hover:gap-2 transition-all">
+                  ดูรายละเอียด →
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {[localBusinessJsonLd, collectionJsonLd, faqJsonLd, breadcrumbJsonLd].map((jsonLd, index) => (
         <script
           key={index}
