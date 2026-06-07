@@ -28,6 +28,13 @@ const nextConfig: NextConfig = {
         destination: "https://www.successcasting.com/:path*",
         permanent: true,
       },
+      // Retired placeholder Stitch-template routes → real pages
+      { source: "/about", destination: "/contact", permanent: true },
+      { source: "/services", destination: "/products", permanent: true },
+      { source: "/promotions", destination: "/products", permanent: true },
+      { source: "/rfq", destination: "/contact", permanent: true },
+      { source: "/designs", destination: "/", permanent: true },
+      { source: "/designs/:slug*", destination: "/", permanent: true },
     ];
   },
   async headers() {

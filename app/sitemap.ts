@@ -16,6 +16,7 @@ export default async function sitemap() {
     { path: "/", priority: 1, changeFrequency: "weekly" },
     { path: "/products", priority: 0.95, changeFrequency: "weekly" },
     { path: "/contact", priority: 0.9, changeFrequency: "monthly" },
+    { path: "/blog", priority: 0.7, changeFrequency: "weekly" },
   ].map(({ path, priority, changeFrequency }) => ({
     url: `${baseUrl}${path}`,
     lastModified: now,

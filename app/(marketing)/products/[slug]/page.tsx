@@ -1,7 +1,7 @@
 import { permanentRedirect } from "next/navigation";
 
 /**
- * Legacy catalog URLs → Stitch portfolio / sample detail.
+ * Legacy catalog URLs → products page.
  */
 export default async function ProductDetailPage({
   params,
@@ -9,5 +9,5 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   await params;
-  permanentRedirect("/designs/product-portfolio-gallery");
+  permanentRedirect("/products");
 }

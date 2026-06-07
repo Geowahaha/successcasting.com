@@ -1128,6 +1128,14 @@ function ContactFooter({ lang }: { lang: Lang }) {
                   <SocialIcon icon={item.icon} />
                 </a>
               ))}
+              <span className="mx-1 h-9 w-px self-center bg-zinc-600" aria-hidden="true" />
+              <Link
+                href="/blog"
+                aria-label="FAQ / Blog"
+                className="grid h-11 place-items-center rounded-full border border-zinc-500 bg-zinc-700/50 px-4 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:border-[#e8b84b] hover:text-[#e8b84b]"
+              >
+                FAQ / Blog
+              </Link>
             </div>
           </div>
         </div>
