@@ -88,14 +88,14 @@ export default function ProductsPage() {
         position: index + 1,
         url: `${canonicalUrl}#products`,
         item: {
-          "@type": "Product",
+          // Custom made-to-order castings have no fixed price, so schema.org/Product
+          // (which requires offers/review/aggregateRating) is not valid here. Use Thing
+          // to keep the catalog rich-but-valid and avoid Search Console "Product" errors.
+          "@type": "Thing",
           name: title,
           description,
-          sku: material,
-          brand: { "@type": "Brand", name: "Success Casting" },
           image: `${siteUrl}${image}`,
-          material,
-          category: "Industrial metal casting and machined components",
+          url: `${canonicalUrl}#products`,
           additionalProperty: [
             { "@type": "PropertyValue", name: "Material group", value: material },
             { "@type": "PropertyValue", name: "Production type", value: "Custom casting by drawing, sample part, or repair requirement" },
