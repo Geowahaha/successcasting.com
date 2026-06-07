@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+// Short CDN cache so deploys propagate within ~1 min (avoids 1-year s-maxage / manual purge).
+export const revalidate = 60;
+
 const SITE = "https://www.successcasting.com";
 
 export const metadata: Metadata = {

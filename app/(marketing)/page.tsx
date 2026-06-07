@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { SuccessCastingHome } from "./SuccessCastingHome";
 
+// Short CDN cache so deploys propagate within ~1 min instead of being stuck
+// behind Next's default 1-year s-maxage (which required a manual Cloudflare purge).
+export const revalidate = 60;
+
 const siteUrl = "https://www.successcasting.com";
 const canonicalUrl = `${siteUrl}/`;
 const ogImage = `${siteUrl}/successcasting-assets/gpt-hero/molten-pour-1.webp`;

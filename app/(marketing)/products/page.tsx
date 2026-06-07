@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import ProductsPageClient from "./ProductsPageClient";
 
+// Short CDN cache so deploys propagate within ~1 min (avoids 1-year s-maxage / manual purge).
+export const revalidate = 60;
+
 const materialList = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr28, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
 const canonicalUrl = "https://www.successcasting.com/products";
 const siteUrl = "https://www.successcasting.com";
