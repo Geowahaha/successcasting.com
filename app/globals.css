@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #e7e7e7;
+  --card: rgba(255, 255, 255, 0.04);
+  --card-2: rgba(255, 255, 255, 0.06);
+  --ring: rgba(255, 255, 255, 0.14);
+  --muted: rgba(231, 231, 231, 0.72);
+  --muted-2: rgba(231, 231, 231, 0.55);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-noto-thai), var(--font-work-sans), var(--font-geist-sans), system-ui,
+    -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Master prototype (Stitch) — editorial industrial */
+.forge-surface {
+  background-color: #131313;
+  color: #e5e2e1;
+}
+
+.editorial-title {
+  font-family: var(--font-space-grotesk), var(--font-noto-thai), system-ui, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.forge-glass-panel {
+  background: rgba(53, 53, 52, 0.6);
+  backdrop-filter: blur(20px);
+}
+
+.text-glow-soft {
+  text-shadow: 0 0 15px rgba(255, 181, 160, 0.3);
+}
+
+.font-forge-headline {
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+}
+
+.font-forge-body {
+  font-family: var(--font-noto-thai), var(--font-work-sans), system-ui, sans-serif;
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.text-muted-2 {
+  color: var(--muted-2);
+}

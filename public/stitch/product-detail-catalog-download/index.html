@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Work+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#0e0e0e",
+              "outline": "#ad887e",
+              "surface-container": "#201f1f",
+              "primary-container": "#ff5625",
+              "primary-fixed": "#ffdbd1",
+              "on-tertiary-container": "#002a53",
+              "surface-tint": "#ffb5a0",
+              "secondary-fixed": "#c6e9e9",
+              "on-primary-fixed-variant": "#872000",
+              "secondary-container": "#2e4e4e",
+              "inverse-primary": "#b12d00",
+              "tertiary-fixed": "#d4e3ff",
+              "background": "#131313",
+              "tertiary": "#a5c8ff",
+              "tertiary-container": "#2592ff",
+              "primary-fixed-dim": "#ffb5a0",
+              "outline-variant": "#5d4038",
+              "on-primary-container": "#541100",
+              "on-secondary": "#143535",
+              "secondary": "#abcdcd",
+              "on-secondary-fixed": "#002020",
+              "surface-dim": "#131313",
+              "surface-container-highest": "#353534",
+              "surface-container-high": "#2a2a2a",
+              "secondary-fixed-dim": "#abcdcd",
+              "on-tertiary-fixed-variant": "#004785",
+              "on-primary-fixed": "#3b0900",
+              "surface": "#131313",
+              "on-surface": "#e5e2e1",
+              "primary": "#ffb5a0",
+              "on-tertiary-fixed": "#001c3a",
+              "error": "#ffb4ab",
+              "error-container": "#93000a",
+              "on-tertiary": "#00315e",
+              "on-surface-variant": "#e7bdb2",
+              "on-secondary-fixed-variant": "#2c4c4c",
+              "surface-variant": "#353534",
+              "on-background": "#e5e2e1",
+              "inverse-surface": "#e5e2e1",
+              "on-primary": "#601400",
+              "inverse-on-surface": "#313030",
+              "tertiary-fixed-dim": "#a5c8ff",
+              "on-error": "#690005",
+              "on-error-container": "#ffdad6",
+              "surface-container-low": "#1c1b1b",
+              "on-secondary-container": "#9dbfbe",
+              "surface-bright": "#3a3939"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Work Sans"],
+              "label": ["Work Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .blueprint-overlay {
+            background-image: radial-gradient(rgba(255, 86, 37, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#131313]/60 backdrop-blur-xl shadow-2xl shadow-black/50 bg-gradient-to-b from-[#131313] to-transparent">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-screen-2xl mx-auto">
+<div class="text-2xl font-black tracking-tighter text-[#ffb5a0] font-headline">PRECISION FORGE</div>
+<div class="hidden md:flex gap-10 items-center font-['Space_Grotesk'] uppercase tracking-widest text-sm">
+<a class="text-[#ff5625] border-b-2 border-[#ff5625] pb-1" href="#">Products</a>
+<a class="text-gray-400 hover:text-white transition-colors" href="#">Catalog</a>
+<a class="text-gray-400 hover:text-white transition-colors" href="#">Admin</a>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-gray-400 cursor-pointer hover:text-[#ffb5a0] transition-all">settings</span>
+<span class="material-symbols-outlined text-gray-400 cursor-pointer hover:text-[#ffb5a0] transition-all">account_circle</span>
+</div>
+<button class="bg-primary-container text-on-primary-container px-6 py-2 font-headline font-bold uppercase tracking-wider duration-300 ease-in-out scale-[0.98] active:scale-95 hover:shadow-[0_0_20px_rgba(255,86,37,0.4)]">
+                    Request Quote
+                </button>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-20">
+<!-- Hero Section -->
+<section class="max-w-screen-2xl mx-auto px-8 lg:px-12 mb-32">
+<div class="flex flex-col lg:flex-row gap-16 items-start">
+<!-- Large Image Display with Technical Overlays -->
+<div class="relative w-full lg:w-3/5 group">
+<div class="absolute -top-6 -left-6 z-10">
+<span class="font-headline text-[10px] tracking-[0.4em] uppercase text-primary border-l-2 border-primary pl-4 py-1">ASSET_REF: VF-902-X</span>
+</div>
+<div class="relative aspect-square overflow-hidden bg-surface-container-low rounded-lg border border-outline-variant/10">
+<!-- Main Product Image -->
+<img class="w-full h-full object-cover mix-blend-luminosity opacity-80 group-hover:mix-blend-normal group-hover:opacity-100 transition-all duration-700" data-alt="Macro high-definition shot of a machined industrial valve body made of brushed stainless steel with complex internal geometric channels" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjO-s3zYnpeC75qKEooBBWi6W66pKgbUrtO-72H7C83M1lVwhOnF9-hoB6wzYzpOcMtbLgKp0mhf4eeNGYD44rM-Yxg__yBndBUYYBHzjXK6eqHlXBzNCzn9zVa8OkxD2RKDEthDjPYHbbG_WIpj6ghsZgvFvwWF2cNdP7BIAv0TEgwJ6og8KihQ3CI11WgsXk3urrEW3qI95TpwR92rfSwx_QeVoSq-a6dFnKnmnMdRekcCpa8zlZS9FFI4Q-d2eHHNSNulexCw"/>
+<!-- Blueprint Overlay Layers -->
+<div class="absolute inset-0 blueprint-overlay pointer-events-none opacity-40"></div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<svg class="w-full h-full text-primary/20 p-12" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="2 2" stroke-width="0.1"></circle>
+<line stroke="currentColor" stroke-width="0.05" x1="0" x2="100" y1="50" y2="50"></line>
+<line stroke="currentColor" stroke-width="0.05" x1="50" x2="50" y1="0" y2="100"></line>
+</svg>
+</div>
+</div>
+<!-- Technical Callouts -->
+<div class="absolute bottom-8 right-8 bg-surface-container-highest/80 backdrop-blur-md p-6 border-l-4 border-primary max-w-xs">
+<p class="font-headline text-xs tracking-widest text-primary mb-2 uppercase">Core Component</p>
+<h3 class="text-2xl font-black font-headline uppercase leading-none mb-4 tracking-tighter">VF-Series Valve Body</h3>
+<p class="text-sm text-on-surface-variant font-light leading-relaxed">High-performance forged stainless steel housing engineered for extreme pressure environments and cryogenic applications.</p>
+</div>
+</div>
+<!-- Product Specifications -->
+<div class="w-full lg:w-2/5 space-y-12">
+<header>
+<h4 class="font-headline text-sm uppercase tracking-[0.3em] text-primary mb-2">Technical Specifications</h4>
+<h1 class="font-headline text-6xl font-black uppercase tracking-tighter text-on-surface leading-[0.9]">FORGED<br/>PRECISION</h1>
+</header>
+<div class="grid grid-cols-1 gap-8">
+<!-- Spec Item -->
+<div class="bg-surface-container-low p-6 transition-all border-l-2 border-transparent hover:border-primary group">
+<div class="flex justify-between items-end mb-2">
+<span class="text-xs uppercase tracking-widest text-on-surface-variant font-headline">Material Alloy</span>
+<span class="font-headline text-xl font-bold text-primary group-hover:scale-110 transition-transform">316L SS</span>
+</div>
+<div class="w-full h-px bg-outline-variant/20 mb-2"></div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant/60">AUSTENITIC CHROMIUM-NICKEL STAINLESS STEEL</p>
+</div>
+<!-- Spec Item -->
+<div class="bg-surface-container-low p-6 transition-all border-l-2 border-transparent hover:border-primary group">
+<div class="flex justify-between items-end mb-2">
+<span class="text-xs uppercase tracking-widest text-on-surface-variant font-headline">Tolerance Range</span>
+<span class="font-headline text-xl font-bold text-primary group-hover:scale-110 transition-transform">±0.005MM</span>
+</div>
+<div class="w-full h-px bg-outline-variant/20 mb-2"></div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant/60">MICRON-LEVEL CNC MACHINING PRECISION</p>
+</div>
+<!-- Spec Item -->
+<div class="bg-surface-container-low p-6 transition-all border-l-2 border-transparent hover:border-primary group">
+<div class="flex justify-between items-end mb-2">
+<span class="text-xs uppercase tracking-widest text-on-surface-variant font-headline">Net Weight</span>
+<span class="font-headline text-xl font-bold text-primary group-hover:scale-110 transition-transform">4.85 KG</span>
+</div>
+<div class="w-full h-px bg-outline-variant/20 mb-2"></div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant/60">OPTIMIZED MASS-TO-STRENGTH RATIO</p>
+</div>
+</div>
+<!-- Catalog Download Trigger -->
+<div class="pt-8">
+<a class="inline-flex items-center gap-4 bg-primary-container text-on-primary-container px-8 py-5 font-headline font-bold uppercase tracking-[0.2em] text-sm group transition-all hover:bg-primary-fixed-dim hover:shadow-[0_20px_40px_rgba(255,86,37,0.3)]" href="#catalog-form">
+                            Download Full Catalog
+                            <span class="material-symbols-outlined transition-transform group-hover:translate-y-1">download</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Registration & Download Section -->
+<section class="max-w-screen-2xl mx-auto px-8 lg:px-12 scroll-mt-32" id="catalog-form">
+<div class="bg-surface-container-lowest border border-outline-variant/10 relative overflow-hidden">
+<!-- Background Accent -->
+<div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary-container/5 to-transparent pointer-events-none"></div>
+<div class="flex flex-col md:flex-row">
+<div class="p-12 md:w-1/2">
+<h2 class="font-headline text-4xl font-black uppercase tracking-tighter mb-6 leading-none">Access the Engineering<br/>Manifesto</h2>
+<p class="text-on-surface-variant leading-relaxed max-w-md mb-8">Receive the complete VF-Series documentation, including 3D CAD models, pressure test reports, and metallurgical certifications.</p>
+<div class="flex items-center gap-4 text-primary mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-headline text-xs tracking-widest uppercase">Certified Engineering Resource</span>
+</div>
+</div>
+<div class="p-12 md:w-1/2 bg-surface-container-low">
+<form action="#" class="space-y-6">
+<div class="relative">
+<label class="block font-headline text-[10px] tracking-widest uppercase text-on-surface-variant mb-2">Corporate Email Address</label>
+<input class="w-full bg-surface-container-highest border-0 border-l-2 border-transparent focus:border-primary focus:ring-0 text-on-surface py-4 px-6 transition-all placeholder:text-on-surface-variant/30" placeholder="engineering@company.com" type="email"/>
+</div>
+<div class="space-y-4 pt-4">
+<label class="flex items-start gap-3 cursor-pointer group">
+<div class="relative mt-1">
+<input class="peer appearance-none w-4 h-4 border border-outline bg-transparent checked:bg-primary-container transition-all" required="" type="checkbox"/>
+<span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[12px] text-on-primary-container opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+</div>
+<span class="text-xs text-on-surface-variant leading-tight">I accept the <a class="text-primary hover:underline" href="#">Privacy Policy</a> and agree to the storage of my professional data for documentation access.</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer">
+<div class="relative mt-1">
+<input class="peer appearance-none w-4 h-4 border border-outline bg-transparent checked:bg-primary-container transition-all" type="checkbox"/>
+<span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[12px] text-on-primary-container opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+</div>
+<span class="text-xs text-on-surface-variant leading-tight">Opt-in to receive technical updates, industrial insights, and product release notifications.</span>
+</label>
+</div>
+<button class="w-full bg-on-surface text-surface py-5 font-headline font-black uppercase tracking-[0.3em] hover:bg-primary-container hover:text-on-primary-container transition-all" type="submit">
+                                Verify &amp; Access Download
+                            </button>
+</form>
+</div>
+</div>
+</div>
+</section>
+<!-- Product Gallery Grid -->
+<section class="max-w-screen-2xl mx-auto px-8 lg:px-12 mt-32">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+<div class="space-y-6 group">
+<div class="h-64 overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" data-alt="Technical close-up of high-pressure fluid testing in a controlled industrial laboratory environment with blue sensor lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbtsISjN5U1lnbgDkTuU9ylgDgy-CezhUHOoFRyuvHOYerqv5S8uOuBvlslWalpxQzrdCY5Iof1DQfoEr2S_vvbPKRTD03qzY1cJBAWXTITJg83APiAyH-sKYibj989i5igGdGbp5Xjh77lON9ZvHW8UwLapAQh1ahuLBbu-qt0w557hcnk3CoeKKxDNwxHhR3OAv7SOfWE6k_ohmEQp2cDfdeSKKmRLjJBtDvXBYNVxhecsZAMBsw6IyDm8NMul2KVekuhO2Z1A"/>
+</div>
+<h3 class="font-headline text-xl font-bold uppercase tracking-tighter">Extreme Pressure Testing</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Each unit is subjected to 1.5x nominal pressure rating to ensure zero-fail performance in critical environments.</p>
+</div>
+<div class="space-y-6 group">
+<div class="h-64 overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" data-alt="Interior of a modern high-precision CNC machining facility with robot arms and sparks from metal cutting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqNsMgSrDXAcMtCEf-jTsgc79lpAwYt2OkzlPFGR7sy13lJqAJsO2o5EFLaHj0DPgMr7MlHHwNKkpziphywTnadgWwBDMwqgrAE0yP9YWxFD4tIjc3DSKmS7VtrlciDkkfH0xlzRY_zNswftKpgbMdWcn7pvr-1UneJpvpswPtWojpLEgKPphJ9yRIN_fVMQriOA-Ba7us9XUOZz6Ib3UUbQJDaIjLoy_UYKO3JcTir4Dv0HILNfcnshtkQacY_YJuWkJeJ2XLCw"/>
+</div>
+<h3 class="font-headline text-xl font-bold uppercase tracking-tighter">Automated Fabrication</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Fully robotic multi-axis machining centers ensure absolute consistency across every production batch.</p>
+</div>
+<div class="space-y-6 group">
+<div class="h-64 overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" data-alt="Industrial quality control specialist measuring a metal part with digital calipers under bright overhead task lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0HDVwgZa6gZlZIc0nmxmaqfBRQjW4l0qmQPWrLKG5VfzvogPVHncuKy577XG3y0TctR-tIWGp-ntpz1sYvOzFh3OO4Teo-Nx1DHvHJZKO9kqmV7Kp8nsE55ErwnHYN3hh6sM2fw1FeyrxNFy-X5t6o_YuprLeiaDzlzAOKRkD7mzMYSrx6Y3vp239sGtauX7hNpI4aFa5QP9RFpofCwGgpBfZOQbN_v_Wjr2JvH535JJuyF1D8xzUiIiA7bhCvOGn3XcSm8AE6g"/>
+</div>
+<h3 class="font-headline text-xl font-bold uppercase tracking-tighter">Quality Assurance</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Optical comparator and CMM inspection verified against original CAD blueprints for every component.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full border-t border-[#5d4038]/15 bg-[#0e0e0e]">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-12 py-10 gap-6">
+<div class="text-lg font-bold text-[#ffb5a0] font-headline">PRECISION FORGE</div>
+<div class="flex flex-wrap justify-center gap-8 font-['Space_Grotesk'] text-[10px] tracking-[0.2em] uppercase">
+<a class="text-gray-500 hover:text-[#ff5625] transition-all opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-gray-500 hover:text-[#ff5625] transition-all opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-gray-500 hover:text-[#ff5625] transition-all opacity-80 hover:opacity-100" href="#">Compliance</a>
+<a class="text-gray-500 hover:text-[#ff5625] transition-all opacity-80 hover:opacity-100" href="#">Global Locations</a>
+</div>
+<div class="font-['Space_Grotesk'] text-[10px] tracking-[0.2em] uppercase text-gray-500">
+                © 2024 PRECISION FORGE INDUSTRIAL. ALL RIGHTS RESERVED.
+            </div>
+</div>
+</footer>
+</body></html>

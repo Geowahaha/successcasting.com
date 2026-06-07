@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Precision Forge | Multi-Language Selector Showcase</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Work+Sans:wght@300;400;500;600&amp;family=Space+Mono&amp;family=Noto+Sans+Thai:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-container": "#2e4e4e",
+              "on-secondary-fixed-variant": "#2c4c4c",
+              "surface-container-high": "#2a2a2a",
+              "on-secondary-container": "#9dbfbe",
+              "surface-container-highest": "#353534",
+              "surface-container-lowest": "#0e0e0e",
+              "tertiary-fixed-dim": "#a5c8ff",
+              "surface-dim": "#131313",
+              "inverse-surface": "#e5e2e1",
+              "error-container": "#93000a",
+              "on-tertiary-container": "#002a53",
+              "inverse-on-surface": "#313030",
+              "on-secondary-fixed": "#002020",
+              "background": "#080808",
+              "on-primary-fixed": "#3b0900",
+              "surface-container": "#161616",
+              "primary-container": "#ff5625",
+              "on-tertiary": "#00315e",
+              "on-primary-container": "#541100",
+              "inverse-primary": "#b12d00",
+              "on-surface": "#e5e2e1",
+              "tertiary-container": "#2592ff",
+              "surface-container-low": "#1c1b1b",
+              "error": "#ffb4ab",
+              "surface-variant": "#353534",
+              "secondary": "#abcdcd",
+              "outline-variant": "#5d4038",
+              "outline": "#ad887e",
+              "primary-fixed": "#ffdbd1",
+              "on-background": "#e5e2e1",
+              "on-error-container": "#ffdad6",
+              "on-tertiary-fixed-variant": "#004785",
+              "on-secondary": "#143535",
+              "on-primary": "#601400",
+              "primary-fixed-dim": "#ffb5a0",
+              "on-primary-fixed-variant": "#872000",
+              "on-error": "#690005",
+              "surface": "#131313",
+              "tertiary-fixed": "#d4e3ff",
+              "primary": "#ffb5a0",
+              "on-surface-variant": "#e7bdb2",
+              "secondary-fixed-dim": "#abcdcd",
+              "surface-tint": "#ffb5a0",
+              "tertiary": "#a5c8ff",
+              "secondary-fixed": "#c6e9e9",
+              "surface-bright": "#3a3939",
+              "on-tertiary-fixed": "#001c3a",
+              "forge-orange": "#e8622c"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Work Sans"],
+              "label": ["Work Sans"],
+              "mono": ["Space Mono"],
+              "thai": ["Noto Sans Thai"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem", "forge": "0.375rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(53, 53, 52, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .industrial-gradient {
+            background: linear-gradient(135deg, #ffb5a0 0%, #ff5625 100%);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #5d4038;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-[#080808] text-on-surface font-body selection:bg-primary-container selection:text-white min-h-screen overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl dark:bg-[#131313]/60 shadow-2xl shadow-black/50">
+<div class="flex justify-between items-center px-8 py-4 w-full max-w-none">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-[#ff5625] uppercase font-headline">The Precision Forge</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[#ff5625] font-bold border-b-2 border-[#ff5625] pb-1 font-['Space_Grotesk'] uppercase tracking-widest text-sm" href="#">Process</a>
+<a class="text-[#ffb5a0]/70 hover:text-[#ffb5a0] transition-colors font-['Space_Grotesk'] uppercase tracking-widest text-sm" href="#">Gallery</a>
+<a class="text-[#ffb5a0]/70 hover:text-[#ffb5a0] transition-colors font-['Space_Grotesk'] uppercase tracking-widest text-sm" href="#">Specs</a>
+<a class="text-[#ffb5a0]/70 hover:text-[#ffb5a0] transition-colors font-['Space_Grotesk'] uppercase tracking-widest text-sm" href="#">Global</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<!-- Dropdown Trigger in Nav -->
+<div class="relative group">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-forge border border-white/10 hover:border-forge-orange/50 transition-all font-mono text-xs uppercase tracking-tighter text-on-surface-variant bg-surface-container-low">
+<span>🇹🇭</span>
+<span>ไทย</span>
+<span class="material-symbols-outlined text-[16px] transition-transform group-hover:rotate-180">expand_more</span>
+</button>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-[#ffb5a0]/70 hover:text-primary transition-colors hover:bg-[#2e4e4e]/30 rounded-lg">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-[#ffb5a0]/70 hover:text-primary transition-colors hover:bg-[#2e4e4e]/30 rounded-lg">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-32 pb-20 px-6 lg:px-20 relative">
+<!-- Background Texture -->
+<div class="absolute inset-0 z-[-1] opacity-20" data-alt="extreme close-up of dark brushed steel texture with microscopic details and subtle metallic sheen under dramatic directional lighting">
+<div class="absolute inset-0 bg-gradient-to-tr from-[#080808] via-transparent to-primary/5"></div>
+</div>
+<!-- Section Header -->
+<div class="mb-16">
+<p class="font-mono text-forge-orange uppercase tracking-[0.3em] text-xs mb-4">Precision Interface Module // 04-LNG</p>
+<h1 class="font-headline text-5xl md:text-7xl font-black uppercase tracking-tighter text-white mb-6">Language <br/><span class="text-primary">Selector</span></h1>
+<div class="w-24 h-1 bg-forge-orange"></div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+<!-- SPECIMEN VIEW (Large Display) -->
+<div class="lg:col-span-7 flex flex-col items-center justify-center p-12 lg:p-20 rounded-xl bg-surface-container-lowest border border-white/5 relative overflow-visible">
+<!-- Molten Glow Behind -->
+<div class="absolute w-64 h-64 bg-forge-orange/20 blur-[100px] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+<div class="relative z-10 w-full max-w-sm">
+<p class="text-center font-mono text-[10px] uppercase text-white/30 mb-8 tracking-widest">Component Specimen: Active State</p>
+<!-- Enlarged Dropdown Specimen -->
+<div class="flex flex-col gap-2">
+<!-- Button Specimen -->
+<div class="w-full flex items-center justify-between px-6 py-4 rounded-xl border-2 border-forge-orange bg-surface-container-high shadow-[0_0_20px_rgba(232,98,44,0.2)]">
+<div class="flex items-center gap-4">
+<span class="text-2xl">🇹🇭</span>
+<span class="font-thai text-xl font-bold text-white">ไทย</span>
+</div>
+<span class="material-symbols-outlined text-forge-orange rotate-180 text-3xl">expand_more</span>
+</div>
+<!-- Dropdown Specimen (Always Visible for Showcase) -->
+<div class="w-full mt-2 rounded-xl glass-panel shadow-2xl shadow-black/80 overflow-hidden translate-y-0 opacity-100 transition-all duration-500">
+<div class="p-2 grid grid-cols-1 gap-1 max-h-[400px] overflow-y-auto custom-scrollbar">
+<!-- Active Item -->
+<button class="flex items-center justify-between w-full px-4 py-3 rounded-lg bg-forge-orange/10 text-white group transition-all border border-forge-orange/20">
+<div class="flex items-center gap-4">
+<span class="text-xl">🇹🇭</span>
+<span class="font-thai text-base">ไทย</span>
+</div>
+<span class="material-symbols-outlined text-forge-orange text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<!-- Inactive Items -->
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇺🇸</span>
+<span class="font-body text-base">English</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇯🇵</span>
+<span class="font-body text-base">日本語</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇨🇳</span>
+<span class="font-body text-base">中文</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇰🇷</span>
+<span class="font-body text-base">한국어</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇩🇪</span>
+<span class="font-body text-base">Deutsch</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇪🇸</span>
+<span class="font-body text-base">Español</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇫🇷</span>
+<span class="font-body text-base">Français</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇷🇺</span>
+<span class="font-body text-base">Русский</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇻🇳</span>
+<span class="font-body text-base">Tiếng Việt</span>
+</button>
+<button class="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-forge-orange/5 group transition-all">
+<span class="text-xl">🇸🇦</span>
+<span class="font-body text-base">العربية</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- TECHNICAL SPECS CARD -->
+<div class="lg:col-span-5 space-y-8">
+<div class="p-8 bg-surface-container-low border-l-4 border-forge-orange relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5">
+<span class="material-symbols-outlined text-8xl">settings_input_component</span>
+</div>
+<h3 class="font-headline text-2xl font-bold uppercase tracking-tight text-white mb-6">Technical Specifications</h3>
+<ul class="space-y-6">
+<li class="flex gap-4">
+<span class="font-mono text-forge-orange">01</span>
+<div>
+<p class="text-white font-bold text-sm uppercase mb-1">Architecture</p>
+<p class="text-on-surface-variant text-sm leading-relaxed">Vanilla JavaScript DOM implementation using the <code class="bg-black/30 px-1 py-0.5 rounded text-primary">toggle()</code> class strategy for memory efficiency and ultra-fast paint cycles.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="font-mono text-forge-orange">02</span>
+<div>
+<p class="text-white font-bold text-sm uppercase mb-1">Materiality</p>
+<p class="text-on-surface-variant text-sm leading-relaxed">Glassmorphism layer with <code class="bg-black/30 px-1 py-0.5 rounded text-primary">backdrop-blur-xl</code> and a 6% white opacity border to simulate tempered protective glass in extreme heat environments.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="font-mono text-forge-orange">03</span>
+<div>
+<p class="text-white font-bold text-sm uppercase mb-1">Dynamics</p>
+<p class="text-on-surface-variant text-sm leading-relaxed">Animation orchestrated via CSS transitions on <code class="bg-black/30 px-1 py-0.5 rounded text-primary">transform: translateY()</code> and <code class="bg-black/30 px-1 py-0.5 rounded text-primary">opacity</code> for hardware-accelerated 60fps interaction.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="font-mono text-forge-orange">04</span>
+<div>
+<p class="text-white font-bold text-sm uppercase mb-1">State Management</p>
+<p class="text-on-surface-variant text-sm leading-relaxed">Click-outside detection using global event listeners with automatic focus cleanup to prevent interface clutter during rapid forge operations.</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-6 bg-surface-container-lowest border border-white/5 rounded-xl">
+<p class="text-[10px] font-mono uppercase text-white/40 mb-2">Primary Accent</p>
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-sm bg-[#e8622c]"></div>
+<span class="font-mono text-sm text-white">#E8622C</span>
+</div>
+</div>
+<div class="p-6 bg-surface-container-lowest border border-white/5 rounded-xl">
+<p class="text-[10px] font-mono uppercase text-white/40 mb-2">Surface Alpha</p>
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-sm bg-white/10"></div>
+<span class="font-mono text-sm text-white">RGBA 6%</span>
+</div>
+</div>
+</div>
+<div class="relative group cursor-pointer overflow-hidden rounded-xl border border-white/10" data-alt="macro photograph of orange hot glowing molten metal pouring from a crucible in a dark high-tech industrial foundry">
+<img alt="Forge" class="w-full h-48 object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3bqxbnRo_a9bKOf59sQfDN8Ur8DZESPWDEGSrpac6eiwAQ9fu3mTVFMM02SQGV_k2s9gYorldYOJySXhJcsODIj23Sbcsvv0Y0taNvrZSrBfg9f_RZxdONOVFPtMxufiOzfjGD642E75Xlx1nMzAMJbIur0I35h9LvRMC3wBMsDlH6lpJUHim3W6lM8WLQn2mR0zw2XRPfd-VPxw7r0rYcCr8Mnv7ycr29-Y4py4uTPFf_-fuGVl7uyurdOkV_zj4jnbFOIOEBw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#080808] to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<span class="material-symbols-outlined text-forge-orange text-3xl">local_fire_department</span>
+<p class="font-headline font-bold text-white uppercase tracking-tighter">Heat Resistance: 2,500°F</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Detail Grid -->
+<section class="mt-32">
+<div class="flex items-baseline gap-4 mb-12">
+<h2 class="font-headline text-3xl font-bold uppercase tracking-tighter text-white">Interface States</h2>
+<div class="flex-grow h-px bg-white/10"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Idle State -->
+<div class="bg-surface-container rounded-lg p-8 border border-white/5 group hover:border-forge-orange/30 transition-all">
+<p class="font-mono text-forge-orange text-xs mb-6 tracking-widest">STATE_IDLE</p>
+<div class="flex items-center gap-2 px-3 py-1.5 w-max rounded-forge border border-white/10 text-white/60 bg-surface-container-low mb-8">
+<span>🇺🇸</span>
+<span class="font-mono text-xs">English</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+<p class="text-sm text-on-surface-variant">Low-profile neutral state with minimal visual weight. Desaturated typography ensures focus remains on critical telemetry data.</p>
+</div>
+<!-- Hover State -->
+<div class="bg-surface-container rounded-lg p-8 border border-white/5 group hover:border-forge-orange/30 transition-all">
+<p class="font-mono text-forge-orange text-xs mb-6 tracking-widest">STATE_HOVER</p>
+<div class="flex items-center gap-2 px-3 py-1.5 w-max rounded-forge border border-forge-orange/40 text-white bg-surface-container-high mb-8 shadow-lg shadow-forge-orange/10">
+<span>🇺🇸</span>
+<span class="font-mono text-xs">English</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+<p class="text-sm text-on-surface-variant">Interaction proximity trigger. Border intensity increases and a subtle glow reinforces clickability without causing visual fatigue.</p>
+</div>
+<!-- Active State -->
+<div class="bg-surface-container rounded-lg p-8 border border-forge-orange/30 transition-all">
+<p class="font-mono text-forge-orange text-xs mb-6 tracking-widest">STATE_ACTIVE</p>
+<div class="flex items-center gap-2 px-3 py-1.5 w-max rounded-forge border border-forge-orange text-white bg-surface-container-highest mb-8 shadow-xl shadow-forge-orange/20">
+<span>🇺🇸</span>
+<span class="font-mono text-xs">English</span>
+<span class="material-symbols-outlined text-[16px] rotate-180">expand_more</span>
+</div>
+<p class="text-sm text-on-surface-variant">Full engagement state. Semantic shift to high-contrast colors and directional icon orientation to indicate an open navigation portal.</p>
+</div>
+</div>
+</section>
+<!-- Signature Footer Section -->
+<footer class="mt-40 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-highest rounded-lg flex items-center justify-center border border-white/10">
+<span class="material-symbols-outlined text-forge-orange">precision_manufacturing</span>
+</div>
+<div>
+<h4 class="font-headline font-black text-white uppercase tracking-tighter">Precision Forge Systems</h4>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-[0.2em]">High Frequency Interface Engineering</p>
+</div>
+</div>
+<div class="flex gap-8 font-mono text-[10px] uppercase tracking-widest text-white/30">
+<a class="hover:text-forge-orange transition-colors" href="#">Documentation</a>
+<a class="hover:text-forge-orange transition-colors" href="#">API Access</a>
+<a class="hover:text-forge-orange transition-colors" href="#">Security</a>
+</div>
+</footer>
+</main>
+<!-- SideNavBar (Hidden on Mobile) -->
+<aside class="hidden lg:flex h-screen w-20 fixed left-0 top-0 bg-[#0e0e0e] border-r border-outline-variant/15 flex-col items-center py-10 z-40">
+<div class="mb-12">
+<span class="material-symbols-outlined text-primary text-3xl">token</span>
+</div>
+<div class="flex flex-col gap-8 flex-grow">
+<button class="text-primary border-l-2 border-primary pl-1 transition-all">
+<span class="material-symbols-outlined">dashboard</span>
+</button>
+<button class="text-on-surface-variant/40 hover:text-primary transition-all">
+<span class="material-symbols-outlined">factory</span>
+</button>
+<button class="text-on-surface-variant/40 hover:text-primary transition-all">
+<span class="material-symbols-outlined">thermostat</span>
+</button>
+<button class="text-on-surface-variant/40 hover:text-primary transition-all">
+<span class="material-symbols-outlined">local_shipping</span>
+</button>
+</div>
+<div class="mt-auto space-y-6">
+<button class="text-on-surface-variant/40 hover:text-primary transition-all">
+<span class="material-symbols-outlined">help_center</span>
+</button>
+</div>
+</aside>
+</body></html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>บริการและผลิตภัณฑ์ | SUPHAN CASTING</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Work+Sans:wght@300;400;500;600&amp;family=Anuphan:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-on-surface": "#313030",
+              "surface-container-lowest": "#0e0e0e",
+              "on-primary-fixed": "#3b0900",
+              "inverse-surface": "#e5e2e1",
+              "secondary": "#abcdcd",
+              "secondary-fixed-dim": "#abcdcd",
+              "on-secondary": "#143535",
+              "on-primary-container": "#541100",
+              "primary-container": "#ff5625",
+              "surface-dim": "#131313",
+              "on-secondary-fixed-variant": "#2c4c4c",
+              "surface-container-low": "#1c1b1b",
+              "error": "#ffb4ab",
+              "on-surface-variant": "#e7bdb2",
+              "on-primary": "#601400",
+              "background": "#131313",
+              "on-tertiary-container": "#002a53",
+              "primary": "#ffb5a0",
+              "on-error": "#690005",
+              "tertiary": "#a5c8ff",
+              "surface-tint": "#ffb5a0",
+              "secondary-container": "#2e4e4e",
+              "on-tertiary-fixed": "#001c3a",
+              "on-primary-fixed-variant": "#872000",
+              "on-surface": "#e5e2e1",
+              "primary-fixed-dim": "#ffb5a0",
+              "surface-bright": "#3a3939",
+              "on-tertiary-fixed-variant": "#004785",
+              "tertiary-fixed-dim": "#a5c8ff",
+              "on-background": "#e5e2e1",
+              "surface-container-highest": "#353534",
+              "tertiary-fixed": "#d4e3ff",
+              "primary-fixed": "#ffdbd1",
+              "outline": "#ad887e",
+              "error-container": "#93000a",
+              "inverse-primary": "#b12d00",
+              "surface-variant": "#353534",
+              "surface-container": "#201f1f",
+              "tertiary-container": "#2592ff",
+              "on-error-container": "#ffdad6",
+              "on-secondary-container": "#9dbfbe",
+              "surface": "#131313",
+              "on-secondary-fixed": "#002020",
+              "secondary-fixed": "#c6e9e9",
+              "outline-variant": "#5d4038",
+              "on-tertiary": "#00315e",
+              "surface-container-high": "#2a2a2a"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk", "Anuphan"],
+              "body": ["Work Sans", "Anuphan"],
+              "label": ["Work Sans", "Anuphan"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(53, 53, 52, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glow-hover:hover {
+            box-shadow: 0 0 20px rgba(255, 86, 37, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-white">
+<!-- แถบนำทางด้านบน -->
+<nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl dark:bg-[#131313]/60 shadow-2xl shadow-black/50">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center text-2xl font-black tracking-tighter text-on-surface uppercase font-headline">
+<div class="bg-[#FF4500] text-white px-3 py-1 mr-3 flex items-center justify-center rounded-sm font-bold">SC</div>
+<span>SUPHAN CASTING</span>
+</div>
+<div class="hidden md:flex items-center space-x-8 font-headline uppercase tracking-widest text-sm">
+<a class="text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">หน้าแรก</a>
+<a class="text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">เกี่ยวกับเรา</a>
+<a class="text-[#ff5625] border-b-2 border-[#ff5625] pb-1" href="#">บริการ</a>
+<a class="text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">ผลิตภัณฑ์</a>
+<a class="text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">เครื่องมือ</a>
+<a class="text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">ติดต่อเรา</a>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-sm border border-outline-variant/30 hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary-container">language</span>
+<span class="font-headline text-sm font-bold uppercase tracking-wider text-on-surface">TH - ภาษาไทย</span>
+<span class="material-symbols-outlined text-sm text-on-surface-variant">expand_more</span>
+</button>
+<div class="absolute right-0 top-full mt-2 w-48 bg-surface-container-highest border border-outline-variant/30 rounded-sm shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-[60]">
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container/20 text-sm font-headline font-bold uppercase tracking-wider transition-colors border-b border-outline-variant/10" href="#">
+<span class="w-6 text-center text-xs font-bold text-primary-container">TH</span>
+<span class="text-on-surface">ภาษาไทย</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 hover:bg-primary-container/10 text-sm font-headline uppercase tracking-wider transition-colors text-on-surface-variant hover:text-on-surface" href="#">
+<span class="w-6 text-center text-xs font-bold">EN</span>
+<span>English</span>
+</a>
+</div>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-20 md:pb-0">
+<!-- ส่วน Hero -->
+<section class="relative h-[614px] flex items-center overflow-hidden px-8">
+<div class="absolute inset-0 z-0">
+<img alt="dramatic wide shot of a high-tech industrial foundry" class="w-full h-full object-cover opacity-40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhWJXKe2PnwsOssp1rjZ7IFftBjYJKth0dvLiJHBaOVvNWMlv3s6Np98C57QPX__z-y-Tq7H_FH_luYS0SfO00E7Y-3AHBVwWt4Yy7GOUaW7nV6JU1lSWyWA4Ha0INq_r-3e61OfcGRprLVtjSGxbzMfnM1GxwQM_wmm-1abYHy_2DKyUJNnYEI4rUecYrLmDflrks8_pQXC0zPsv3Afqdrb0ni4BEqgVvnf0d9OpzruunMi-arzglI2EUKNFFNwFivo-Zxq5NcA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-screen-2xl mx-auto w-full">
+<span class="label-md uppercase tracking-[0.3em] text-primary mb-4 block font-headline">กว่า 20 ปีแห่งความเป็นผู้นำทางอุตสาหกรรม</span>
+<h1 class="text-6xl md:text-8xl font-black font-headline uppercase tracking-tighter leading-none mb-6">
+                หล่อหลอม <br/><span class="text-primary-container">ความสมบูรณ์แบบ</span>
+</h1>
+<p class="max-w-xl text-lg text-on-surface-variant leading-relaxed">
+                Suphan Casting คือผู้นำในอุตสาหกรรมการหล่อทรายความจุสูง (High-capacity Sand Casting) เราส่งมอบชิ้นส่วนที่มีความแข็งแรงเชิงโครงสร้างสูงสุดสำหรับโครงการวิศวกรรมที่ต้องการความแม่นยำระดับโลก
+            </p>
+</div>
+</section>
+<!-- บริการหลัก: Sand Casting -->
+<section class="py-24 px-8 max-w-screen-2xl mx-auto">
+<div class="mb-20 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="text-4xl font-headline font-black uppercase tracking-tighter border-l-4 border-primary-container pl-6 text-primary-container">บริการหลัก: การหล่อทราย (Sand Casting)</h2>
+<p class="text-on-surface-variant mt-4 max-w-2xl">ความเชี่ยวชาญหลักของเรา ด้วยประสบการณ์กว่าสองทศวรรษ เราให้บริการโซลูชันการหล่อทรายเฉพาะทางที่เป็นมาตรฐานระดับสากลสำหรับชิ้นส่วนอุตสาหกรรมหนัก</p>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low p-4 rounded">
+<span class="material-symbols-outlined text-primary-container">verified</span>
+<span class="text-xs font-headline font-bold uppercase tracking-widest text-on-surface">ได้รับการรับรอง AS9100D</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+<div class="lg:col-span-7 space-y-12">
+<div class="relative group">
+<div class="absolute -inset-4 bg-primary-container/10 blur-3xl rounded-full opacity-50"></div>
+<img alt="professional industrial foundry floor" class="relative w-full aspect-video object-cover rounded shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEAFfTrEtOb7O85K8vZWy6KUVtykOoYm95yMLrYanACQluV8XWrs1Pa47AKTKPCl7Ahi2wEXn5yajluH7GByhPgmDaW1_F5JC89HZFkXeRqYU2hT4jnXQvXHQFR-edGKkW0Su8kCs3tD6ByK2xjv54Ivzgb6kcYe426AoZ-7-3rwB5CSjaDqgSf03HWt6Arw_YXvXG637OJl1PrU8UoI38vJCYl2u6Ei9NbRLLMGYwqjec-J40drFjxqrPzt7-KIC9eCs7BroLGw"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-4">
+<h4 class="text-xl font-headline font-bold uppercase text-primary tracking-tight">ความเชี่ยวชาญทางเทคนิค</h4>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                            ระบบหล่อทรายแบบ Green Sand อัตโนมัติและระบบ No-bake ของเรา ช่วยให้สามารถผลิตชิ้นงานต้นแบบและงานจำนวนมากได้รวดเร็ว รองรับน้ำหนักสูงสุดถึง 15,000 กก. เราใช้ซอฟต์แวร์จำลอง MAGMA เพื่อวิเคราะห์การแข็งตัวและลดข้อบกพร่องก่อนการเทจริง
+                        </p>
+</div>
+<div class="space-y-4">
+<h4 class="text-xl font-headline font-bold uppercase text-primary tracking-tight">การควบคุมทางโลหะวิทยา</h4>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                            การวิเคราะห์ทางเคมีภายในโรงงานด้วยเครื่อง OES Spectrometry ช่วยให้มั่นใจว่าเหล็กทุกล็อตตรงตามสเปคของลูกค้า เราเชี่ยวชาญด้านเหล็กหล่อเทา (Grey Iron), เหล็กหล่อเหนียว (Ductile Iron) และเหล็กกล้าผสมสูง พร้อมการรับรองโครงสร้างทางจุลภาค
+                        </p>
+</div>
+</div>
+</div>
+<div class="lg:col-span-5 space-y-8">
+<div class="bg-surface-container p-8 rounded border border-outline-variant/20">
+<h3 class="text-2xl font-headline font-black uppercase mb-6 flex items-center gap-3 text-on-surface">
+                        เปรียบเทียบกระบวนการ
+                    </h3>
+<div class="space-y-6">
+<div>
+<p class="text-[10px] uppercase tracking-widest text-primary font-bold mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add_circle</span> ข้อดี (Advantages)
+                            </p>
+<ul class="space-y-3 text-sm">
+<li class="flex items-start gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mt-1.5 shrink-0"></span>
+<span class="text-on-surface">คุ้มค่าสูงสุดสำหรับการผลิตชิ้นส่วนขนาดกลางถึงขนาดใหญ่</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mt-1.5 shrink-0"></span>
+<span class="text-on-surface">รองรับวัสดุหลากหลาย รวมถึงโลหะผสมที่มีจุดหลอมเหลวสูง</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mt-1.5 shrink-0"></span>
+<span class="text-on-surface">ต้นทุนแม่พิมพ์ต่ำที่สุดเมื่อเทียบกับวิธีอื่น</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mt-1.5 shrink-0"></span>
+<span class="text-on-surface">สามารถผลิตชิ้นงานที่มีโพรงภายในซับซ้อนด้วยระบบไส้แบบ (Cores)</span>
+</li>
+</ul>
+</div>
+<div class="pt-6 border-t border-outline-variant/20">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">remove_circle</span> ข้อจำกัด (Limitations)
+                            </p>
+<ul class="space-y-3 text-sm opacity-70">
+<li class="flex items-start gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5 shrink-0"></span>
+<span>ผิวงานมีความขรุขระกว่าวิธีอื่น อาจต้องมีการกลึงแต่งเพิ่มเติม</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5 shrink-0"></span>
+<span>ความแม่นยำของขนาดน้อยกว่าการหล่อแบบแม่พิมพ์ขี้ผึ้ง (±0.5 มม.)</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-6 border-l-2 border-primary-container">
+<p class="text-[10px] uppercase tracking-widest text-primary mb-1">น้ำหนักเทสูงสุด</p>
+<p class="font-headline font-bold text-2xl">15,000 กก.</p>
+</div>
+<div class="bg-surface-container-low p-6 border-l-2 border-primary-container">
+<p class="text-[10px] uppercase tracking-widest text-primary mb-1">ระยะเวลาการผลิต</p>
+<p class="font-headline font-bold text-2xl">3-4 สัปดาห์</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- คลังความรู้เทคโนโลยี (บริการอื่นๆ ในส่วน Coming Soon / Knowledge Base) -->
+<section class="bg-surface-container-lowest py-24 px-8 border-y border-outline-variant/10">
+<div class="max-w-screen-2xl mx-auto">
+<div class="mb-16">
+<h2 class="text-4xl font-headline font-black uppercase tracking-tighter text-on-surface">คลังความรู้เทคโนโลยีการหล่อ</h2>
+<p class="text-on-surface-variant mt-2">ศึกษาศักยภาพในอนาคตและกระบวนการทางโลหะวิทยาเฉพาะทาง</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- การหล่อแบบแม่พิมพ์ขี้ผึ้ง -->
+<div class="group bg-surface p-8 rounded relative overflow-hidden transition-all hover:bg-surface-container-low border border-outline-variant/10">
+<div class="absolute top-0 right-0 p-4">
+<span class="px-3 py-1 bg-secondary-container text-secondary text-[10px] font-bold uppercase tracking-widest">เร็วๆ นี้</span>
+</div>
+<div class="max-w-md">
+<h3 class="text-2xl font-headline font-black uppercase mb-4">การหล่อแบบแม่พิมพ์ขี้ผึ้ง (Investment Casting)</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">
+                            กระบวนการที่มีความแม่นยำสูงโดยใช้ต้นแบบขี้ผึ้งเพื่อสร้างชิ้นส่วนที่ซับซ้อน เหมาะสำหรับเทอร์ไบน์อากาศยานและเครื่องมือแพทย์ที่ต้องการผิวสัมผัสเรียบและค่าเผื่อขนาดที่เข้มงวด
+                        </p>
+<div class="flex gap-4">
+<div class="text-[10px] uppercase tracking-widest text-primary font-bold">แผนเปิดให้บริการ: ไตรมาส 4 ปี 2568</div>
+</div>
+</div>
+<div class="mt-8 opacity-30 grayscale group-hover:grayscale-0 group-hover:opacity-50 transition-all duration-700">
+<img alt="ceramic shell molds" class="w-full h-32 object-cover rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXQiXDf7kQvJqZTBLn-3dEIgjMAYgECzrn43VNvD6EpfmIo-ZviR4licFnwQ2_31rYbM81kU59ke1swyPJxpxmeaQUQCB537nRiq254ZTW-fH3U6CGxi_cc7F3dE9aarMAXbwipfB61ffK8S91rk4_6v1_P4zCPZt0PMZwC-nzH6dnBP14LcN6qpvOyVxuAG8DuHTp0DG_0jwSysPpi_Ok_YEihcb3abKQBIJjrCTj-OUfttlQA-k1sOAXz4rzJV1TvnzGfHpSOQ"/>
+</div>
+</div>
+<!-- การหล่อแบบฉีด -->
+<div class="group bg-surface p-8 rounded relative overflow-hidden transition-all hover:bg-surface-container-low border border-outline-variant/10">
+<div class="absolute top-0 right-0 p-4">
+<span class="px-3 py-1 bg-secondary-container text-secondary text-[10px] font-bold uppercase tracking-widest">ข้อมูลทางเทคนิค</span>
+</div>
+<div class="max-w-md">
+<h3 class="text-2xl font-headline font-black uppercase mb-4">การหล่อแบบฉีดแรงดันสูง (Die Casting)</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">
+                            กระบวนการอัดโลหะหลอมเหลวภายใต้แรงดันสูงเข้าสู่แม่พิมพ์เหล็ก ส่วนใหญ่ใช้สำหรับโลหะนอกกลุ่มเหล็ก เช่น อลูมิเนียมและสังกะสี สำหรับชิ้นส่วนยานยนต์และเครื่องใช้ไฟฟ้าที่ผลิตจำนวนมาก
+                        </p>
+<div class="flex gap-4">
+<div class="text-[10px] uppercase tracking-widest text-primary font-bold">องค์ความรู้ด้านวิศวกรรม</div>
+</div>
+</div>
+<div class="mt-8 opacity-30 grayscale group-hover:grayscale-0 group-hover:opacity-50 transition-all duration-700">
+<img alt="die casting machinery" class="w-full h-32 object-cover rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBU-qkNLcb9Ot9LkiN47rbidnFSLcnoOtmA6-jFoujc8h1hTAbIxZaUn9HmZAl9yx2Lvt-ROPJhINxtc1YgkU1CIx76yPGxYqKM39SgSNOMXyjx1pWKlq169uE6QzHPdC1ss5IPMeZThoJzI3KHB6d09e2HT8-AeLJn5EbmIbZW9tJzLBY24ssK4NRl0QrHNfee8OZb_mT1eSU9WHl8Y_AH8PpoUZbt1UMWKQ651N5jicIca0qWpwHcGa2nXPQoStS_b3UNcB7uCQ"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- แคตตาล็อกผลิตภัณฑ์ -->
+<section class="py-24 px-8">
+<div class="max-w-screen-2xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+<div>
+<h2 class="text-4xl font-headline font-black uppercase tracking-tighter text-on-surface">ผลงานการหล่อทราย</h2>
+<p class="text-on-surface-variant mt-2">ชิ้นส่วนอุตสาหกรรมหนักที่ผ่านการออกแบบเชิงวิศวกรรมที่แม่นยำ</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<!-- บล็อกเครื่องยนต์ขนาดใหญ่ -->
+<div class="md:col-span-2 md:row-span-2 relative group overflow-hidden bg-surface">
+<img alt="massive marine engine component" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3DMNqPDIwyGGsVoe5rJObDlq9jw5tSUG1S37XjfOQHq2gh1XLmDVHo4S8HaePaR3YUbqS0CD05R4yJtHOJa251Kz0LyqvVb1RyLGJw4oVi1htTAX5sJmfjrqBFyL4935yrz1_z0xboMS1jSACKdPKZMyvYYTQqZyYc4FNjCKLCKVnLJwORhSwNEMo5xNbRWYJ4m4TpAPcNsPRyRK9IwJlpgSKPU33tDje0Pz4XhOPJP2pPBjZ7iWI0cmcET1GCCvuPuYVRX2HEg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8">
+<span class="text-primary text-[10px] uppercase font-bold tracking-widest mb-2 block">อุตสาหกรรมเรือเดินสมุทร</span>
+<h4 class="text-3xl font-headline font-black uppercase mb-4 text-on-surface">บล็อกเครื่องยนต์ V-88</h4>
+<button class="flex items-center gap-2 text-primary-container text-xs font-bold uppercase tracking-widest group/btn">
+                            ข้อมูลทางเทคนิค <span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- วาล์วอุตสาหกรรม -->
+<div class="bg-surface-container-low group overflow-hidden">
+<div class="h-48 overflow-hidden">
+<img alt="industrial valve body" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNBgufIJqo6-uEvJyUcOitf9Lic6TMI3Fmmza7NlYZzKGnvsO3yvWeeFt6wygPNM79SVjdcjb1alRhkBGFQI2omvFLWzf--cPTuQb9sCoOZ_jTV6sG1vUoJIflFBATKpKLyqGgYbyVronyrc_0Jcw7wI4bH4aLFCkAM_W1krgLx8Z2AimgEod_Ln0iQZuf3HkrpY-xAn6iuZZdG5Ob9KH_hQH0bUTVi-rbjBDB7UtxyhmctM1g_LfDwecCJqMfiRk6IoERadX2Jg"/>
+</div>
+<div class="p-6">
+<p class="text-primary text-[10px] uppercase font-bold mb-1">ก๊าซและน้ำมัน</p>
+<h5 class="text-xl font-headline font-black uppercase text-on-surface">ตัวเรือนเกทวาล์วหลัก</h5>
+</div>
+</div>
+<!-- เสื้อเกียร์หนัก -->
+<div class="bg-surface-container-low group overflow-hidden">
+<div class="h-48 overflow-hidden">
+<img alt="heavy gear housing" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnKBzAJCqOyQzDK3zhXOb72MyKZw6lE2hHVjd6V7p7Qp2GIZFaoHR79PPqxQqwgBpwm65ZsgkdiWIbyKtFSabrguvfWxTN6CEj3HH5Qa9phgCeVv3EGS8ezFSMhzQ_-0ix26EqzL90asSVaUHZiOIytL3uuvZnhWOIYoPnKe_X3eS8OuscKWfLXm_p2Y4fVyCDcqGmOXKv2l9JsAdd5ponNC9UqlmqlHVdQFoWmHZhbFgb_NoVG3_3dFMs6bVUjVVzsbu3BREqZw"/>
+</div>
+<div class="p-6">
+<p class="text-primary text-[10px] uppercase font-bold mb-1">การทำเหมืองแร่</p>
+<h5 class="text-xl font-headline font-black uppercase text-on-surface">เสื้อเกียร์แพลนเนตตารี</h5>
+</div>
+</div>
+<!-- โครงสเตเตอร์ -->
+<div class="md:col-span-2 bg-surface-container-low flex flex-col md:flex-row">
+<div class="md:w-1/2 p-8">
+<p class="text-primary text-[10px] uppercase font-bold mb-1">โรงไฟฟ้า</p>
+<h5 class="text-2xl font-headline font-black uppercase mb-4 text-on-surface">โครงสเตเตอร์ (Stator Frame)</h5>
+<p class="text-sm text-on-surface-variant">โครงหล่อทรายความแม่นยำสูงสำหรับเครื่องปั่นไฟฟ้าขนาด 500MW</p>
+</div>
+<div class="md:w-1/2 overflow-hidden h-48 md:h-full">
+<img alt="large industrial casting" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs6CJAniEPfFsWLlEr0ajXZqw28Oa6EB5RpAnjkPbpcOTuVSUiiPRudKhIZULDg8JmL4T7iewJ6kUsUUqrOr0pj7gVL9Rblclnf7LxZAVq3dgh0lwYKzEj3FDfT5DFseDsKrQ13I02QCjNSaODKBtnwfwBV3iB_r8VT2Y3VpWocqnU2OYwvWur75peXGxupqX8wn57BCWqEd6iwvhhysXmBJQ52Ay7dPEPgfk2obUivrq1ZxXNlEGCPl19xsYfnLcGr9WJq2MSTQ"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- มาตรฐานทางวิศวกรรม -->
+<section class="py-24 px-8 max-w-screen-2xl mx-auto">
+<h2 class="text-4xl font-headline font-black uppercase tracking-tighter mb-12 text-on-surface">มาตรฐานวิศวกรรมและการรับรอง</h2>
+<div class="overflow-x-auto hide-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/30 text-primary uppercase font-headline text-xs tracking-widest">
+<th class="py-6 px-4">เกรดวัสดุ (Material Grade)</th>
+<th class="py-6 px-4">กระบวนการผลิต</th>
+<th class="py-6 px-4">น้ำหนักสูงสุด</th>
+<th class="py-6 px-4">ค่าเผื่อขนาด (Tolerance)</th>
+<th class="py-6 px-4">สถานะ</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/15">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-8 px-4 font-headline font-bold text-lg text-on-surface">EN-GJS-400-15</td>
+<td class="py-8 px-4 text-on-surface-variant">เหล็กหล่อเหนียว (Green Sand)</td>
+<td class="py-8 px-4 text-on-surface-variant">5,000 กก.</td>
+<td class="py-8 px-4"><span class="px-2 py-1 bg-secondary-container/30 text-secondary text-[10px] font-bold">ISO 8062-CT8</span></td>
+<td class="py-8 px-4 text-primary font-bold uppercase text-[10px]">เปิดให้บริการ</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-8 px-4 font-headline font-bold text-lg text-on-surface">ASTM A351 CF8M</td>
+<td class="py-8 px-4 text-on-surface-variant">เหล็กกล้าไร้สนิม (No-Bake)</td>
+<td class="py-8 px-4 text-on-surface-variant">15,000 กก.</td>
+<td class="py-8 px-4"><span class="px-2 py-1 bg-secondary-container/30 text-secondary text-[10px] font-bold">ISO 8062-CT9</span></td>
+<td class="py-8 px-4 text-primary font-bold uppercase text-[10px]">เปิดให้บริการ</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors opacity-40">
+<td class="py-8 px-4 font-headline font-bold text-lg text-on-surface">AL-6061 T6</td>
+<td class="py-8 px-4 text-on-surface-variant">หล่อฉีดแม่พิมพ์เหล็ก (Automated)</td>
+<td class="py-8 px-4 text-on-surface-variant">50 กก.</td>
+<td class="py-8 px-4"><span class="px-2 py-1 bg-surface-container-highest text-on-surface-variant text-[10px] font-bold">ISO 8062-CT4</span></td>
+<td class="py-8 px-4 text-on-surface-variant uppercase text-[10px]">เร็วๆ นี้</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- ส่วนกำหนดค่าบริการ (Configurator) -->
+<section class="py-24 px-8 bg-surface-container-low">
+<div class="max-w-4xl mx-auto">
+<div class="glass-panel p-10 rounded shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary-container"></div>
+<div class="relative z-10">
+<h2 class="text-3xl font-headline font-black uppercase mb-2 text-on-surface">เครื่องมือประเมินบริการ</h2>
+<p class="text-on-surface-variant mb-10 text-sm">กำหนดพารามิเตอร์โครงการของคุณเพื่อรับคำปรึกษาจากการหล่อทรายโดยผู้เชี่ยวชาญ</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+<div>
+<label class="block text-[10px] uppercase font-bold tracking-widest text-primary mb-3">กลุ่มวัสดุ</label>
+<select class="w-full bg-surface-container-highest border-none focus:ring-1 focus:ring-primary-container text-on-surface p-4 text-sm font-medium">
+<option>เหล็กหล่อเหนียว (SGI)</option>
+<option>เหล็กหล่อเทา (CI)</option>
+<option>เหล็กกล้าผสม</option>
+<option>เหล็กกล้าไร้สนิม</option>
+</select>
+</div>
+<div>
+<label class="block text-[10px] uppercase font-bold tracking-widest text-primary mb-3">ระดับความซับซ้อน</label>
+<select class="w-full bg-surface-container-highest border-none focus:ring-1 focus:ring-primary-container text-on-surface p-4 text-sm font-medium">
+<option>งานหล่อตัน (ไม่มีไส้แบบ)</option>
+<option>ความซับซ้อนปานกลาง (1-3 ไส้แบบ)</option>
+<option>ความซับซ้อนสูง (หลายไส้แบบ)</option>
+<option>ความซับซ้อนวิกฤต (ช่องทางภายในซับซ้อนมาก)</option>
+</select>
+</div>
+</div>
+<div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-outline-variant/20">
+<div class="text-center md:text-left">
+<p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">คำแนะนำจากผู้เชี่ยวชาญ</p>
+<p class="text-2xl font-headline font-black text-primary-container uppercase">การหล่อทรายความจุสูง (Sand Casting)</p>
+</div>
+<button class="w-full md:w-auto px-10 py-4 bg-primary-container text-on-primary-container font-headline font-black uppercase tracking-widest glow-hover transition-all">
+                            ขอรับการตรวจสอบงานวิศวกรรม
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- ส่วนท้าย (Footer) -->
+<footer class="bg-[#0e0e0e] py-12 px-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto items-start">
+<div>
+<div class="text-xl font-bold text-[#ff5625] font-headline uppercase mb-6">SUPHAN CASTING</div>
+<p class="font-headline text-xs tracking-wider text-[#4a6b6b] leading-relaxed">
+                กำหนดมาตรฐานระดับโลกในการหล่อที่มีความแม่นยำสูงและวิศวกรรมทางโลหะวิทยา ความเป็นเลิศที่หลอมจากความร้อน
+            </p>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<div class="flex flex-col space-y-3">
+<span class="font-headline font-bold text-[10px] text-primary uppercase tracking-[0.2em] mb-2">บริษัท</span>
+<a class="font-headline text-xs tracking-wider text-[#4a6b6b] hover:text-[#ffb5a0] transition-opacity" href="#">นโยบายความเป็นส่วนตัว</a>
+<a class="font-headline text-xs tracking-wider text-[#4a6b6b] hover:text-[#ffb5a0] transition-opacity" href="#">เงื่อนไขการให้บริการ</a>
+</div>
+<div class="flex flex-col space-y-3">
+<span class="font-headline font-bold text-[10px] text-primary uppercase tracking-[0.2em] mb-2">การรับรอง</span>
+<a class="font-headline text-xs tracking-wider text-[#4a6b6b] hover:text-[#ffb5a0] transition-opacity" href="#">ISO 9001:2015</a>
+<a class="font-headline text-xs tracking-wider text-[#4a6b6b] hover:text-[#ffb5a0] transition-opacity" href="#">AS9100D</a>
+</div>
+</div>
+<div class="md:text-right">
+<p class="font-headline text-xs tracking-wider text-[#4a6b6b] mb-4">ปรึกษาวิศวกรของเรา</p>
+<p class="font-headline font-black text-2xl text-primary mb-6">+66 (0) 2-XXX-XXXX</p>
+<div class="flex md:justify-end gap-4">
+<span class="material-symbols-outlined text-primary-container cursor-pointer hover:scale-110 transition-transform">language</span>
+<span class="material-symbols-outlined text-primary-container cursor-pointer hover:scale-110 transition-transform">share</span>
+<span class="material-symbols-outlined text-primary-container cursor-pointer hover:scale-110 transition-transform">mail</span>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto border-t border-outline-variant/10 mt-12 pt-8 text-center">
+<p class="font-headline text-xs tracking-wider text-[#4a6b6b]">© 2024 SUPHAN CASTING INDUSTRIAL. สงวนลิขสิทธิ์ทั้งหมด</p>
+</div>
+</footer>
+<!-- แถบนำทางด้านล่างสำหรับมือถือ -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 bg-[#0e0e0e]/80 backdrop-blur-lg border-t border-[#5d4038]/15 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+<a class="flex flex-col items-center justify-center text-[#2e4e4e] hover:text-[#ffb5a0]" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-headline text-[10px] uppercase font-bold tracking-tighter mt-1">หน้าหลัก</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ff5625] transition-all" href="#">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span class="font-headline text-[10px] uppercase font-bold tracking-tighter mt-1">บริการ</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2e4e4e] hover:text-[#ffb5a0]" href="#">
+<span class="material-symbols-outlined">build</span>
+<span class="font-headline text-[10px] uppercase font-bold tracking-tighter mt-1">เครื่องมือ</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2e4e4e] hover:text-[#ffb5a0]" href="#">
+<span class="material-symbols-outlined">mail</span>
+<span class="font-headline text-[10px] uppercase font-bold tracking-tighter mt-1">ติดต่อ</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tools &amp; Resources | PRECISION FORGE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Work+Sans:wght@300;400;500;600&amp;family=Anuphan:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-primary": "#b12d00",
+              "error-container": "#93000a",
+              "tertiary-container": "#2592ff",
+              "surface-tint": "#ffb5a0",
+              "surface-bright": "#3a3939",
+              "surface-container-high": "#2a2a2a",
+              "surface": "#131313",
+              "tertiary-fixed-dim": "#a5c8ff",
+              "surface-container-low": "#1c1b1b",
+              "surface-container-highest": "#353534",
+              "on-surface": "#e5e2e1",
+              "surface-container": "#201f1f",
+              "primary-fixed-dim": "#ffb5a0",
+              "secondary": "#abcdcd",
+              "secondary-fixed-dim": "#abcdcd",
+              "on-secondary": "#143535",
+              "primary-container": "#ff5625",
+              "on-primary-container": "#541100",
+              "outline-variant": "#5d4038",
+              "on-secondary-container": "#9dbfbe",
+              "background": "#131313",
+              "primary-fixed": "#ffdbd1",
+              "surface-container-lowest": "#0e0e0e",
+              "secondary-container": "#2e4e4e",
+              "on-primary-fixed": "#3b0900",
+              "secondary-fixed": "#c6e9e9",
+              "primary": "#ffb5a0",
+              "inverse-on-surface": "#313030",
+              "surface-variant": "#353534",
+              "on-tertiary-fixed": "#001c3a",
+              "on-tertiary-container": "#002a53",
+              "on-tertiary": "#00315e",
+              "on-tertiary-fixed-variant": "#004785",
+              "on-secondary-fixed": "#002020",
+              "on-error-container": "#ffdad6",
+              "on-error": "#690005",
+              "outline": "#ad887e",
+              "on-secondary-fixed-variant": "#2c4c4c",
+              "tertiary": "#a5c8ff",
+              "surface-dim": "#131313",
+              "on-surface-variant": "#e7bdb2",
+              "inverse-surface": "#e5e2e1",
+              "on-primary-fixed-variant": "#872000",
+              "on-background": "#e5e2e1",
+              "error": "#ffb4ab",
+              "on-primary": "#601400",
+              "tertiary-fixed": "#d4e3ff"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk", "Anuphan", "sans-serif"],
+              "body": ["Work Sans", "Anuphan", "sans-serif"],
+              "label": ["Work Sans", "Anuphan", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-effect {
+        backdrop-filter: blur(20px);
+        background: rgba(53, 53, 52, 0.6);
+      }
+      .molten-gradient {
+        background: linear-gradient(135deg, #ffb5a0 0%, #ff5625 100%);
+      }
+      .industrial-border {
+        border-left: 2px solid #ff5625;
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-white">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/60 dark:bg-[#131313]/60 backdrop-blur-xl border-b border-[#5d4038]/15 shadow-2xl shadow-black/50">
+<div class="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-[#ff5625] dark:text-[#ffb5a0] font-headline">
+                PRECISION FORGE
+            </div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-headline uppercase tracking-widest text-sm text-slate-400 hover:text-white transition-colors" href="#">Home</a>
+<a class="font-headline uppercase tracking-widest text-sm text-slate-400 hover:text-white transition-colors" href="#">About</a>
+<a class="font-headline uppercase tracking-widest text-sm text-slate-400 hover:text-white transition-colors" href="#">Sand Casting</a>
+<a class="font-headline uppercase tracking-widest text-sm text-slate-400 hover:text-white transition-colors" href="#">Products</a>
+<a class="font-headline uppercase tracking-widest text-sm text-[#ff5625] dark:text-[#ffb5a0] border-b-2 border-[#ff5625] pb-1" href="#">Resources</a>
+<a class="scale-95 active:scale-90 transition-transform bg-primary-container text-on-primary-container px-6 py-2 font-headline uppercase tracking-widest text-sm font-bold" href="#">Contact</a>
+</div>
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<main class="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+<!-- Hero Header -->
+<header class="mb-20 text-center md:text-left">
+<span class="label-md uppercase tracking-[0.3em] text-primary mb-4 block font-headline font-medium">Utility Command Center</span>
+<h1 class="text-6xl md:text-8xl font-headline font-bold uppercase tracking-tighter mb-6 leading-none">
+                Tools &amp; <br/> <span class="text-primary-container">Resources</span>
+</h1>
+<p class="max-w-2xl text-on-surface-variant text-lg leading-relaxed">
+                Centralized access for industrial engineers, procurement officers, and technical partners. High-precision documentation and streamlined project management at your fingertips.
+            </p>
+</header>
+<!-- Navigation Hub: Bento Grid -->
+<section class="mb-28">
+<h2 class="text-xs uppercase tracking-widest text-outline mb-8 flex items-center gap-4">
+<span class="w-12 h-[1px] bg-outline-variant/30"></span>
+                Navigation Hub
+            </h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Large Card -->
+<a class="group relative md:col-span-2 h-80 overflow-hidden bg-surface-container-low transition-all duration-500 hover:bg-surface-container-high" href="#">
+<div class="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity">
+<img alt="close-up of industrial foundry process with sparks and glowing molten metal in a dark factory setting" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzqcjFm88Nwxyqut99vFI-5hCGylxW6dgMlykMC4v59vdYb1cJGZMCyJ7SR5EHzKN0j8Pd3QTmjI9rdQjLry7gzbuU3D3GJiWu23Qq845xWlu-bwex15oteD8cROPLV7bF6S9QY7Xqo1nwnLX1EduchuvonwRqCTbrui4lhHCR3VRcpFkCSdvUGpAB4jwPVIKQaiNmFbfk6e3A7P9R1Mqmu0V8jtejLrvlVv9VINB--tPqts6lr5VM3xEyUGVZ4r8yYIf9c9FiGA"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8">
+<h3 class="text-4xl font-headline font-bold uppercase mb-2">Sand Casting</h3>
+<p class="text-on-surface-variant max-w-md">Explore our core manufacturing process and heavy machinery capabilities.</p>
+</div>
+<div class="absolute top-8 right-8">
+<span class="material-symbols-outlined text-primary text-4xl group-hover:translate-x-2 transition-transform">arrow_forward</span>
+</div>
+</a>
+<!-- Small Card 1 -->
+<a class="group bg-surface-container-low p-8 flex flex-col justify-between hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-primary text-3xl">verified</span>
+<div>
+<h3 class="text-xl font-headline font-bold uppercase mb-2">Certifications</h3>
+<p class="text-sm text-on-surface-variant">ISO 9001:2015 and safety standards documentation.</p>
+</div>
+</a>
+<!-- Small Card 2 -->
+<a class="group bg-surface-container-low p-8 flex flex-col justify-between hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-primary text-3xl">precision_manufacturing</span>
+<div>
+<h3 class="text-xl font-headline font-bold uppercase mb-2">Products</h3>
+<p class="text-sm text-on-surface-variant">View our comprehensive portfolio of forged components.</p>
+</div>
+</a>
+<!-- Small Card 3 -->
+<a class="group bg-surface-container-low p-8 flex flex-col justify-between hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-primary text-3xl">corporate_fare</span>
+<div>
+<h3 class="text-xl font-headline font-bold uppercase mb-2">About Us</h3>
+<p class="text-sm text-on-surface-variant">Our history of precision engineering since 1984.</p>
+</div>
+</a>
+<!-- Small Card 4 -->
+<a class="group bg-surface-container-low p-8 flex flex-col justify-between hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-primary text-3xl">mail</span>
+<div>
+<h3 class="text-xl font-headline font-bold uppercase mb-2">Contact</h3>
+<p class="text-sm text-on-surface-variant">Global sales and technical support channels.</p>
+</div>
+</a>
+</div>
+</section>
+<!-- Technical Catalog & Client Resources -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-28">
+<!-- Catalog Section -->
+<section>
+<h2 class="text-xs uppercase tracking-widest text-outline mb-10 flex items-center gap-4">
+<span class="w-12 h-[1px] bg-outline-variant/30"></span>
+                    Technical Catalog
+                </h2>
+<div class="space-y-4">
+<div class="group bg-surface-container-lowest p-6 flex items-center justify-between border-l-2 border-transparent hover:border-primary-container hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">picture_as_pdf</span>
+</div>
+<div>
+<h4 class="font-headline font-bold uppercase tracking-tight">Full Company Catalog 2024</h4>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest mt-1">PDF • 14.2 MB • Updated Q3</p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant group-hover:bg-primary-container group-hover:border-primary-container transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+</button>
+</div>
+<div class="group bg-surface-container-lowest p-6 flex items-center justify-between border-l-2 border-transparent hover:border-primary-container hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">settings_suggest</span>
+</div>
+<div>
+<h4 class="font-headline font-bold uppercase tracking-tight">Material Spec Sheets</h4>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest mt-1">XLSX • 2.1 MB • ASTM Standard</p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant group-hover:bg-primary-container group-hover:border-primary-container transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+</button>
+</div>
+<div class="group bg-surface-container-lowest p-6 flex items-center justify-between border-l-2 border-transparent hover:border-primary-container hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">engineering</span>
+</div>
+<div>
+<h4 class="font-headline font-bold uppercase tracking-tight">Tolerance Standards</h4>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest mt-1">PDF • 4.8 MB • ISO 8062</p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant group-hover:bg-primary-container group-hover:border-primary-container transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+</button>
+</div>
+</div>
+<!-- Knowledge Base Link -->
+<div class="mt-10 p-8 bg-secondary-container/20 border border-secondary-container/30">
+<h4 class="font-headline font-bold uppercase mb-2">Knowledge Base</h4>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">Detailed comparative analysis between Sand Casting, Investment Casting, and Die Casting technologies.</p>
+<a class="text-primary font-headline uppercase tracking-widest text-xs font-bold flex items-center gap-2 group" href="#">
+                        Explore Database 
+                        <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_right_alt</span>
+</a>
+</div>
+</section>
+<!-- Quotation Tool -->
+<section class="bg-surface-container p-10 relative overflow-hidden" id="quote-tool">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/10 blur-3xl rounded-full -mr-16 -mt-16"></div>
+<h2 class="text-2xl font-headline font-bold uppercase mb-2">Request Quote</h2>
+<p class="text-on-surface-variant text-sm mb-10">Instant industrial inquiry for custom sand casting projects.</p>
+<form class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="relative">
+<label class="text-[10px] uppercase tracking-widest text-outline mb-2 block">Company Name</label>
+<input class="w-full bg-surface-container-highest border-none focus:ring-0 p-4 industrial-border text-sm" placeholder="Global Logistics Co." type="text"/>
+</div>
+<div class="relative">
+<label class="text-[10px] uppercase tracking-widest text-outline mb-2 block">Material Type</label>
+<select class="w-full bg-surface-container-highest border-none focus:ring-0 p-4 industrial-border text-sm appearance-none">
+<option>Ductile Iron</option>
+<option>Grey Iron</option>
+<option>Steel Alloy</option>
+</select>
+</div>
+</div>
+<div class="relative">
+<label class="text-[10px] uppercase tracking-widest text-outline mb-2 block">Estimated Volume (Units)</label>
+<input class="w-full bg-surface-container-highest border-none focus:ring-0 p-4 industrial-border text-sm" placeholder="5,000+" type="number"/>
+</div>
+<div class="relative">
+<label class="text-[10px] uppercase tracking-widest text-outline mb-2 block">Project Details</label>
+<textarea class="w-full bg-surface-container-highest border-none focus:ring-0 p-4 industrial-border text-sm h-32" placeholder="Describe specifications and timelines..."></textarea>
+</div>
+<button class="w-full molten-gradient text-on-primary-container font-headline font-bold uppercase tracking-[0.2em] py-5 shadow-xl shadow-primary-container/20 hover:scale-[1.02] active:scale-95 transition-all">
+                        Generate Submission
+                    </button>
+</form>
+</section>
+</div>
+<!-- Blog & Knowledge -->
+<section class="mb-28">
+<div class="flex justify-between items-end mb-12">
+<h2 class="text-xs uppercase tracking-widest text-outline flex items-center gap-4">
+<span class="w-12 h-[1px] bg-outline-variant/30"></span>
+                    Knowledge &amp; Insights
+                </h2>
+<a class="text-primary-container text-xs font-bold uppercase tracking-widest border-b border-primary-container/30 pb-1" href="#">View All Articles</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+<article class="group cursor-pointer">
+<div class="h-48 overflow-hidden mb-6">
+<img alt="high-tech industrial machine with blue lights and glowing sensors in a modern manufacturing facility" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYjr6OYbZPXR1x7BAARCOjYd6a6fsQBhdb6tgt0coOlngE9NYXVRT_XCndxaFJlEBZamEAgoIKAzvLTcofx_-pHZR26gy902AAaiMwm96JukGDPhBX5-fkSISDTycJEcYSmLWauCeCS3rPtGb3AWuIflw4a9n1OY4Se09ElQIiLHyCXxKaM7mXIi_M8jAwEGB_jvUEU4aPut0qvbhyfbKvTMQYUnlo7yMOYhg3nCTczJTggUCwuihtbAtUqg2SnW2fu7bQvD9y0A"/>
+</div>
+<span class="text-[10px] font-headline uppercase tracking-widest text-primary mb-3 block">Engineering Trends</span>
+<h3 class="text-xl font-headline font-bold uppercase leading-tight mb-3 group-hover:text-primary transition-colors">Digital Twins in Sand Casting: The 2024 Revolution</h3>
+<p class="text-sm text-on-surface-variant line-clamp-3 leading-relaxed">How simulation software is reducing casting defects by 40% before the first mold is even poured.</p>
+</article>
+<article class="group cursor-pointer">
+<div class="h-48 overflow-hidden mb-6">
+<img alt="close-up of molten metal glowing bright orange being poured from a crucible into a mold" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCK7UzK3N2V2QluOJ5Qsc7yuj5qRg1uFck7CvvqB7hzMPmmSnimbd9MHVW8bGvKWG74pM-xl-tKlSVtr0l8qf34nqQE6gb2LXem7bk286lJ7vfqUOkguQu5Fhw8G6g4evh1qCdkt-UZdrVB2I96NmLI-hTdzURyY1y1giWMiVaZ4KDzPqH82iWPyFoWWG_vgaiIJ92FTBTil5Ocs26gHaTiTQeBVQyvMddsQBFg9T71AVJE7ItP11l5fO7EPgbLj8q4nhHOSMPm3A"/>
+</div>
+<span class="text-[10px] font-headline uppercase tracking-widest text-primary mb-3 block">Material Science</span>
+<h3 class="text-xl font-headline font-bold uppercase leading-tight mb-3 group-hover:text-primary transition-colors">Optimizing Alloy Composition for Extreme Heat</h3>
+<p class="text-sm text-on-surface-variant line-clamp-3 leading-relaxed">A technical breakdown of carbon-silicon ratios in heavy industrial valve production.</p>
+</article>
+<article class="group cursor-pointer">
+<div class="h-48 overflow-hidden mb-6">
+<img alt="architectural view of a dark industrial warehouse with dramatic light beams filtering through structural steel" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYN6zhAYga0KkBdtwf4oBClppqevoytrZPysuFYqnezvs391ZGhvlIjX02LmwNCUF2uC3e6IYM3HFS9ivYJzBx5HRwyZ2m2fgAADAWtzJ42I5eARv19mTzpipIyOhicVtmL1z8YYBykY29q8xyzNWF66UCqD7xx-9OtgAwGTuUOHzYicgsJ_7UxVWYjR2q8rW-KX8EPuphpMOQZrTg8dX2ClT8kEzKlwssVcgFXIc9hCuJDE23H_4DiVYIq5n9sj-h1vcfoZuUpQ"/>
+</div>
+<span class="text-[10px] font-headline uppercase tracking-widest text-primary mb-3 block">Global Trade</span>
+<h3 class="text-xl font-headline font-bold uppercase leading-tight mb-3 group-hover:text-primary transition-colors">Navigating International Foundry Standards</h3>
+<p class="text-sm text-on-surface-variant line-clamp-3 leading-relaxed">Key differences between ASTM and JIS standards for global procurement officers.</p>
+</article>
+</div>
+</section>
+<!-- Email Templates: Quick Action -->
+<section class="bg-[#0e0e0e] border border-outline-variant/10 p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
+<div>
+<h2 class="text-3xl font-headline font-bold uppercase mb-4">International Inquiry Center</h2>
+<p class="text-on-surface-variant max-w-xl">Need professional phrasing for your requisition? Use our pre-formatted industrial inquiry templates for seamless communication.</p>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+<button class="bg-surface-container-highest px-8 py-4 font-headline uppercase tracking-widest text-xs font-bold flex items-center justify-center gap-3 hover:bg-surface-container transition-all group">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+                    RFQ Template
+                </button>
+<button class="bg-surface-container-highest px-8 py-4 font-headline uppercase tracking-widest text-xs font-bold flex items-center justify-center gap-3 hover:bg-surface-container transition-all group">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+                    Technical Brief
+                </button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#0e0e0e] dark:bg-[#0e0e0e] w-full py-12 px-8">
+<div class="bg-gradient-to-r from-transparent via-[#5d4038]/20 to-transparent h-[1px] mb-8"></div>
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
+<div class="text-lg font-black text-white font-headline">PRECISION FORGE INDUSTRIAL.</div>
+<div class="flex gap-8">
+<a class="font-headline text-xs tracking-tight text-slate-500 hover:text-[#ff5625] transition-colors" href="#">Privacy Policy</a>
+<a class="font-headline text-xs tracking-tight text-slate-500 hover:text-[#ff5625] transition-colors" href="#">Terms of Service</a>
+<a class="font-headline text-xs tracking-tight text-slate-500 hover:text-[#ff5625] transition-colors" href="#">Technical Support</a>
+<a class="font-headline text-xs tracking-tight text-slate-500 hover:text-[#ff5625] transition-colors" href="#">Global Locations</a>
+</div>
+<div class="font-headline text-xs tracking-tight text-slate-500">
+                © 2024 PRECISION FORGE INDUSTRIAL. ALL RIGHTS RESERVED.
+            </div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Suphan Casting | Precision Industrial Forge</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Work+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-on-surface": "#313030",
+              "surface-container-lowest": "#0e0e0e",
+              "on-primary-fixed": "#3b0900",
+              "inverse-surface": "#e5e2e1",
+              "secondary": "#abcdcd",
+              "secondary-fixed-dim": "#abcdcd",
+              "on-secondary": "#143535",
+              "on-primary-container": "#541100",
+              "primary-container": "#ff5625",
+              "surface-dim": "#131313",
+              "on-secondary-fixed-variant": "#2c4c4c",
+              "surface-container-low": "#1c1b1b",
+              "error": "#ffb4ab",
+              "on-surface-variant": "#e7bdb2",
+              "on-primary": "#601400",
+              "background": "#131313",
+              "on-tertiary-container": "#002a53",
+              "primary": "#ffb5a0",
+              "on-error": "#690005",
+              "tertiary": "#a5c8ff",
+              "surface-tint": "#ffb5a0",
+              "secondary-container": "#2e4e4e",
+              "on-tertiary-fixed": "#001c3a",
+              "on-primary-fixed-variant": "#872000",
+              "on-surface": "#e5e2e1",
+              "primary-fixed-dim": "#ffb5a0",
+              "surface-bright": "#3a3939",
+              "on-tertiary-fixed-variant": "#004785",
+              "tertiary-fixed-dim": "#a5c8ff",
+              "on-background": "#e5e2e1",
+              "surface-container-highest": "#353534",
+              "tertiary-fixed": "#d4e3ff",
+              "primary-fixed": "#ffdbd1",
+              "outline": "#ad887e",
+              "error-container": "#93000a",
+              "inverse-primary": "#b12d00",
+              "surface-variant": "#353534",
+              "surface-container": "#201f1f",
+              "tertiary-container": "#2592ff",
+              "on-error-container": "#ffdad6",
+              "on-secondary-container": "#9dbfbe",
+              "surface": "#131313",
+              "on-secondary-fixed": "#002020",
+              "secondary-fixed": "#c6e9e9",
+              "outline-variant": "#5d4038",
+              "on-tertiary": "#00315e",
+              "surface-container-high": "#2a2a2a"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Work Sans"],
+              "label": ["Work Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      body { background-color: #131313; color: #e5e2e1; font-family: 'Work Sans', sans-serif; }
+      .hide-scrollbar::-webkit-scrollbar { display: none; }
+      .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .glass-panel { background: rgba(53, 53, 52, 0.6); backdrop-filter: blur(20px); }
+      .glow-effect:active { box-shadow: 0 0 20px rgba(255, 86, 37, 0.6); }
+      .editorial-title { font-family: 'Space Grotesk', sans-serif; font-weight: 900; letter-spacing: -0.05em; line-height: 0.9; }
+      .text-glow { text-shadow: 0 0 15px rgba(255, 181, 160, 0.3); }
+    </style>
+</head>
+<body class="selection:bg-primary-container selection:text-white overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl dark:bg-[#131313]/60 shadow-2xl shadow-black/50">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-3">
+<img alt="Logo Anchor" class="w-8 h-8" data-alt="Industrial factory icon in bright molten orange representing metal casting and heavy manufacturing" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB28Cb_ZUeZLTGKecvGVGRE4EfIJYJ2c8oNY06bQp8fRNizAa0GO-1332Ijv3ftiTVhbxcRr9Umf3ouPFdITclnDBy5BYYk3Vjg0qwJznGKe2oyL71T4yHJx3NfKFcXEJ0HoagE0YG056WQ8c7LJ8K3h7x34vuq2pwIKaUcmVRHiIlzaqfGAeqOIfb-X98c4nLxNacX6y0o8q12NaW5K0nXcwTRMcEdxSbv4px2tUM0M8YMwtygY3UOqzFG9t_MQqv92e8TjhWbMA"/>
+<span class="text-2xl font-black tracking-tighter text-[#ff5625] dark:text-[#ff5625] uppercase font-['Space_Grotesk']">SUPHAN CASTING</span>
+</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-[#ff5625] border-b-2 border-[#ff5625] pb-1" href="#">Home</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">Services</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">Products</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">Tools</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-on-surface-variant hover:text-[#ffb5a0] transition-colors" href="#">Contact</a>
+<button class="bg-primary-container text-on-primary-container font-bold px-6 py-2 rounded uppercase tracking-tighter hover:bg-primary transition-all scale-95 active:scale-90">Get Quote</button>
+</div>
+<div class="md:hidden">
+<span class="material-symbols-outlined text-primary text-3xl">menu</span>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative h-screen w-full flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-black/40 z-10"></div>
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="Cinematic wide shot of molten orange steel being poured from a heavy industrial crucible in a modern, dark foundry with glowing sparks" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm4ccBfSoxjyN1NZ9eSNhCUWBVpDZSZR0My0SmkKILmfwE40pZvrEI4GEaAOsC5VjSGklV5kM5vFvfXYcpXQB13vpO5kCql6ssTY6L9xDnm2HnZ0mkFKXMwlpE1iUBGmmfOo9jkk8OMfCzeXHic_kmVirkr0n_O5RL0GRxfpdMjjRH2Jz_z_AZGLauHbjI0E5RF1Hfe21f-ozCy42b1pXjDvL7K0Ck_E8NT0OICOxXp6Kn86AuNiCAPKbU5mfGi-ROLJGrL4MgZA"/>
+<div class="relative z-20 text-center px-6 max-w-5xl">
+<span class="inline-block py-1 px-3 mb-6 border border-primary/30 text-primary text-xs font-bold tracking-[0.4em] uppercase bg-primary-container/10 backdrop-blur-sm">Precision Engineering Since 1988</span>
+<h1 class="editorial-title text-6xl md:text-9xl mb-8 text-white uppercase">
+                Molten Steel <br/>
+<span class="text-primary-container italic">Shaped</span> into <br/>
+                Your Vision.
+            </h1>
+<div class="flex flex-col md:flex-row gap-4 justify-center items-center">
+<button class="w-full md:w-auto px-10 py-5 bg-primary-container text-white font-black uppercase tracking-widest hover:shadow-[0_0_30px_rgba(255,86,37,0.4)] transition-all">Start Your Project</button>
+<button class="w-full md:w-auto px-10 py-5 border border-white/20 backdrop-blur-md text-white font-black uppercase tracking-widest hover:bg-white/10 transition-all">Explore Services</button>
+</div>
+</div>
+<!-- Scroll Indicator -->
+<div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 hidden md:block">
+<div class="w-[2px] h-16 bg-white/10 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1/2 bg-primary-container animate-bounce"></div>
+</div>
+</div>
+</section>
+<!-- Services Section (Horizontal Scroll) -->
+<section class="py-24 bg-surface relative overflow-hidden">
+<div class="px-8 mb-16 flex justify-between items-end max-w-screen-2xl mx-auto">
+<div>
+<p class="text-primary font-bold tracking-widest uppercase text-xs mb-2 italic">// Core Capabilities</p>
+<h2 class="editorial-title text-5xl text-on-surface">Industrial Expertise.</h2>
+</div>
+<div class="hidden md:flex gap-4">
+<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-primary-container transition-colors group">
+<span class="material-symbols-outlined group-hover:text-white">west</span>
+</button>
+<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-primary-container transition-colors group">
+<span class="material-symbols-outlined group-hover:text-white">east</span>
+</button>
+</div>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory gap-6 px-8 pb-12">
+<!-- Flagship: Sand Casting -->
+<div class="min-w-[85vw] md:min-w-[550px] aspect-[16/9] md:aspect-[4/5] relative snap-start group overflow-hidden border-2 border-primary-container shadow-[0_0_40px_rgba(255,86,37,0.15)]">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Detail of a traditional sand casting mold being prepared by hand in an industrial setting with dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcAvKo7QH6pOw33sBqKaLJHC_WTOgXXmNDx8TAQy5-s-EjXAr9sbq8jjicHvm1eX2oQwMdnb1L-1quXPqPvaVpaB2hdXs0gkAX64CGT9MD6CEmPqKGMJso6wX2npjIPqHJbtGFv0fOAjAYa5VOGXxq227T_EtgWxuEfKOFMwoDAx4CYwFj8l0-LqoND9-eN6NVAOxDQySvco-grPS5wN5iHct5wLbtASJQlEAw-f595SLjZrBOPRQuuQ7oBOB3VD26Q58S2mMa3Q"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+<div class="absolute top-6 right-6">
+<span class="bg-primary-container text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest">Flagship Service</span>
+</div>
+<div class="absolute bottom-0 p-8 w-full">
+<span class="text-primary text-xs font-bold tracking-widest mb-4 block">CORE / PROCESS 01</span>
+<h3 class="font-headline text-4xl font-bold mb-4 uppercase text-white">Sand Casting</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed max-w-sm">Our primary expert technique for large scale industrial components with complex internal geometry and legendary durability.</p>
+<button class="flex items-center gap-2 text-primary-container font-black text-xs uppercase tracking-widest bg-white/5 backdrop-blur-md px-4 py-2 border border-primary-container/30 hover:bg-primary-container hover:text-white transition-all">
+                        Immediate Project Start <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Future: Investment Casting -->
+<div class="min-w-[85vw] md:min-w-[400px] aspect-[4/5] relative snap-start group overflow-hidden opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="Modern precision investment casting equipment with molten metal being injected into high-precision ceramic molds" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfpnva66xe3fbhS4dVKLIJ13I5LRvEMSnxJcKQvhy026g3NPxoSk7yiHKuuNKdFClS4jbI0sGdUJ4bG4AZcljIRfLifwpEpj0Hux_PDqTXrs65mGDDL-j3QlC82qgDoYopk1OGIfxvdlGVJUiasZ93X3UHj0U7WktDhPE7FqjfC814DO0gM7CCdJY9gLxC80G0p6SPitbDEo0gmP2py8zNiSyaISwvpZhbjvobyB2KFQGQFbNZbXWPwDMb4NNAz4rIWhuiXMHmjA"/>
+<div class="absolute inset-0 bg-black/60 backdrop-grayscale"></div>
+<div class="absolute inset-0 flex items-center justify-center p-8 text-center border border-white/5">
+<div class="space-y-4">
+<span class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Knowledge Base</span>
+<h3 class="font-headline text-2xl font-bold uppercase text-white/60">Investment <br/> Casting</h3>
+<p class="text-[10px] text-white/40 uppercase tracking-widest">Expansion in Progress</p>
+</div>
+</div>
+<div class="absolute bottom-0 p-8 w-full">
+<span class="text-outline-variant text-xs font-bold tracking-widest mb-4 block">FUTURE / PROCESS 02</span>
+<p class="text-on-surface-variant text-xs mb-4 italic">High-precision patterns for aerospace parts. Currently in R&amp;D phase for 2025 rollout.</p>
+<span class="text-white/40 font-bold text-[10px] uppercase tracking-widest border-b border-white/20 pb-1">Coming Soon</span>
+</div>
+</div>
+<!-- Future: Die Casting -->
+<div class="min-w-[85vw] md:min-w-[400px] aspect-[4/5] relative snap-start group overflow-hidden opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="High-pressure die casting machine showing the mechanical assembly and precise cooling nozzles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFsDWKH617JnXU6p5aL2ZXLtz-9lpLY0aHY_ipKGptfgfuxhtA5hca2CMgO1tapfbb-Gvt35Nr93kp_eNXACAqisI1yZUD0pnqhQAtHPvwTXqcyHHbnxLe8hcIuX0HP8cgzFNSajxStK3rQ8dQy31BJKpo1NDodjoRYN4Wvbk0lwAahBhWRPOBmYyjhFqMcP5u92QOV1shDnTqmgEe1gY_XnB7ILid6IYNEa7sfFaN0EedXXUXk2WT8F4DRfDlreasZ8fK2_jd4g"/>
+<div class="absolute inset-0 bg-black/60 backdrop-grayscale"></div>
+<div class="absolute inset-0 flex items-center justify-center p-8 text-center border border-white/5">
+<div class="space-y-4">
+<span class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Knowledge Base</span>
+<h3 class="font-headline text-2xl font-bold uppercase text-white/60">Die <br/> Casting</h3>
+<p class="text-[10px] text-white/40 uppercase tracking-widest">Future Capability</p>
+</div>
+</div>
+<div class="absolute bottom-0 p-8 w-full">
+<span class="text-outline-variant text-xs font-bold tracking-widest mb-4 block">FUTURE / PROCESS 03</span>
+<p class="text-on-surface-variant text-xs mb-4 italic">Automated high-pressure systems for mass production. Engineering phase ongoing.</p>
+<span class="text-white/40 font-bold text-[10px] uppercase tracking-widest border-b border-white/20 pb-1">Coming Soon</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Process Section (Asymmetric) -->
+<section class="py-24 bg-surface-container-lowest">
+<div class="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+<div class="relative">
+<div class="absolute -top-10 -left-10 w-40 h-40 bg-primary-container/20 blur-[80px]"></div>
+<img class="w-full aspect-square object-cover grayscale brightness-75 border-l-4 border-primary-container p-4" data-alt="Industrial CAD design station showing a complex 3D metal part blueprint with technical grid and measurements" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCosA3il6NAQfM05oV0pxzKP-BBiIOdacDZj6y21P0JlO_HehI0S17TRFoy0u1tgr7vHAelOuySK5MWMo52z0KvbaaCs0N7xML8wpgjiUwzI8bEDubCtXVgWQdGtjMRQJcedV7x5MDo8EGg3n7ALYSo31RZI02WOoRXqDJyr6wLIHBpyKe2w6JiEGu539Lp30SZVvskD8VsUAWKfg1GiS-KGjefS40mybmGOPJhwpkwG5eNxtLqQiKfpFXoRFdjcWO5qsL3s767AA"/>
+<div class="absolute bottom-4 right-4 bg-surface-container-highest p-6 max-w-xs border border-outline-variant/20">
+<p class="font-headline text-xl font-bold mb-2 uppercase text-primary">Zero-Error Policy</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Every mold is scanned via 3D laser technology to ensure 100% adherence to your engineering specifications.</p>
+</div>
+</div>
+<div class="space-y-12">
+<div>
+<p class="text-primary font-bold tracking-widest uppercase text-xs mb-2">// How we forge</p>
+<h2 class="editorial-title text-6xl text-white mb-6 uppercase">The Production <br/><span class="text-outline">Flow.</span></h2>
+</div>
+<div class="space-y-10">
+<div class="flex gap-6 items-start">
+<span class="text-4xl font-black text-outline-variant/30 font-headline">01</span>
+<div>
+<h4 class="text-xl font-bold text-white uppercase mb-2 tracking-tighter">Design &amp; Simulation</h4>
+<p class="text-on-surface-variant text-sm">Advanced CAD/CAM analysis to predict metal flow and prevent porosity before the first pour.</p>
+</div>
+</div>
+<div class="flex gap-6 items-start">
+<span class="text-4xl font-black text-outline-variant/30 font-headline">02</span>
+<div>
+<h4 class="text-xl font-bold text-white uppercase mb-2 tracking-tighter">Mold Fabrication</h4>
+<p class="text-on-surface-variant text-sm">Precision toolmaking in-house to ensure the master mold captures every micro-detail of your part.</p>
+</div>
+</div>
+<div class="flex gap-6 items-start">
+<span class="text-4xl font-black text-primary-container font-headline">03</span>
+<div>
+<h4 class="text-xl font-bold text-white uppercase mb-2 tracking-tighter">Controlled Casting</h4>
+<p class="text-on-surface-variant text-sm">Atmospheric-controlled furnace melting with real-time alloy composition monitoring.</p>
+</div>
+</div>
+<div class="flex gap-6 items-start">
+<span class="text-4xl font-black text-outline-variant/30 font-headline">04</span>
+<div>
+<h4 class="text-xl font-bold text-white uppercase mb-2 tracking-tighter">Final Inspection</h4>
+<p class="text-on-surface-variant text-sm">X-ray, ultrasonic, and hydrostatic testing to guarantee structural integrity and performance.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Gallery Section (Swipeable) -->
+<section class="py-24 bg-surface border-y border-outline-variant/10">
+<div class="px-8 mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-screen-2xl mx-auto">
+<h2 class="editorial-title text-5xl text-white uppercase">Precision <span class="text-primary italic">Output.</span></h2>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-1 rounded-full border border-primary text-primary text-[10px] font-black uppercase tracking-widest">Automotive</span>
+<span class="px-4 py-1 rounded-full border border-outline-variant text-on-surface-variant text-[10px] font-black uppercase tracking-widest">Industrial Pumps</span>
+<span class="px-4 py-1 rounded-full border border-outline-variant text-on-surface-variant text-[10px] font-black uppercase tracking-widest">Aeronautics</span>
+</div>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory gap-4 px-8">
+<div class="min-w-[70vw] md:min-w-[400px] aspect-square snap-start overflow-hidden bg-surface-container-low group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Macro close-up of a high-precision machined aluminum pump housing with complex internal vanes and polished surfaces" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcvjqoF65ybeQggMD2XiYXMSqqdLDS0eipsREVHFGTGO2eCS2N0YJE8qZCYlziaMNsti4sx6NBVTnfkFchhNJgpyD1Dnh_pxmf51mWlFV0QjCFVjp-LvvNdxfMYZvxSMTDIu1_2IEKqJ4azF9z3X3yKapn7mX45WPBeIBmsfbt1q2tZ3t310VlahJJEQFyTtQGib_KYjwBYiT2dfuvSbe7l2kh90aCpkH4BIjj61bsG_iYkd0QwSIOi0SEpVVjlB29MFgLfMYHpQ"/>
+</div>
+<div class="min-w-[70vw] md:min-w-[400px] aspect-square snap-start overflow-hidden bg-surface-container-low group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Steel valve body component for industrial fluid control, featuring precise threading and matte industrial finish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAumDSYYS8V_mBMRUixty46MOw1nKWdr27RfyITuzQa1IJMRfIjBFbxmGN58VfiQ2iVx1YBTIavn_3MKoo9TmTIV6uFiElFfCc1KOrpWpLY1K00qFiJ9FojHx4ndtzRQy30r9IcdutMNeihekWqaBwSflB-ZjGDXlPgKjGhBHwdpfZaN8gSyxqLCuX5DGttPq2p_Ii8YIPeaKZFc-SmmJx-uoN0QCObE58RqpT6RGpYaIhS6MWZhHQ7N1YmdfHYPdE8ZPrwYI6aHQ"/>
+</div>
+<div class="min-w-[70vw] md:min-w-[400px] aspect-square snap-start overflow-hidden bg-surface-container-low group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Set of complex automotive engine mounting brackets made of cast iron, arranged on a dark workshop table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPNK7FO-hd6SX0RpRkfS57lpPcGTvbgfKFOGeCxGwoBnyLPWYBxzGiMRJ48WzfffNqOoDQv1thE43AweY-xNYAuf3mowZdhXZ-Qs9H0a_TSyD-PV2XPKsnitNILXv7WoVlEKWssVcU1_tcOROpAK7zlMsj5G8DDyj2S7S8qpUQM5qvZnmNoju_kKw0rp-ZnqRJvcxbGvrYvwYBQz9vMTu-_obDGH28bRE1aNms8pZOL3N9RJDIyqfl8iZdRUJFxY972XVyWd00mQ"/>
+</div>
+<div class="min-w-[70vw] md:min-w-[400px] aspect-square snap-start overflow-hidden bg-surface-container-low group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Precision-engineered turbine blade component showing subtle metallic sheen and aerodynamic profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC3O8aySrzg3Vm-QrY8dwxQJTgrSmnEksrjyaZv_Qkj1EqYdM5-y09W6wcXeRFE8_qLqTyv4nzfeGM0ek3iiV71J1NSTZYK0NWv4c4yh0RHrVsaNmBNap56y7xQwGxOq49fRUlhS7rGEYYqCJa4BAmc2JwssBipqXMGxy0ckujqkkO5i97ctgxG31pEQcQePeH-hMSdCFi3t-RuVPnjZarSQ-KEpEJ6QMuhcH4in-sHaTS9yWPn6i3n1PhnfTogLrdfyhomX92eg"/>
+</div>
+</div>
+</section>
+<!-- CTA Section (Glassmorphism) -->
+<section class="py-32 bg-surface-container-lowest relative">
+<div class="max-w-4xl mx-auto px-8">
+<div class="glass-panel p-12 md:p-20 border border-white/5 relative overflow-hidden text-center">
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary-container/20 rounded-full blur-[100px]"></div>
+<div class="absolute -bottom-24 -left-24 w-64 h-64 bg-secondary-container/20 rounded-full blur-[100px]"></div>
+<h2 class="editorial-title text-5xl md:text-7xl mb-8 text-white uppercase relative z-10">Start Your <span class="text-primary">Quote</span> Today.</h2>
+<p class="text-on-surface-variant text-lg mb-12 max-w-2xl mx-auto relative z-10 font-body">Connect with our engineering team for a feasibility study and transparent pricing within 24 hours.</p>
+<div class="flex flex-col md:flex-row gap-6 justify-center items-center relative z-10">
+<button class="w-full md:w-auto px-12 py-5 bg-primary-container text-white font-black uppercase tracking-widest hover:bg-primary transition-all shadow-xl shadow-primary-container/20">Request Proposal</button>
+<a class="text-white font-bold flex items-center gap-3 group" href="tel:+123456789">
+<span class="material-symbols-outlined text-primary group-hover:rotate-12 transition-transform">call</span>
+                        +66 (0) 2 345 6789
+                    </a>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-[#0e0e0e] dark:bg-[#0e0e0e] w-full py-12 px-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto">
+<div class="space-y-6">
+<div class="flex items-center gap-3">
+<img alt="Footer Logo" class="w-6 h-6" data-alt="Orange industrial factory icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdb-zJr0SN1420DKP3VEnbXAOX8Lr8CAn8FN8xq2flLXK_L1_bxBVzU2puGT6J0-NTEdKD6TSzbKcJuYBndeEdixBHJxLai3YyQIpatCNbrrS11FuBLZEmpuQdw1PiSxZghwroV7yua4hlF0Dz2h7qOdVeOWMGy891qmJ7mRuUxfRuU6RriufEu0tMTMSAS8lXEn0ZF6Ol_hIhlpNoer9Eko_htj3ttjtLmxV76tieu7Cuqrv_AIk89i7cYumMq3tyfYM9zHq2xQ"/>
+<span class="text-xl font-bold text-[#ff5625] font-['Space_Grotesk'] uppercase">SUPHAN CASTING</span>
+</div>
+<p class="text-[#2e4e4e] text-xs leading-relaxed max-w-xs font-['Space_Grotesk'] tracking-wider">Defining the future of metal fabrication through high-precision casting and rigorous quality standards since 1988.</p>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<div>
+<h5 class="text-[#ffb5a0] font-bold text-xs uppercase mb-6 font-['Space_Grotesk'] tracking-wider">Quick Links</h5>
+<ul class="space-y-3">
+<li><a class="text-[#2e4e4e] hover:text-[#ffb5a0] transition-opacity font-['Space_Grotesk'] text-xs tracking-wider" href="#">About Us</a></li>
+<li><a class="text-[#2e4e4e] hover:text-[#ffb5a0] transition-opacity font-['Space_Grotesk'] text-xs tracking-wider" href="#">Services</a></li>
+<li><a class="text-[#2e4e4e] hover:text-[#ffb5a0] transition-opacity font-['Space_Grotesk'] text-xs tracking-wider" href="#">Portfolio</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-[#ffb5a0] font-bold text-xs uppercase mb-6 font-['Space_Grotesk'] tracking-wider">Legal</h5>
+<ul class="space-y-3">
+<li><a class="text-[#2e4e4e] hover:text-[#ffb5a0] transition-opacity font-['Space_Grotesk'] text-xs tracking-wider" href="#">Privacy Policy</a></li>
+<li><a class="text-[#2e4e4e] hover:text-[#ffb5a0] transition-opacity font-['Space_Grotesk'] text-xs tracking-wider" href="#">Terms of Service</a></li>
+<li><a class="text-[#2e4e4e] hover:text-[#ffb5a0] transition-opacity font-['Space_Grotesk'] text-xs tracking-wider" href="#">ISO Certification</a></li>
+</ul>
+</div>
+</div>
+<div class="space-y-6">
+<h5 class="text-[#ffb5a0] font-bold text-xs uppercase font-['Space_Grotesk'] tracking-wider">Global HQ</h5>
+<p class="text-[#2e4e4e] text-xs font-['Space_Grotesk'] tracking-wider leading-relaxed">
+                    123 Industrial Estate Road, Bang Na<br/>
+                    Samut Prakan, 10540, Thailand
+                </p>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-[#ffb5a0]">language</span>
+<span class="material-symbols-outlined text-[#ffb5a0]">share</span>
+<span class="material-symbols-outlined text-[#ffb5a0]">verified</span>
+</div>
+</div>
+</div>
+<div class="mt-16 pt-8 border-t border-[#5d4038]/15 text-center">
+<p class="font-['Space_Grotesk'] text-xs tracking-wider text-[#2e4e4e]">© 2024 SUPHAN CASTING INDUSTRIAL. ALL RIGHTS RESERVED.</p>
+</div>
+</footer>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 bg-[#0e0e0e]/80 backdrop-blur-lg dark:bg-[#0e0e0e]/80 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] border-t border-[#5d4038]/15 z-50">
+<a class="flex flex-col items-center justify-center text-[#ff5625] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-tighter">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2e4e4e]" href="#">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-tighter">Products</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2e4e4e]" href="#">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-tighter">Tools</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2e4e4e]" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-tighter">Contact</span>
+</a>
+</nav>
+</body></html>

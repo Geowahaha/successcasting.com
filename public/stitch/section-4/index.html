@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>แคตตาล็อกผลิตภัณฑ์อุตสาหกรรม | PRECISION FORGE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Work+Sans:wght@300;400;500;600&amp;family=Bebas+Neue&amp;family=Sarabun:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "surface-container": "#201f1f",
+                "surface-dim": "#131313",
+                "on-surface-variant": "#e7bdb2",
+                "inverse-surface": "#e5e2e1",
+                "error": "#ffb4ab",
+                "on-tertiary-fixed": "#001c3a",
+                "on-error": "#690005",
+                "outline-variant": "#5d4038",
+                "secondary-fixed": "#c6e9e9",
+                "on-tertiary-container": "#002a53",
+                "on-primary-fixed-variant": "#872000",
+                "surface-container-low": "#1c1b1b",
+                "on-secondary": "#143535",
+                "tertiary-fixed": "#d4e3ff",
+                "primary-fixed-dim": "#ffb5a0",
+                "error-container": "#93000a",
+                "surface-tint": "#ffb5a0",
+                "on-primary": "#601400",
+                "secondary-container": "#2e4e4e",
+                "outline": "#ad887e",
+                "tertiary-fixed-dim": "#a5c8ff",
+                "on-error-container": "#ffdad6",
+                "background": "#131313",
+                "primary-container": "#ff5625",
+                "on-surface": "#e5e2e1",
+                "on-secondary-container": "#9dbfbe",
+                "on-secondary-fixed": "#002020",
+                "secondary": "#abcdcd",
+                "tertiary": "#a5c8ff",
+                "surface-container-lowest": "#0e0e0e",
+                "on-primary-fixed": "#3b0900",
+                "surface-bright": "#3a3939",
+                "on-primary-container": "#541100",
+                "on-tertiary-fixed-variant": "#004785",
+                "secondary-fixed-dim": "#abcdcd",
+                "on-tertiary": "#00315e",
+                "inverse-on-surface": "#313030",
+                "surface": "#131313",
+                "surface-container-high": "#2a2a2a",
+                "surface-container-highest": "#353534",
+                "primary-fixed": "#ffdbd1",
+                "on-secondary-fixed-variant": "#2c4c4c",
+                "tertiary-container": "#2592ff",
+                "inverse-primary": "#b12d00",
+                "primary": "#ffb5a0",
+                "on-background": "#e5e2e1",
+                "surface-variant": "#353534"
+              },
+              fontFamily: {
+                "headline": ["Space Grotesk", "Sarabun"],
+                "body": ["Work Sans", "Sarabun"],
+                "label": ["Work Sans", "Sarabun"],
+                "industrial": ["Bebas Neue", "Sarabun"]
+              },
+              borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+            },
+          },
+        }
+    </script>
+<style>
+        .glass-nav {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+        }
+        .molten-glow {
+            box-shadow: 0 0 30px rgba(255, 86, 37, 0.2);
+        }
+        .industrial-grid {
+            background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+        .text-glow {
+            text-shadow: 0 0 15px rgba(255, 181, 160, 0.4);
+        }
+        .card-inner-shadow {
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0e0e0e; }
+        ::-webkit-scrollbar-thumb { background: #2e4e4e; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ff5625; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-white">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/60 backdrop-blur-xl shadow-2xl shadow-orange-900/20">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-none">
+<div class="text-2xl font-black tracking-tighter text-orange-500 font-headline">PRECISION FORGE</div>
+<div class="hidden md:flex gap-10 items-center">
+<a class="font-headline uppercase tracking-widest text-sm text-neutral-400 hover:text-neutral-100 transition-colors" href="#">โซลูชัน</a>
+<a class="font-headline uppercase tracking-widest text-sm text-orange-500 border-b-2 border-orange-500 pb-1" href="#">ผลิตภัณฑ์</a>
+<a class="font-headline uppercase tracking-widest text-sm text-neutral-400 hover:text-neutral-100 transition-colors" href="#">โลหวิทยา</a>
+<a class="font-headline uppercase tracking-widest text-sm text-neutral-400 hover:text-neutral-100 transition-colors" href="#">มาตรฐาน</a>
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">search</button>
+<button class="bg-primary-container text-on-primary-container px-6 py-2 font-headline font-bold uppercase tracking-widest text-xs hover:scale-95 transition-all duration-150">ขอใบเสนอราคา</button>
+</div>
+</div>
+</nav>
+<!-- Page Header -->
+<header class="pt-40 pb-20 px-8 industrial-grid border-b border-white/5">
+<div class="max-w-7xl mx-auto">
+<div class="flex items-center gap-4 mb-4">
+<span class="h-px w-12 bg-primary"></span>
+<span class="text-primary font-headline font-bold uppercase tracking-[0.4em] text-xs">แคตตาล็อก v4.2</span>
+</div>
+<h1 class="font-industrial text-7xl md:text-9xl uppercase tracking-tighter leading-none mb-6">
+            ชิ้นส่วน <br/><span class="text-primary-container">วิศวกรรม</span>
+</h1>
+<p class="max-w-2xl text-on-surface-variant text-lg leading-relaxed">
+            กลุ่มผลิตภัณฑ์งานหล่อคุณภาพสูงสำหรับโครงสร้างพื้นฐานระดับโลก ทุกชิ้นส่วนถูกหลอมขึ้นด้วยความแม่นยำด้านความร้อนสูงสุดและความเป็นเลิศทางโลหวิทยา
+        </p>
+</div>
+</header>
+<!-- Premium Product Gallery -->
+<section class="py-24 px-8">
+<div class="max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+<!-- Product 1: Pump Housings -->
+<div class="group relative aspect-[4/5] bg-surface-container-low overflow-hidden border border-white/5 transition-all duration-500 hover:border-primary/50">
+<img alt="เสื้อปั๊ม" class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbBm8WD03QoQZ_1W2TKnWdygRMTXHbMhaS7HKOPK9NFFqKMF23ShS6deFYyJiqY6X_Ib0C3olbDKjEABr4CVgYvRiHCYPKwLQbIdwubKD4z1W3jzGFgiacD425oMrGhm2Vn1_KGEykEi2nUzMUczRws6O3C2n_xEx7In8hFbU3yD5EXV5IQY1Qz7RepiEJ2dlG3zOV2qvuxMpGPnVEIAKWmy6qUHbMBFxO-6uAs3g7unYa9qKCRVCyadvVTDkFiGjI1EFt83x99g"/>
+<div class="absolute inset-0 card-inner-shadow"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="mb-2 text-primary font-headline text-[10px] uppercase tracking-[0.3em]">พลศาสตร์ของไหล</div>
+<h3 class="font-industrial text-4xl text-white mb-4 group-hover:text-primary transition-colors">เสื้อปั๊ม (Pump Housings)</h3>
+<p class="text-xs text-neutral-400 uppercase tracking-widest line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">ออกแบบมาเพื่อระบบแรงดันสูงใต้ทะเลและกระบวนการทางอุตสาหกรรม</p>
+<button class="mt-6 flex items-center gap-2 text-primary text-[10px] uppercase tracking-widest font-bold group-hover:gap-4 transition-all">
+                        ดูข้อมูลทางเทคนิค <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Product 2: Engine Blocks -->
+<div class="group relative aspect-[4/5] bg-surface-container-low overflow-hidden border border-white/5 transition-all duration-500 hover:border-primary/50">
+<img alt="เสื้อสูบ" class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAinZLLdmM_-heb4HnZe8QZSqAgQSljQLyEVSYJONDStWg03lAqKr2oMj1Xwdxs2drbTxspcRo7T10F435vCZlWxSnzaX13AWjP5yjMN98fgaA4gSogU9eSy7AT2vmRhd7LMeGsXg2UOsVU8PzLC7GR8NgBD755AJzjKbxeVAZ_LshuHg8hBGCUc22dY018zcrtknYydMVKux0JggvzR-9cU1O0qUsS3UEFZpsg0ej6yCBoN1teeS0AZ9xMu2E_Jwi8Pt7_LE2Igw"/>
+<div class="absolute inset-0 card-inner-shadow"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="mb-2 text-primary font-headline text-[10px] uppercase tracking-[0.3em]">ระบบขับเคลื่อน</div>
+<h3 class="font-industrial text-4xl text-white mb-4 group-hover:text-primary transition-colors">เสื้อสูบ (Engine Blocks)</h3>
+<p class="text-xs text-neutral-400 uppercase tracking-widest line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">เหล็กหล่อเทาและเหล็กหล่อเหนียวความแม่นยำสูง สำหรับเครื่องยนต์เรือเดินทะเลขนาดใหญ่</p>
+<button class="mt-6 flex items-center gap-2 text-primary text-[10px] uppercase tracking-widest font-bold group-hover:gap-4 transition-all">
+                        ดูข้อมูลทางเทคนิค <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Product 3: Valve Bodies -->
+<div class="group relative aspect-[4/5] bg-surface-container-low overflow-hidden border border-white/5 transition-all duration-500 hover:border-primary/50">
+<img alt="ตัววาล์ว" class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZJ_skQRPXMVXyp5swth39peugWp2VSV4oAH0K90eHKfSXiFtAlbqNqhoHuF1jZl-AH6jdLMPCRYv_SZC2_nZXqZQBUOO26Lqi1nQQ2-liZ9bs8HHUXXSNIx_03sndy4UQASYs8BawbcvEeSs3YNci_OI8IfSmn2nMtwt5x2t83gtqN2vZhN1bnisXSEdfuoOT7klSzy23r5GMY_boPah_ST98vPp4BUrBNKB5-9pnWKnxCB8WsHBJQPXf52SqX_8nCtMfP7gBBg"/>
+<div class="absolute inset-0 card-inner-shadow"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="mb-2 text-primary font-headline text-[10px] uppercase tracking-[0.3em]">ความแม่นยำสูงพิเศษ</div>
+<h3 class="font-industrial text-4xl text-white mb-4 group-hover:text-primary transition-colors">ตัววาล์ว (Valve Bodies)</h3>
+<p class="text-xs text-neutral-400 uppercase tracking-widest line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">โครงสร้างภายในซับซ้อนสำหรับการควบคุมการไหลที่มีความละเอียดสูง</p>
+<button class="mt-6 flex items-center gap-2 text-primary text-[10px] uppercase tracking-widest font-bold group-hover:gap-4 transition-all">
+                        ดูข้อมูลทางเทคนิค <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Product 4: Turbine Components -->
+<div class="group relative aspect-[4/5] bg-surface-container-low overflow-hidden border border-white/5 transition-all duration-500 hover:border-primary/50">
+<img alt="ชิ้นส่วนกังหัน" class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2fgCZ3VOknvaK7wNq5wEsLeLpaE2w8mRFImITiMvUFkjPCibRIDp5yAtiFBLGW4OzRW8YoRMJHOvVPbG6lUxroS4LnjL0IilOaVRICPSxFFYUQrDes1CZ0nGklGtkkeA8Bf2-9pkzk3DwXmtyRLrYfHf-9zbE_t_NghgICe_XeAghKz1PnMewHAsKNkD16u-ljm-lofropJNuWhTl1VfvG1PgBJHkOMYaJ7G2eA6kG2kGDag1kRLC1HgdsFwurwj00F8Uee4WpA"/>
+<div class="absolute inset-0 card-inner-shadow"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="mb-2 text-primary font-headline text-[10px] uppercase tracking-[0.3em]">ภาคพลังงาน</div>
+<h3 class="font-industrial text-4xl text-white mb-4 group-hover:text-primary transition-colors">งานหล่อกังหัน</h3>
+<p class="text-xs text-neutral-400 uppercase tracking-widest line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">โลหะผสมทนความร้อนสูง ออกแบบมาเพื่อรับรอบอุณหภูมิที่รุนแรงในการผลิตพลังงาน</p>
+<button class="mt-6 flex items-center gap-2 text-primary text-[10px] uppercase tracking-widest font-bold group-hover:gap-4 transition-all">
+                        ดูข้อมูลทางเทคนิค <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Product 5: Precision Moldings -->
+<div class="group relative aspect-[4/5] bg-surface-container-low overflow-hidden border border-white/5 transition-all duration-500 hover:border-primary/50">
+<img alt="แม่พิมพ์ความแม่นยำ" class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMR0w6XYDUwKfdByiBZnxmaIltZOwsPCmzdOGyO65Dfxie891zySfPqwsyinsEqI35eQFSVS3B2S-d3GWJNzaPDkDLBvPoWfTKTbXhBpwEdzrApT61BDiqFlN6okzBAzrr3WEX2qXT_cLhg3eKQeTJsde0XoqaUZOwCpYJ6raakbyG6VaE0VIUiu0aNDQvuysB-IeKQWDLac2HGW_WkVrou7UHwWgXQwVMBFR_ODo5-1p91cwJQ3v5-2T58bl5wnYwYMqbQ8B8Ng"/>
+<div class="absolute inset-0 card-inner-shadow"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="mb-2 text-primary font-headline text-[10px] uppercase tracking-[0.3em]">กระบวนการพิเศษ</div>
+<h3 class="font-industrial text-4xl text-white mb-4 group-hover:text-primary transition-colors">แม่พิมพ์สั่งทำพิเศษ</h3>
+<p class="text-xs text-neutral-400 uppercase tracking-widest line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">แม่พิมพ์เซรามิกและทรายขั้นสูงสำหรับการผลิตชิ้นส่วนโครงสร้างต้นแบบที่มีความซับซ้อน</p>
+<button class="mt-6 flex items-center gap-2 text-primary text-[10px] uppercase tracking-widest font-bold group-hover:gap-4 transition-all">
+                        ดูข้อมูลทางเทคนิค <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Call to Action Card -->
+<div class="bg-primary-container p-10 flex flex-col justify-center items-start relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-black/10 -translate-y-8 translate-x-8 rotate-45 group-hover:translate-x-4 transition-transform"></div>
+<h3 class="font-industrial text-5xl text-on-primary-container leading-[0.9] mb-6">ต้องการ <br/> โซลูชัน <br/>เฉพาะตัว?</h3>
+<p class="text-on-primary-container text-sm font-medium mb-10 max-w-[200px]">วิศวกรของเราพร้อมหารือเกี่ยวกับข้อกำหนดทางโลหวิทยาเฉพาะของคุณ</p>
+<button class="bg-neutral-950 text-white px-8 py-4 font-headline text-xs font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors">
+                    ปรึกษาวิศวกร
+                </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Technical Specs Section -->
+<section class="py-24 bg-surface-container-lowest border-t border-white/5 relative">
+<div class="max-w-7xl mx-auto px-8">
+<div class="mb-16 flex flex-col md:flex-row justify-between items-end gap-6 border-l-4 border-primary pl-8">
+<div>
+<h2 class="font-industrial text-5xl uppercase tracking-tighter text-white">ข้อกำหนดทางเทคนิค</h2>
+<p class="text-neutral-500 uppercase tracking-[0.3em] text-[10px] mt-2 font-headline">ตารางวัสดุและความสามารถด้านค่าความคลาดเคลื่อน</p>
+</div>
+<div class="flex gap-4">
+<button class="border border-white/10 px-6 py-2 text-[10px] uppercase font-bold tracking-widest hover:bg-white/5 transition-colors">ดาวน์โหลด PDF ฉบับเต็ม</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse border-y border-white/5">
+<thead>
+<tr class="bg-neutral-950/50 text-[10px] uppercase tracking-[0.2em] font-headline text-primary">
+<th class="p-6 border-b border-white/5 font-black">เกรดวัสดุ</th>
+<th class="p-6 border-b border-white/5 font-black">การใช้งานหลัก</th>
+<th class="p-6 border-b border-white/5 text-center font-black">น้ำหนักสูงสุดต่อหน่วย</th>
+<th class="p-6 border-b border-white/5 text-right font-black">ระดับความแม่นยำ</th>
+</tr>
+</thead>
+<tbody class="text-sm font-light">
+<tr class="border-b border-white/5 hover:bg-primary-container/5 transition-colors group">
+<td class="p-6 font-semibold text-white group-hover:text-primary transition-colors">เหล็กหล่อ (เทา/เหนียว)</td>
+<td class="p-6 text-neutral-400 group-hover:text-neutral-200">ฐานเครื่องจักรหนัก, เสื้อเกียร์, มู่เล่</td>
+<td class="p-6 text-center text-neutral-300">10,000 กก.</td>
+<td class="p-6 text-right font-mono text-primary/80 group-hover:text-primary">ISO 8062-CT10</td>
+</tr>
+<tr class="border-b border-white/5 hover:bg-primary-container/5 transition-colors group">
+<td class="p-6 font-semibold text-white group-hover:text-primary transition-colors">เหล็กคาร์บอนและเหล็กกล้าผสม</td>
+<td class="p-6 text-neutral-400 group-hover:text-neutral-200">ขายึดโครงสร้าง, ข้อต่อรับแรงสูง, ชุดลากจูง</td>
+<td class="p-6 text-center text-neutral-300">4,500 กก.</td>
+<td class="p-6 text-right font-mono text-primary/80 group-hover:text-primary">ISO 8062-CT8</td>
+</tr>
+<tr class="border-b border-white/5 hover:bg-primary-container/5 transition-colors group">
+<td class="p-6 font-semibold text-white group-hover:text-primary transition-colors">สแตนเลส (300/400)</td>
+<td class="p-6 text-neutral-400 group-hover:text-neutral-200">ระบบจัดการของไหลกัดกร่อน, ระบบแปรรูปอาหาร</td>
+<td class="p-6 text-center text-neutral-300">2,200 กก.</td>
+<td class="p-6 text-right font-mono text-primary/80 group-hover:text-primary">ISO 8062-CT7</td>
+</tr>
+<tr class="border-b border-white/5 hover:bg-primary-container/5 transition-colors group">
+<td class="p-6 font-semibold text-white group-hover:text-primary transition-colors">ซูเปอร์อัลลอยนิกเกิลสูง</td>
+<td class="p-6 text-neutral-400 group-hover:text-neutral-200">ชิ้นส่วนกังหันอากาศยาน, อุปกรณ์แลกเปลี่ยนความร้อน</td>
+<td class="p-6 text-center text-neutral-300">800 กก.</td>
+<td class="p-6 text-right font-mono text-primary/80 group-hover:text-primary">ISO 8062-CT6</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Action Buttons -->
+<div class="mt-20 flex flex-wrap gap-6 justify-center">
+<button class="bg-primary-container text-on-primary-container px-12 py-5 font-headline font-black uppercase tracking-[0.2em] text-sm hover:translate-y-[-2px] transition-all molten-glow">
+                ขอข้อมูลทางเทคนิคเพิ่มเติม
+            </button>
+<button class="border-2 border-white/10 text-white px-12 py-5 font-headline font-black uppercase tracking-[0.2em] text-sm hover:bg-white/5 hover:border-white/20 transition-all">
+                ติดต่อฝ่ายวิศวกรรม
+            </button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-neutral-950 w-full border-t border-neutral-800/30 pt-20 pb-10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 px-12 max-w-7xl mx-auto">
+<div class="space-y-6">
+<div class="text-lg font-bold text-neutral-500 font-headline">PRECISION FORGE INDUSTRIAL</div>
+<p class="text-neutral-500 text-xs leading-relaxed max-w-xs uppercase tracking-tighter">
+                ผู้นำระดับโลกด้านโซลูชันงานหล่อขั้นสูงและวิศวกรรมโลหวิทยา สำหรับการใช้งานในอุตสาหกรรมที่ต้องการความแม่นยำสูง
+            </p>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="font-headline text-xs uppercase tracking-wider text-orange-600 mb-2">ขีดความสามารถ</h4>
+<a class="text-neutral-500 hover:text-orange-400 font-headline text-xs uppercase tracking-wider hover:translate-x-1 transition-transform duration-200" href="#">มาตรฐาน ASTM</a>
+<a class="text-neutral-500 hover:text-orange-400 font-headline text-xs uppercase tracking-wider hover:translate-x-1 transition-transform duration-200" href="#">การรับรอง ISO 9001</a>
+<a class="text-neutral-500 hover:text-orange-400 font-headline text-xs uppercase tracking-wider hover:translate-x-1 transition-transform duration-200" href="#">โลจิสติกส์ระดับโลก</a>
+<a class="text-neutral-500 hover:text-orange-400 font-headline text-xs uppercase tracking-wider hover:translate-x-1 transition-transform duration-200" href="#">ที่ตั้งโรงหล่อ</a>
+<a class="text-neutral-500 hover:text-orange-400 font-headline text-xs uppercase tracking-wider hover:translate-x-1 transition-transform duration-200" href="#">เอกสารข้อมูลทางเทคนิค</a>
+</div>
+<div class="space-y-4">
+<h4 class="font-headline text-xs uppercase tracking-wider text-orange-600 mb-2">สำนักงานใหญ่</h4>
+<p class="text-neutral-500 text-xs uppercase tracking-widest leading-loose">
+                Forge District No. 42<br/>
+                Metallurgy Way, Heavy Industry Zone<br/>
+                Global Logistics Hub 10294
+            </p>
+<div class="flex gap-4 pt-4">
+<span class="material-symbols-outlined text-neutral-600 hover:text-primary cursor-pointer">language</span>
+<span class="material-symbols-outlined text-neutral-600 hover:text-primary cursor-pointer">mail</span>
+<span class="material-symbols-outlined text-neutral-600 hover:text-primary cursor-pointer">precision_manufacturing</span>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-12 mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+<span class="font-headline text-xs uppercase tracking-wider text-neutral-600">© 2024 PRECISION FORGE INDUSTRIAL. สงวนลิขสิทธิ์.</span>
+<div class="flex gap-8">
+<a class="text-neutral-600 text-[10px] uppercase tracking-widest hover:text-white" href="#">ข้อกำหนดความเป็นส่วนตัว</a>
+<a class="text-neutral-600 text-[10px] uppercase tracking-widest hover:text-white" href="#">จริยธรรมห่วงโซ่อุปทาน</a>
+</div>
+</div>
+</footer>
+</body></html>

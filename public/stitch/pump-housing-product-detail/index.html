@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Work+Sans:wght@300;400;500;600&amp;family=Bebas+Neue&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "error-container": "#93000a",
+              "surface-container-low": "#1c1b1b",
+              "secondary": "#abcdcd",
+              "on-tertiary-container": "#002a53",
+              "primary-fixed-dim": "#ffb5a0",
+              "tertiary-fixed": "#d4e3ff",
+              "on-secondary": "#143535",
+              "on-error-container": "#ffdad6",
+              "primary": "#ffb5a0",
+              "on-secondary-container": "#9dbfbe",
+              "secondary-container": "#2e4e4e",
+              "on-background": "#e5e2e1",
+              "surface-container-lowest": "#0e0e0e",
+              "secondary-fixed-dim": "#abcdcd",
+              "on-tertiary-fixed-variant": "#004785",
+              "surface": "#131313",
+              "outline-variant": "#5d4038",
+              "on-tertiary": "#00315e",
+              "background": "#131313",
+              "surface-variant": "#353534",
+              "outline": "#ad887e",
+              "on-surface-variant": "#e7bdb2",
+              "on-surface": "#e5e2e1",
+              "inverse-on-surface": "#313030",
+              "secondary-fixed": "#c6e9e9",
+              "on-tertiary-fixed": "#001c3a",
+              "on-primary-container": "#541100",
+              "inverse-primary": "#b12d00",
+              "primary-fixed": "#ffdbd1",
+              "inverse-surface": "#e5e2e1",
+              "on-primary": "#601400",
+              "surface-tint": "#ffb5a0",
+              "surface-dim": "#131313",
+              "tertiary-container": "#2592ff",
+              "surface-bright": "#3a3939",
+              "primary-container": "#ff5625",
+              "error": "#ffb4ab",
+              "tertiary-fixed-dim": "#a5c8ff",
+              "on-secondary-fixed": "#002020",
+              "on-secondary-fixed-variant": "#2c4c4c",
+              "on-primary-fixed": "#3b0900",
+              "surface-container-high": "#2a2a2a",
+              "on-error": "#690005",
+              "tertiary": "#a5c8ff",
+              "surface-container-highest": "#353534",
+              "on-primary-fixed-variant": "#872000",
+              "surface-container": "#201f1f"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Work Sans"],
+              "label": ["Work Sans"],
+              "bebas": ["Bebas Neue"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-nav {
+        background: rgba(19, 19, 19, 0.6);
+        backdrop-filter: blur(20px);
+      }
+      .tonal-layering-no-border {
+        border: none !important;
+      }
+      .molten-gradient {
+        background: linear-gradient(135deg, #ffb5a0 0%, #ff5625 100%);
+      }
+      .glow-hover:hover {
+        box-shadow: 0 0 30px rgba(255, 86, 37, 0.4);
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-white">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-12 py-6 w-full max-w-none bg-surface/60 backdrop-blur-xl dark:bg-black/60 shadow-2xl shadow-orange-900/20 tonal-layering-no-border">
+<div class="font-bebas text-3xl tracking-tighter text-white uppercase">PRECISION FORGE</div>
+<div class="hidden md:flex gap-10">
+<a class="font-space-grotesk tracking-widest uppercase text-sm text-zinc-400 hover:text-white transition-colors" href="#">Process</a>
+<a class="font-space-grotesk tracking-widest uppercase text-sm text-orange-500 border-b-2 border-orange-500 pb-1" href="#">Portfolio</a>
+<a class="font-space-grotesk tracking-widest uppercase text-sm text-zinc-400 hover:text-white transition-colors" href="#">Capabilities</a>
+<a class="font-space-grotesk tracking-widest uppercase text-sm text-zinc-400 hover:text-white transition-colors" href="#">Resources</a>
+</div>
+<button class="bg-primary-container text-white px-6 py-2 font-space-grotesk uppercase tracking-wider text-xs font-bold rounded-lg transition-all duration-300 scale-95 active:scale-90 hover:bg-primary hover:text-on-primary-container">
+            Request Quote
+        </button>
+</nav>
+<main class="pt-24">
+<!-- Hero Section -->
+<section class="relative h-[921px] flex items-center px-12 overflow-hidden bg-surface-container-lowest">
+<div class="absolute inset-0 z-0">
+<img alt="Precision Pump Housing" class="w-full h-full object-cover opacity-60 mix-blend-luminosity" data-alt="Macro photography of a machined stainless steel industrial pump housing with sharp metallic edges and cool industrial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJulv6NG7HeudwVv1Bd1WPBT4HDoqt32sYCnvotogzq-3eF1BmQFPFpApG-uq-4xe6DCP9kK6bTjzAjy-AH9S6DjcGYgbIqd-1yy3w5GAB66504ZPvbJZ1KLoGrPdRta_DWRY6MROA2rHm3_jehOGps92ZZq3A8KUDSvzhFLDFKo36Wx90SjLf4GIMkAjjbs-FgMhO9C4mKBmhlaSHzceInk9950p2fM6N461ZLx2NV2fWSXWDa-sjLhbbMIwOSVdKvgXaoXUIBw"/>
+<div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-4xl">
+<span class="inline-block py-1 px-3 mb-6 bg-secondary-container text-secondary text-[10px] tracking-[0.2em] uppercase font-bold rounded">Product ID: PF-PH-992</span>
+<h1 class="font-bebas text-7xl md:text-9xl text-white leading-none tracking-tight mb-4">
+                    Industrial <span class="text-primary italic">Pump Housing</span>
+</h1>
+<p class="font-headline text-xl md:text-2xl text-on-surface-variant max-w-2xl mb-12 font-light leading-relaxed">
+                    Engineered for High-Pressure Chemical &amp; Oil Applications. Extreme metallurgical stability for critical environments.
+                </p>
+<div class="flex gap-6 items-center">
+<button class="molten-gradient text-on-primary-container px-10 py-5 font-headline font-bold uppercase tracking-widest text-sm rounded-lg glow-hover transition-all duration-300">
+                        Request Technical Specs
+                    </button>
+<button class="text-white flex items-center gap-3 font-headline uppercase tracking-widest text-sm hover:text-primary transition-colors group">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">download</span> 
+                        Full CAD Profile
+                    </button>
+</div>
+</div>
+</section>
+<!-- Technical Overview -->
+<section class="py-32 px-12 grid md:grid-cols-2 gap-24 items-center bg-surface">
+<div class="relative aspect-square group">
+<div class="absolute -inset-4 bg-primary/10 blur-3xl rounded-full opacity-50"></div>
+<img alt="Schematic Concept" class="w-full h-full object-cover rounded-xl border border-white/5 shadow-2xl relative z-10" data-alt="Blueprint style technical 3D wireframe render of a complex industrial valve assembly with glowing orange highlight lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCptUpboxeNIApUWzVITzt4lMoQOq3dPck6XYEPpoSiAdA_nZmCAdm1YB5ZoPioi7cyKEnz7HRCwE2b5uf66JdqAJdPW9qSeV1XKSV-uPskYVtclvtCvmcXGWSzenDIo0GQD_kV_NSHng70b_2AWimLjXmNomtVSMe9nh83Lbh5WcfHFu-cGKxYk7QklqfkgCMcR3v-lDA8R8e7iv8eIfnFlyKu2kX3lVFwDNKW5lRXbtycvAAfTqKZU6O-qgRsag9TvyzAC7JmHA"/>
+<div class="absolute top-8 right-8 z-20 bg-black/80 backdrop-blur-md p-6 rounded-lg border-l-4 border-primary">
+<p class="font-bebas text-4xl text-white">5000 PSI</p>
+<p class="text-[10px] tracking-widest uppercase text-zinc-400">Pressure Tolerance Rating</p>
+</div>
+</div>
+<div class="space-y-12">
+<header>
+<p class="label-md uppercase tracking-[0.3em] text-primary mb-2 font-bold">Performance Matrix</p>
+<h2 class="font-bebas text-6xl text-white">Advanced Material Integrity</h2>
+</header>
+<ul class="space-y-8">
+<li class="flex gap-6 items-start">
+<div class="w-12 h-12 flex-shrink-0 bg-surface-container-highest rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+</div>
+<div>
+<h4 class="font-headline text-lg font-bold text-white mb-1">Corrosion Resistant Alloy</h4>
+<p class="text-on-surface-variant leading-relaxed">Proprietary chromium-nickel blend designed to withstand harsh sulphuric and nitric acid environments without surface degradation.</p>
+</div>
+</li>
+<li class="flex gap-6 items-start">
+<div class="w-12 h-12 flex-shrink-0 bg-surface-container-highest rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">precision_manufacturing</span>
+</div>
+<div>
+<h4 class="font-headline text-lg font-bold text-white mb-1">Precision Machined Threads</h4>
+<p class="text-on-surface-variant leading-relaxed">Multi-axis CNC turning ensures tolerance levels within +/- 0.005mm for perfect seal mating in high-vibration systems.</p>
+</div>
+</li>
+<li class="flex gap-6 items-start">
+<div class="w-12 h-12 flex-shrink-0 bg-surface-container-highest rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">thermostat</span>
+</div>
+<div>
+<h4 class="font-headline text-lg font-bold text-white mb-1">Thermal Resistance Calibration</h4>
+<p class="text-on-surface-variant leading-relaxed">Tested to sustain structural integrity in operating temperatures ranging from -20°C to 450°C without alloy fatigue.</p>
+</div>
+</li>
+</ul>
+</div>
+</section>
+<!-- Materials & Specifications Table -->
+<section class="py-32 px-12 bg-surface-container-lowest">
+<div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+<div>
+<p class="label-md uppercase tracking-[0.3em] text-zinc-500 mb-2 font-bold">Technical Data Sheet</p>
+<h2 class="font-bebas text-6xl text-white">Critical Specifications</h2>
+</div>
+<div class="flex gap-4">
+<div class="px-6 py-4 bg-surface-container-low border-l-2 border-secondary">
+<p class="text-[10px] uppercase tracking-tighter text-zinc-500 mb-1">Status</p>
+<p class="font-headline text-secondary font-bold">READY FOR DEPLOYMENT</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/5 overflow-hidden rounded-xl border border-white/5">
+<div class="bg-surface-container-low p-10 flex justify-between items-center group hover:bg-surface-container-high transition-colors">
+<span class="font-space-grotesk text-zinc-400 uppercase tracking-widest text-xs">Material Grade</span>
+<span class="font-headline font-bold text-white">ASTM A351 CF8M / SUS 316</span>
+</div>
+<div class="bg-surface-container-low p-10 flex justify-between items-center group hover:bg-surface-container-high transition-colors">
+<span class="font-space-grotesk text-zinc-400 uppercase tracking-widest text-xs">Max Operating Pressure</span>
+<span class="font-headline font-bold text-white">35 MPa</span>
+</div>
+<div class="bg-surface-container-low p-10 flex justify-between items-center group hover:bg-surface-container-high transition-colors">
+<span class="font-space-grotesk text-zinc-400 uppercase tracking-widest text-xs">Temperature Range</span>
+<span class="font-headline font-bold text-white">-20°C TO 450°C</span>
+</div>
+<div class="bg-surface-container-low p-10 flex justify-between items-center group hover:bg-surface-container-high transition-colors">
+<span class="font-space-grotesk text-zinc-400 uppercase tracking-widest text-xs">Casting Method</span>
+<span class="font-headline font-bold text-white">HIGH-PRECISION SAND CASTING</span>
+</div>
+<div class="bg-surface-container-low p-10 flex justify-between items-center group hover:bg-surface-container-high transition-colors col-span-1 md:col-span-2">
+<span class="font-space-grotesk text-zinc-400 uppercase tracking-widest text-xs">Tolerance</span>
+<span class="font-headline font-bold text-white">ISO 8062-CT8</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Casting Process Deep Dive -->
+<section class="py-32 px-12 bg-surface">
+<header class="text-center mb-24">
+<p class="label-md uppercase tracking-[0.3em] text-primary mb-2 font-bold">Our Methodology</p>
+<h2 class="font-bebas text-7xl text-white">Lifecycle of Metal</h2>
+</header>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto relative">
+<!-- Process Line -->
+<div class="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-secondary-container -translate-y-1/2 z-0"></div>
+<!-- Step 01 -->
+<div class="relative z-10 space-y-8">
+<div class="aspect-video overflow-hidden rounded-lg">
+<img alt="Digital Simulation" class="w-full h-full object-cover" data-alt="Technical engineer reviewing industrial fluid dynamics simulation on a computer monitor with orange and blue heatmap gradients" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeDHjRUX7I8KpUnT3oUBX6J2wbDMgjMZj9Uvb8-Cp5aZfzoqdp2UYxj0z2tnUNnXJ9Pn9s2iWO2oe49M7e54W-eJRmdb0toNH-6jeIDejZ9A1Z_dbE3ui5TgFkgO0Bd-Z3oWy_QVrrEuHq7607wJxnZtNKY5j3H-Q0CZv4FcDLuMK94jrKFUnOP9-PIeIJApvFeogucfXonrLOIBH7GuMlYjHKR2NB7zoX4L_X1aot6haOmU-M0RnylLi7dbyL3cfZyLid_WxWyg"/>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full border-4 border-surface bg-primary flex items-center justify-center font-bebas text-2xl text-on-primary-container">01</div>
+<h3 class="font-bebas text-3xl text-white tracking-wide">Digital Simulation</h3>
+</div>
+<p class="text-on-surface-variant font-light pr-8">Comprehensive flow analysis to eliminate casting porosity and structural weak points before the first pour.</p>
+</div>
+<!-- Step 02 -->
+<div class="relative z-10 space-y-8">
+<div class="aspect-video overflow-hidden rounded-lg">
+<img alt="Molten Pour" class="w-full h-full object-cover" data-alt="Vibrant close-up of molten glowing orange metal being poured from a furnace ladle into a ceramic mold in a dark industrial forge" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZdfixuZgD6KZxmIgRhdp9cjsFd4yOqZk7PaWdUOkN4Odzt2Wzf_C2jxiBhW53kphv-mpSv0PiyCzjHndFzAKVs-StBR2j7Yxp-cBrEt6DNe8oujTVbjpqoCAjZQJn2IMjQiZtjZ15qO-dgBBz9qD1cssrXaXKGPG8QkJzF96sOnOwU5sDHkNq2-O5BW-VnGfCwsughXkqS-I3E606Qthuiuc7JP2HwbIjbkW9y6D7dR3U1hkHSvHmPTmwJ4gl0Mc7U6jqTvn95A"/>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full border-4 border-surface bg-primary flex items-center justify-center font-bebas text-2xl text-on-primary-container">02</div>
+<h3 class="font-bebas text-3xl text-white tracking-wide">Molten Pour</h3>
+</div>
+<p class="text-on-surface-variant font-light pr-8">Controlled metallurgical fusion within vacuum-sealed chambers to ensure pure elemental composition and grain structure.</p>
+</div>
+<!-- Step 03 -->
+<div class="relative z-10 space-y-8">
+<div class="aspect-video overflow-hidden rounded-lg">
+<img alt="Precision Finishing" class="w-full h-full object-cover" data-alt="CNC machining arm drilling into a metallic industrial part with sparks flying and cool blue-white spotlighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkPH9AV5m8yZPsRSuAkZwsB5zk5a37lhpYcJQC2MtXMmRQCz69Iu-Ipnbz1mtg2Tq2KqfvRk5nHJPB8mVsJanQ50asFcqz2GYOdE-QxBkNv8-6M_o9uhNuXBTeLNVb2QP8-TZLwlj73HbuT1kySyd6bZXEqyjqlkDX3AOXqBbs6foGiiZ8x-QaxiX3_DuyaIYAG_F_kBvO0B4FbezaKK1JCGc87p_D2k1f5cBE2CojDLK5LZia0yjVG2-sbS0xvpYon7z4aUZ0GA"/>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full border-4 border-surface bg-primary flex items-center justify-center font-bebas text-2xl text-on-primary-container">03</div>
+<h3 class="font-bebas text-3xl text-white tracking-wide">Precision Finishing</h3>
+</div>
+<p class="text-on-surface-variant font-light pr-8">Final CNC boring and surfacing to meet micron-level tolerances, followed by automated laser inspection for zero-defect output.</p>
+</div>
+</div>
+</section>
+<!-- Quality & Compliance -->
+<section class="py-24 px-12 bg-surface-container-low border-y border-white/5">
+<div class="flex flex-col md:flex-row items-center justify-between gap-12 max-w-7xl mx-auto">
+<div class="flex flex-wrap justify-center gap-12">
+<div class="flex items-center gap-4 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
+<span class="material-symbols-outlined text-4xl text-primary">security</span>
+<div>
+<p class="font-bebas text-2xl text-white leading-tight">ISO 9001:2015</p>
+<p class="text-[10px] uppercase tracking-widest text-zinc-500">Quality Certified</p>
+</div>
+</div>
+<div class="flex items-center gap-4 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
+<span class="material-symbols-outlined text-4xl text-primary">flight_takeoff</span>
+<div>
+<p class="font-bebas text-2xl text-white leading-tight">AS9100</p>
+<p class="text-[10px] uppercase tracking-widest text-zinc-500">Aerospace Standard</p>
+</div>
+</div>
+</div>
+<a class="flex items-center gap-4 py-4 px-8 rounded-full border border-white/10 hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-primary group-hover:rotate-45 transition-transform">analytics</span>
+<span class="font-headline font-bold uppercase tracking-widest text-xs text-white">View Inspection Report</span>
+</a>
+</div>
+</section>
+<!-- Related Products -->
+<section class="py-32 px-12 bg-surface">
+<header class="mb-16">
+<h2 class="font-bebas text-5xl text-white">Forge Ecosystem</h2>
+<p class="text-zinc-500 font-headline uppercase tracking-widest text-xs mt-2">Compatible components &amp; similar cast projects</p>
+</header>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+<!-- Related 01 -->
+<div class="group cursor-pointer">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-high aspect-[4/3] mb-6">
+<img alt="Valve Bodies" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110" data-alt="Collection of heavy industrial valve bodies stacked neatly in a factory with dramatic shadows and steel textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHawVtGVbGag4Em1rUxvBe0e2sfFlIklGfnsyjm0p2V2utNAmA9PFiVoy-UfjWUH-0qT9ROkvf65FU4AqrXbkX0Gy41RhbdWxMaK4A7jYMqvlwls_WoKMRsZYYMd7Q7Gv1tsoXdlfN4hUsiMxG8Rr66cnPFxIGe-hNF3d3NuOpjhUy3QYvzD0aavgO09dkPaXtueTGmOXKu8X9OPzTWmgeHkfY1vdwahWig7-l0qWgqoar8bYMZeMVfy3Tu5WqSVPrAcCcwN0mLQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<h3 class="font-bebas text-3xl text-white">Valve Bodies</h3>
+</div>
+</div>
+<div class="flex justify-between items-center px-2">
+<p class="text-xs text-zinc-500 font-headline uppercase tracking-widest">Pressure Grade Castings</p>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform">arrow_forward</span>
+</div>
+</div>
+<!-- Related 02 -->
+<div class="group cursor-pointer">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-high aspect-[4/3] mb-6">
+<img alt="Impeller Castings" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110" data-alt="Shiny metallic impeller with complex blade geometry resting on a dark industrial work surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzbY6eu2svbH5Q2afBd62YSKba7n5ZfmBlxi7vTa_UvNG8lBJExQfy9kgbuRkLftsOL9a2d83ktMii_MHAvzZof_fwkWiap8LNVDsZBUuIkLzBoBChO2xYhr31i5-G7uOgsC4Aqh9SCeyJZytDK0qLkhAwyCCIrZTM-15BQg58Q4CV0dqTn4jBj0DPzAg4ueEvbR4JhgxzL_ljYo8kf6TwDE-iC58_2rM-YA1yeb33HMqR6eEJUAvsBvjiqLlEGV-H3Cplz-v3Yg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<h3 class="font-bebas text-3xl text-white">Impeller Castings</h3>
+</div>
+</div>
+<div class="flex justify-between items-center px-2">
+<p class="text-xs text-zinc-500 font-headline uppercase tracking-widest">Fluid Dynamics Optima</p>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform">arrow_forward</span>
+</div>
+</div>
+<!-- Related 03 (Call to Action Card) -->
+<div class="bg-surface-container-high rounded-xl p-12 flex flex-col justify-center items-start relative overflow-hidden group">
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl"></div>
+<p class="label-md uppercase tracking-[0.3em] text-primary mb-4 font-bold">Custom Order</p>
+<h3 class="font-bebas text-4xl text-white leading-tight mb-6">Bespoke Industrial Castings</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-8">Require a specific alloy or custom geometry for your application?</p>
+<button class="w-full py-4 border border-primary text-primary font-headline uppercase tracking-[0.2em] text-xs font-bold rounded hover:bg-primary hover:text-on-primary-container transition-all duration-300">
+                        Consult Engineering
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-zinc-950 dark:bg-black w-full border-t border-zinc-800/50 flex flex-col md:flex-row justify-between items-center px-12 py-12 w-full">
+<div class="mb-8 md:mb-0">
+<div class="font-bebas text-xl text-zinc-500 mb-2">PRECISION FORGE INDUSTRIAL</div>
+<p class="font-space-grotesk text-xs tracking-tight text-zinc-500 uppercase">© 2024 PRECISION FORGE INDUSTRIAL. ALL RIGHTS RESERVED.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-10">
+<a class="font-space-grotesk text-xs tracking-tight text-zinc-500 hover:text-orange-400 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-space-grotesk text-xs tracking-tight text-zinc-500 hover:text-orange-400 transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-space-grotesk text-xs tracking-tight text-zinc-500 hover:text-orange-400 transition-colors opacity-80 hover:opacity-100" href="#">Compliance</a>
+<a class="font-space-grotesk text-xs tracking-tight text-zinc-500 hover:text-orange-400 transition-colors opacity-80 hover:opacity-100" href="#">Global Locations</a>
+</div>
+</footer>
+</body></html>

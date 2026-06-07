@@ -1,0 +1,33 @@
+How It Works
+
+Public Site (index_mimo_code4.html)
+Visitors see the beautiful Suphancasting site with 11 languages
+AI Agents section shows status cards with live heartbeat
+No controls visible — agents work silently in background
+
+Admin Dashboard (admin.html)
+Login screen → full agent control center
+6 agents: coordinator, researcher, writer, visual, seo_optimizer, publisher
+Launch Agents — runs full pipeline (research → blog → image → video → SEO → publish)
+Self-Cycle — auto-generates random goals and runs autonomously
+Auto-cycle — runs every N minutes automatically
+Task DAG — live dependency graph visualization
+Content tabs — blog, image prompts, video scripts, SEO reports
+SEO scoring — 12-point checklist with ring score
+Live log — real-time agent activity feed
+Token tracking — sparkline usage trend
+
+
+To Run
+
+bash
+bash
+# Just open files in browser:
+start index_mimo_code4.html    # Public site
+start admin.html               # Admin dashboard (login: admin/Admin123)
+
+# Or with backend:
+npm install && npm start       # → localhost:3456
+
+Copy these files to your D:\Success_Suphancasting\stitch_original_suphancasting_source 1 Aplril2026\ folder and you're live.
+

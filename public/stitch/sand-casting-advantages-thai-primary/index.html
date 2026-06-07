@@ -1,0 +1,339 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Work+Sans:wght@300;400;500;600&amp;family=Bebas+Neue&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary": "#a5c8ff",
+              "secondary-fixed": "#c6e9e9",
+              "surface-container-low": "#1c1b1b",
+              "tertiary-container": "#2592ff",
+              "on-secondary-fixed-variant": "#2c4c4c",
+              "on-secondary": "#143535",
+              "on-tertiary-fixed": "#001c3a",
+              "tertiary-fixed": "#d4e3ff",
+              "on-primary": "#601400",
+              "surface-dim": "#131313",
+              "primary-fixed": "#ffdbd1",
+              "tertiary-fixed-dim": "#a5c8ff",
+              "surface-variant": "#353534",
+              "on-primary-container": "#541100",
+              "error-container": "#93000a",
+              "inverse-primary": "#b12d00",
+              "surface-bright": "#3a3939",
+              "surface-container-lowest": "#0e0e0e",
+              "inverse-surface": "#e5e2e1",
+              "surface-tint": "#ffb5a0",
+              "outline-variant": "#5d4038",
+              "on-tertiary-container": "#002a53",
+              "on-background": "#e5e2e1",
+              "surface-container": "#201f1f",
+              "primary-fixed-dim": "#ffb5a0",
+              "primary-container": "#ff5625",
+              "surface": "#131313",
+              "on-primary-fixed": "#3b0900",
+              "on-error-container": "#ffdad6",
+              "background": "#131313",
+              "surface-container-highest": "#353534",
+              "on-tertiary": "#00315e",
+              "on-surface": "#e5e2e1",
+              "on-secondary-container": "#9dbfbe",
+              "surface-container-high": "#2a2a2a",
+              "outline": "#ad887e",
+              "secondary": "#abcdcd",
+              "on-primary-fixed-variant": "#872000",
+              "error": "#ffb4ab",
+              "secondary-container": "#2e4e4e",
+              "secondary-fixed-dim": "#abcdcd",
+              "primary": "#ffb5a0",
+              "on-surface-variant": "#e7bdb2",
+              "on-secondary-fixed": "#002020",
+              "on-error": "#690005",
+              "on-tertiary-fixed-variant": "#004785",
+              "inverse-on-surface": "#313030"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Work Sans"],
+              "label": ["Work Sans"],
+              "display": ["Bebas Neue"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(53, 53, 52, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        .text-glow {
+            text-shadow: 0 0 15px rgba(255, 86, 37, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary/30 selection:text-primary">
+<!-- TopNavBar Implementation -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-900/60 backdrop-blur-xl shadow-2xl shadow-orange-900/20">
+<div class="flex justify-between items-center px-12 py-6 max-w-[1920px] mx-auto">
+<div class="text-3xl font-black tracking-tighter text-orange-600 dark:text-orange-500"><div class="flex items-center gap-3">
+<div class="text-background px-3 py-1 font-black text-2xl tracking-tighter shadow-lg shadow-primary/20 bg-[#FF4500] text-white shadow-[0_0_20px_rgba(255,69,0,0.6)]" style="">C</div>
+<div class="font-display text-2xl tracking-widest text-on-surface" style="">SUPHAN <span class="text-primary" style="">CASTING</span></div>
+</div></div>
+<div class="hidden md:flex items-center space-x-12">
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm font-bold text-orange-500 border-b-2 border-orange-600 pb-1" href="#" style="">Process</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm font-bold text-neutral-400 hover:text-white transition-colors" href="#" style="">Materials</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm font-bold text-neutral-400 hover:text-white transition-colors" href="#" style="">Capabilities</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm font-bold text-neutral-400 hover:text-white transition-colors" href="#" style="">Quality</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm font-bold text-neutral-400 hover:text-white transition-colors" href="#" style="">Contact</a>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 bg-surface-container-high text-on-surface px-4 py-2 font-['Space_Grotesk'] uppercase tracking-widest text-sm font-bold border border-outline-variant/30 hover:border-primary transition-all" style="">
+<span class="material-symbols-outlined text-primary text-lg" style="">language</span>
+<span class="" style="">TH</span>
+<span class="material-symbols-outlined text-xs" style="">expand_more</span>
+</button>
+<div class="absolute right-0 top-full mt-2 w-48 bg-surface-container-highest border border-outline-variant/30 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+<a class="flex items-center justify-between px-4 py-3 font-['Space_Grotesk'] text-sm text-primary bg-primary/10" href="#" style="">
+<span class="" style="">ภาษาไทย (TH)</span>
+<span class="material-symbols-outlined text-sm" style="">check</span>
+</a>
+<a class="flex items-center px-4 py-3 font-['Space_Grotesk'] text-sm text-on-surface-variant hover:bg-surface-variant transition-colors" href="#" style="">
+<span class="" style="">English (EN)</span>
+</a>
+</div>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative min-h-[819px] flex flex-col justify-center px-12 pt-20 overflow-hidden bg-surface-container-lowest">
+<div class="absolute top-0 right-0 w-1/2 h-full opacity-40">
+<img alt="" class="w-full h-full object-cover grayscale mix-blend-screen" data-alt="dramatic macro shot of molten orange steel being poured into a sand mold in a dark industrial foundry setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5xqFZdLt3SYpIKXrQGF7HpT7LySN60AzG_bUzKxO_ZuK2cXTF6uv0RSPws6Fj-WfghBQoKlzuSwETjyUFX13Cr3OlKRm0eTHxavzqdgKQfkEtp-dxIi7Dbwpytm_x_d5GmTzmcMTDDXnKny4NUeaNCEjjhLlv7EXQdSqMMNEGbQdGOKVLR0LgjWzqtPMPRtLOh-kP6Fdmteo4LG5Vx2aaq2H-E8D0pnvTprSXuJGGU6f1pMUPnaKDZZKP5-lOrqGt5VYG7XUTtA" style="">
+<div class="absolute inset-0 bg-gradient-to-l from-transparent via-surface-container-lowest to-surface-container-lowest"></div>
+</div>
+<div class="relative z-10 max-w-5xl">
+<span class="font-headline uppercase tracking-[0.3em] text-primary text-sm font-bold mb-4 block" style="">Engineered Superiority</span>
+<h1 class="font-display text-8xl md:text-[10rem] leading-[0.85] text-on-surface mb-8" style="">
+                WHY SAND <br> <span class="text-primary text-glow" style="">CASTING</span>
+</h1>
+<p class="text-xl text-on-surface-variant max-w-xl font-light leading-relaxed border-l-4 border-primary pl-8" style="">
+                Exploring the industrial standard for large-scale, complex, and high-performance metal components. From prototype to mass production.
+            </p>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="relative">
+<!-- Advantage 01: Cost Effectiveness -->
+<section class="py-32 px-12 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+<div class="md:col-span-5 order-2 md:order-1">
+<span class="font-headline text-primary text-xs tracking-widest uppercase mb-4 block" style="">Advantage 01</span>
+<h2 class="font-display text-6xl text-on-surface mb-6 uppercase" style="">Cost-Efficiency &amp; <br>Scalable ROI</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed mb-8" style="">
+                    Sand casting drastically reduces the initial capital barrier. By utilizing low-cost tooling and 100% reusable sand media, it is the most economical choice for both rapid prototyping and sustained production runs.
+                </p>
+<div class="space-y-4">
+<div class="flex items-start gap-4 p-4 glass-panel border-l-2 border-primary">
+<span class="material-symbols-outlined text-primary" style="">payments</span>
+<div>
+<h4 class="font-headline text-sm font-bold uppercase tracking-wider text-on-surface" style="">Low Tooling Cost</h4>
+<p class="text-sm text-neutral-400" style="">Wooden or plastic patterns are significantly cheaper than permanent steel dies.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="md:col-span-7 order-1 md:order-2 bg-surface-container-low p-2">
+<img alt="" class="w-full h-[500px] object-cover filter brightness-75 contrast-125" data-alt="industrial designer inspecting a large wooden sand casting pattern on a clean dark workshop table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1PVEkWoyNWzHjBg2jEgCtrSGrPQQU-U1VFFHt7voDBkEqjUM5M0-ptsOI_jZW5aOHCCSFUmDZqJyociM21J5NnZzG2-A4cC5-kE3_OSzULP2joiYh9zpuPY81Vd0cyiHdKrW18kLyIKkSzrAwzTlOmEJeHpEjkmhmMkA_8x14MPmjFB35GyyqMbQrdWV2hh66oqGpHAHcw60gsO_ti8G_79zq9ReQOuZTuxuvqCy0P89EsoKmScmlNtBJmLWdrOnYySC7DitgYA" style="">
+</div>
+</section>
+<!-- Advantage 02: Large-Scale Capability -->
+<section class="py-32 bg-surface-container-lowest relative overflow-hidden">
+<div class="px-12 relative z-10">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+<div class="max-w-2xl">
+<span class="font-headline text-primary text-xs tracking-widest uppercase mb-4 block" style="">Advantage 02</span>
+<h2 class="font-display text-7xl md:text-9xl text-on-surface leading-none uppercase" style="">Massive <br>Scale Casting</h2>
+</div>
+<div class="text-right">
+<span class="font-display text-8xl text-outline-variant opacity-30 leading-none" style="">15,000 KG</span>
+<p class="font-headline uppercase tracking-widest text-primary text-sm font-bold" style="">Max Pour Capacity</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="md:col-span-2 relative h-[600px] group">
+<img alt="" class="w-full h-full object-cover" data-alt="massive heavy industrial engine block casting in raw grey iron sitting on a factory floor with overhead crane lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsz-LZXRiwmrSESJwttfz15rOwlmXP-K5tqqTtaH6hbrhdysSz39Zph-Ubhr-qrdzj4ozG7mzfEt4hhy9pmmFJ7cT4E7CFGeusImeEsHIJuCj0hHG3JY6YskGNak9KFqxuMjTS2IFOa_vz0rGm79bEsVM-WYgmb8sZ-nomF3a54UvQxjJsOJOMKP6P1DJjwKTsfEHRN81HEMmvIx-nnr0IzAMsCy3zxJI8xInBT95nAXq0bXl_NhSF4QJjYW53WzOpZ7SI7L_K5w" style="">
+<div class="absolute bottom-0 left-0 p-8 glass-panel w-full md:w-1/2">
+<h3 class="font-headline text-xl font-bold uppercase mb-2" style="">Engine Blocks &amp; Turbines</h3>
+<p class="text-sm text-neutral-300" style="">Unmatched capability for ultra-heavy components that exceed the physical limits of die casting and investment casting.</p>
+</div>
+</div>
+<div class="space-y-8 flex flex-col justify-center">
+<div class="p-8 border-l-4 border-secondary-container bg-surface-container-low">
+<p class="text-on-surface-variant italic mb-4" style="">"For infrastructure-grade components, sand casting is not just an option—it's the only solution."</p>
+<span class="text-xs uppercase tracking-widest font-headline text-secondary" style="">Chief Metallurgist</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface p-6 text-center">
+<span class="block text-3xl font-display text-primary" style="">98%</span>
+<span class="text-[10px] uppercase tracking-tighter text-neutral-500" style="">Yield Reliability</span>
+</div>
+<div class="bg-surface p-6 text-center">
+<span class="block text-3xl font-display text-primary" style="">XXL</span>
+<span class="text-[10px] uppercase tracking-tighter text-neutral-500" style="">Envelope Size</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Advantage 03: Material Versatility -->
+<section class="py-32 px-12">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-20">
+<div>
+<span class="font-headline text-primary text-xs tracking-widest uppercase mb-4 block" style="">Advantage 03</span>
+<h2 class="font-display text-6xl text-on-surface mb-8 uppercase" style="">Material <br>Versatility</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed mb-12" style="">
+                        Unlike other processes restricted to low-melting-point alloys, sand casting handles the entire spectrum of ferrous and non-ferrous metals.
+                    </p>
+<div class="grid grid-cols-1 gap-1">
+<div class="group flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container-high transition-all">
+<span class="font-headline uppercase font-bold tracking-widest" style="">Grey Iron / Ductile Iron</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform" style="">arrow_forward</span>
+</div>
+<div class="group flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container-high transition-all">
+<span class="font-headline uppercase font-bold tracking-widest" style="">Alloy Steels</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform" style="">arrow_forward</span>
+</div>
+<div class="group flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container-high transition-all">
+<span class="font-headline uppercase font-bold tracking-widest" style="">Copper &amp; Aluminum</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform" style="">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="relative">
+<img alt="" class="w-full h-full object-cover grayscale opacity-60" data-alt="abstract close up of textured metal surface showing different grain patterns of iron and steel alloys" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWyM_EkULPAHP2VrnztxSsPFy97-dgT1q2Yxh9YPFOczcH6Vl1fdjrA-FW9GBlqiGnXf-6YSZUZQwXhHjM6W7wK9DG07PWuO9zbEeS1QB8tXiXuY9yWo8Yx2y9voTTGGyNk1rH7EoYe0NOkN1Lp7Lss8JjeuWj8RWddKoDZD7Wc6C-dJfHScg62_frdDR_xxF24C7lik5B6q6NRCP2Lwzu7J1dckA9FDyCdcYUzoPuCaeVqNHx_aIEWGywRFW8-IoekEmh1XuYyw" style="">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim to-transparent"></div>
+</div>
+</div>
+</section>
+<!-- Advantage 04: Complex Geometries -->
+<section class="py-32 px-12 bg-surface-container-low">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row gap-16 items-center">
+<div class="w-full md:w-1/2">
+<div class="relative aspect-square">
+<div class="absolute inset-0 border-[20px] border-surface-container-high translate-x-4 translate-y-4"></div>
+<img alt="" class="relative z-10 w-full h-full object-cover" data-alt="intricate sand core structure being placed into a mold showing complex internal chambers for a hydraulic pump" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYhc2LtX-gdGzMdq_eIylSU9i_A6OLhXsnLqz1cwuqh7F4SaosYqjcmrOK6JpYbTvynCpqBE4cAyS8EHzr3wI3xGEjnAE4Ri3N08gZ_YGGcgv37zOKboKZDbqVFG7EfYbOgla18iR81juk5BdFEztEIxUbHc4SQyWDrkbX24DauqsWVlrUr2QGaAz3bCQ8jq_GRnjsKMK282deOgYA8x8dl1KkOJsmgVu-z5pfB1t5M-xwFQVpbeeJcPGuGS_F4DIFOczPM921sQ" style="">
+</div>
+</div>
+<div class="w-full md:w-1/2">
+<span class="font-headline text-primary text-xs tracking-widest uppercase mb-4 block" style="">Advantage 04</span>
+<h2 class="font-display text-6xl text-on-surface mb-6 uppercase" style="">Intricate <br>Internal Geometries</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed mb-8" style="">
+                            Using chemically bonded sand cores, we create complex internal passages, hollow chambers, and cooling jackets that are impossible to machine or achieve with permanent molds.
+                        </p>
+<ul class="space-y-6">
+<li class="flex gap-4" style="">
+<span class="material-symbols-outlined text-primary shrink-0" style="">architecture</span>
+<p class="text-sm text-on-surface-variant font-medium" style="">Design Freedom: Create non-linear internal paths for fluid or gas flow.</p>
+</li>
+<li class="flex gap-4" style="">
+<span class="material-symbols-outlined text-primary shrink-0" style="">precision_manufacturing</span>
+<p class="text-sm text-on-surface-variant font-medium" style="">Core Assembly: Combine multiple cores for highly detailed internal architectural components.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- Engineers Guide: Bento Grid -->
+<section class="py-32 px-12">
+<div class="text-center mb-20">
+<h2 class="font-display text-5xl text-on-surface uppercase mb-4" style="">When to Choose Sand Casting</h2>
+<p class="font-headline uppercase tracking-[0.2em] text-primary text-sm font-bold" style="">The Engineer's Decision Matrix</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+<div class="md:col-span-2 bg-surface-container-high p-10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6" style="">scale</span>
+<h3 class="font-headline text-xl font-bold uppercase mb-4" style="">Weight &gt; 50kg</h3>
+</div>
+<p class="text-sm text-on-surface-variant" style="">When the physical volume and weight of the part exceed the capabilities of high-pressure die casting machines.</p>
+</div>
+<div class="bg-primary-container p-10 flex flex-col justify-between text-on-primary-container">
+<div>
+<span class="material-symbols-outlined text-4xl mb-6" style="">timer</span>
+<h3 class="font-headline text-xl font-bold uppercase mb-4" style="">Rapid Prototyping</h3>
+</div>
+<p class="text-sm opacity-90" style="">When the design is still evolving and you need functional test parts without committing to $100k+ steel dies.</p>
+</div>
+<div class="bg-surface-container-high p-10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6" style="">science</span>
+<h3 class="font-headline text-xl font-bold uppercase mb-4" style="">Special Alloys</h3>
+</div>
+<p class="text-sm text-on-surface-variant" style="">When high-temperature ferrous alloys like Stainless Steel or Ductile Iron are required for performance.</p>
+</div>
+<div class="bg-secondary-container p-10 flex flex-col justify-between text-on-secondary-container">
+<div>
+<span class="material-symbols-outlined text-4xl mb-6" style="">hub</span>
+<h3 class="font-headline text-xl font-bold uppercase mb-4" style="">Internal Complexity</h3>
+</div>
+<p class="text-sm opacity-90" style="">When parts require internal water jackets, oil galleries, or hollow structural voids.</p>
+</div>
+<div class="md:col-span-3 bg-surface-container-lowest p-10 border border-outline-variant/20 flex flex-col md:flex-row gap-8 items-center">
+<img alt="" class="w-full md:w-1/3 h-48 object-cover filter grayscale" data-alt="industrial blueprint schematics of a mechanical assembly glowing on a dark screen in a design office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrWs8S-N-W9HDhE1nJpB5VLDdPgKreoNG1oK0h8tp6ccYnGfWLlELNAcPLJKmvkEuLmh7X5s02J5jJF9jh7kbd8BWdewA0EgAa2jQnIi2eyFYJPlRazfsYlI9n7khP0Ay5-cL6ey4NuurHa7l2f4JCSGyP-amiph_F89n40bIJ3ibUhgrFn0HMSXtRil-7hOxfLAnQGrzTk1G8yPDdyYaR5Hu1S9US7Fagj0zzFHK9f6zs7V5okTHcHEm3DVtgL0jGGzJ4-HGNSw" style="">
+<div>
+<h3 class="font-headline text-xl font-bold uppercase mb-4" style="">Consult Our Metallurgy Team</h3>
+<p class="text-sm text-on-surface-variant mb-6" style="">Unsure if sand casting fits your project? Send us your STEP files for a free manufacturability review and cost-comparison analysis.</p>
+<a class="inline-flex items-center gap-2 text-primary font-bold uppercase text-xs tracking-widest hover:gap-4 transition-all" href="#" style="">
+                            Talk to an Engineer <span class="material-symbols-outlined" style="">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Implementation -->
+<footer class="bg-neutral-950 w-full border-t-4 border-orange-600">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 px-12 py-20 w-full">
+<div class="space-y-6">
+<div class="text-xl font-bold text-neutral-100" style="">SC INDUSTRIAL FORGE</div>
+<p class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-neutral-500" style="">
+                    PRECISION CASTING SYSTEMS FOR THE MODERN WORLD.
+                </p>
+</div>
+<div>
+<h4 class="text-orange-600 font-bold mb-6 text-sm uppercase tracking-widest" style="">Capabilities</h4>
+<ul class="space-y-4">
+<li class="" style=""><a class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-neutral-500 hover:text-orange-400 transition-colors" href="#" style="">Technical Specs</a></li>
+<li class="" style=""><a class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-neutral-500 hover:text-orange-400 transition-colors" href="#" style="">Material Safety</a></li>
+<li class="" style=""><a class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-neutral-500 hover:text-orange-400 transition-colors" href="#" style="">Equipment List</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-orange-600 font-bold mb-6 text-sm uppercase tracking-widest" style="">Global</h4>
+<ul class="space-y-4">
+<li class="" style=""><a class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-neutral-500 hover:text-orange-400 transition-colors" href="#" style="">Global Logistics</a></li>
+<li class="" style=""><a class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-neutral-500 hover:text-orange-400 transition-colors" href="#" style="">Privacy Policy</a></li>
+<li class="" style=""><a class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-neutral-500 hover:text-orange-400 transition-colors" href="#" style="">Terms of Service</a></li>
+</ul>
+</div>
+<div class="flex flex-col justify-end">
+<p class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-neutral-500 leading-relaxed" style="">
+                    © 2024 SC INDUSTRIAL FORGE. PRECISION CASTING SYSTEMS.
+                </p>
+</div>
+</div>
+</footer>
+</body></html>

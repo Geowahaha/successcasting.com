@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Precision Forge | Sand Casting Process</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Work+Sans:wght@300;400;500;600&amp;family=Bebas+Neue&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-surface": "#e5e2e1",
+              "secondary-fixed-dim": "#abcdcd",
+              "error": "#ffb4ab",
+              "tertiary-container": "#2592ff",
+              "surface-tint": "#ffb5a0",
+              "primary-fixed": "#ffdbd1",
+              "inverse-primary": "#b12d00",
+              "secondary-fixed": "#c6e9e9",
+              "on-tertiary": "#00315e",
+              "surface-container-lowest": "#0e0e0e",
+              "outline": "#ad887e",
+              "on-tertiary-container": "#002a53",
+              "inverse-on-surface": "#313030",
+              "primary": "#ffb5a0",
+              "outline-variant": "#5d4038",
+              "primary-container": "#ff5625",
+              "on-primary-fixed-variant": "#872000",
+              "on-surface-variant": "#e7bdb2",
+              "inverse-surface": "#e5e2e1",
+              "surface-container": "#201f1f",
+              "tertiary-fixed-dim": "#a5c8ff",
+              "on-primary-fixed": "#3b0900",
+              "surface": "#131313",
+              "primary-fixed-dim": "#ffb5a0",
+              "on-secondary-fixed-variant": "#2c4c4c",
+              "on-secondary": "#143535",
+              "on-tertiary-fixed-variant": "#004785",
+              "secondary-container": "#2e4e4e",
+              "surface-bright": "#3a3939",
+              "on-secondary-container": "#9dbfbe",
+              "surface-container-high": "#2a2a2a",
+              "tertiary-fixed": "#d4e3ff",
+              "on-error-container": "#ffdad6",
+              "on-background": "#e5e2e1",
+              "background": "#131313",
+              "on-primary": "#601400",
+              "error-container": "#93000a",
+              "tertiary": "#a5c8ff",
+              "secondary": "#abcdcd",
+              "on-tertiary-fixed": "#001c3a",
+              "surface-dim": "#131313",
+              "surface-container-highest": "#353534",
+              "surface-variant": "#353534",
+              "on-secondary-fixed": "#002020",
+              "on-error": "#690005",
+              "surface-container-low": "#1c1b1b",
+              "on-primary-container": "#541100"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Work Sans"],
+              "label": ["Work Sans"],
+              "display": ["Bebas Neue"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .molten-glow {
+            box-shadow: 0 0 20px rgba(255, 86, 37, 0.3);
+        }
+        .asymmetric-clip {
+            clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-white">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#131313]/60 backdrop-blur-xl shadow-2xl shadow-black/50 flex justify-between items-center px-8 py-4">
+<div class="text-2xl font-black tracking-tighter text-[#ff5625] font-headline">PRECISION FORGE</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-[#ffb5a0] border-b-2 border-[#ff5625] pb-1" href="#">Process</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-zinc-500 hover:text-zinc-200 transition-colors" href="#">Inventory</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-zinc-500 hover:text-zinc-200 transition-colors" href="#">Quality Control</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-widest text-sm text-zinc-500 hover:text-zinc-200 transition-colors" href="#">Safety</a>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-zinc-400">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-all duration-300">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-all duration-300">settings</span>
+</div>
+<div class="h-10 w-10 bg-surface-container-highest rounded-full border border-outline-variant/30 overflow-hidden">
+<img alt="Lead Engineer Profile" class="w-full h-full object-cover" data-alt="professional portrait of a lead manufacturing engineer wearing safety glasses and a focused expression in a high-tech workshop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFAgSOwhppBs0gjVoVgU_g8rbcFOU_GI3uKR9yUOu4juDiSRN77NHTgmwkQjh2aY__yNppveYKE6SI2irEtoKj78T_g8xYH0zZPzywhwNZ-kesfjlPRGEZgmWcaoJF3EXI_1taDCVygUV9EuPliQpVB3MJ7TnEod_X92a8Vq3StJlzBaB3hPo0OUEfqm12ihfwox5up3iFiMCCAXozJAK4CpmmhfwJoPTgvTprMmhsJWV_COIWD0fhcSSi873x3VDyEzWyFjkTGA"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar (Desktop Only) -->
+<aside class="hidden lg:flex fixed left-0 top-0 h-full w-64 z-40 bg-[#0e0e0e] border-r border-[#5d4038]/15 flex-col pt-24 pb-8">
+<div class="px-6 mb-12">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></div>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Unit 01 Status</span>
+</div>
+<h2 class="text-xl font-display text-on-surface uppercase tracking-wide">Sand Casting Line</h2>
+<p class="text-[10px] font-label text-zinc-500 uppercase tracking-widest">Efficiency: 98.4%</p>
+</div>
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-4 text-zinc-500 px-6 py-4 hover:bg-[#1c1c1c] transition-colors font-['Space_Grotesk'] font-bold text-xs uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="architecture">architecture</span> Design
+            </a>
+<a class="flex items-center gap-4 text-zinc-500 px-6 py-4 hover:bg-[#1c1c1c] transition-colors font-['Space_Grotesk'] font-bold text-xs uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="format_paint">format_paint</span> Molding
+            </a>
+<a class="flex items-center gap-4 text-zinc-500 px-6 py-4 hover:bg-[#1c1c1c] transition-colors font-['Space_Grotesk'] font-bold text-xs uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="fire_filler">person_filled</span> Melting
+            </a>
+<a class="flex items-center gap-4 bg-[#2e4e4e]/20 text-[#ffb5a0] border-l-4 border-[#ff5625] px-6 py-4 font-['Space_Grotesk'] font-bold text-xs uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span> Casting
+            </a>
+<a class="flex items-center gap-4 text-zinc-500 px-6 py-4 hover:bg-[#1c1c1c] transition-colors font-['Space_Grotesk'] font-bold text-xs uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span> Inspection
+            </a>
+</nav>
+<div class="mt-auto px-6 space-y-4">
+<div class="bg-surface-container-high p-4 rounded-sm border-l-2 border-primary-container">
+<p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">System Status</p>
+<p class="text-xs text-on-surface">ALL SYSTEMS ACTIVE</p>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-4 text-zinc-500 hover:text-zinc-200 transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="help">help</span>
+<span class="text-[10px] uppercase font-bold tracking-widest">Support</span>
+</a>
+<a class="flex items-center gap-4 text-zinc-500 hover:text-zinc-200 transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+<span class="text-[10px] uppercase font-bold tracking-widest">Log Out</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-20 px-6 md:px-12 lg:ml-64 min-h-screen">
+<!-- Hero Section -->
+<header class="mb-20">
+<div class="flex items-center gap-4 mb-4">
+<div class="h-[2px] w-12 bg-primary-container"></div>
+<span class="text-xs font-bold uppercase tracking-[0.3em] text-primary">Manufacturing Workflow</span>
+</div>
+<h1 class="text-6xl md:text-8xl font-display text-on-surface tracking-tight uppercase leading-[0.9]">
+                Sand Casting <br/> <span class="text-outline-variant opacity-50">Evolution</span>
+</h1>
+<p class="mt-6 max-w-2xl text-zinc-400 font-body leading-relaxed">
+                From digital thermal simulations to high-precision inspection, discover the workflow that turns raw alloys into precision-engineered industrial components.
+            </p>
+</header>
+<!-- Vertical Timeline Section -->
+<section class="relative">
+<!-- Timeline Spine -->
+<div class="absolute left-4 md:left-1/2 top-0 bottom-0 w-[4px] bg-secondary-container transform -translate-x-1/2 hidden md:block opacity-30"></div>
+<div class="space-y-24 relative">
+<!-- Step 1 -->
+<div class="flex flex-col md:flex-row items-center gap-8 group">
+<div class="flex-1 text-right order-2 md:order-1 hidden md:block">
+<span class="text-primary font-display text-4xl mb-2 block">01</span>
+<h3 class="text-2xl font-headline font-black uppercase text-on-surface tracking-tight">Design &amp; 3D Simulation</h3>
+<p class="text-zinc-500 max-w-sm ml-auto mt-2">Engineers leverage advanced CAD/CAM suites and MAGMA soft for sophisticated thermal analysis and flow prediction.</p>
+</div>
+<div class="z-10 w-12 h-12 rounded-sm bg-primary-container flex items-center justify-center order-1 md:order-2 molten-glow">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">architecture</span>
+</div>
+<div class="flex-1 order-3">
+<div class="bg-surface-container-low p-1 border border-outline-variant/10 rounded-sm overflow-hidden group-hover:border-primary-container/40 transition-all duration-500">
+<img class="w-full h-48 object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="high-tech computer screen showing a complex 3D engineering CAD model with thermal heatmap simulation overlays in a dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkLGYXrn8hQl2-Xt3O--IZoBtrFa6HiiJ1CVA7MTUYOZxzjyPUCNmTDSYv7uUFu5zY0aAY24_jgo9qnD0demb6e_byJBAtjTZkBarm61o4gp84iwg-924BY47LXCKp-nK3h7K-0C6iALdvPKODtqVUwE1Mh2Tq5Hkwd91FyT35yAwfzbHua34DSkC2zq3b64jEsQF8SxZrWK1rARv3X7uldRDLNi6m1GRK7IwJJiJUcWiILIeEEPvvXfAOza4Ub9x3qtMyL2oaVQ"/>
+</div>
+<div class="md:hidden mt-4">
+<span class="text-primary font-display text-3xl mb-1 block">01</span>
+<h3 class="text-xl font-headline font-black uppercase text-on-surface">Design &amp; 3D Simulation</h3>
+<p class="text-zinc-500 text-sm mt-1">CAD/CAM and thermal analysis workflow.</p>
+</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col md:flex-row items-center gap-8 group">
+<div class="flex-1 order-3 md:order-1">
+<div class="bg-surface-container-low p-1 border border-outline-variant/10 rounded-sm overflow-hidden group-hover:border-primary-container/40 transition-all duration-500">
+<img class="w-full h-48 object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="close-up of a high-precision wooden pattern for sand casting being machined by a CNC mill with wood shavings" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAADeBQCoQPnvqlRjvMS2tLhOiI1_K_mFpkZ1PqKeSRG4doVH9B9Tdw9Zgu6RLXhiJfBwAzDtBak1NUU5zs6_gFjnx8GELJSZ2CGSUb9-h5kKBIP-AiFfox1vNSbX1A3xJqvjFkeM4Hy8MJtjJjMHOLeEqFD_6ePGcYRn5BOgEogtSAc7h41mxuV6ErgzlPYxGk99nrzorrWq29-o1OuTrctfny0ahyGXe6A0pC9EhjY72IvQayBaz6OQghPkWPEqEO7Wvig9_pg"/>
+</div>
+<div class="md:hidden mt-4">
+<span class="text-primary font-display text-3xl mb-1 block">02</span>
+<h3 class="text-xl font-headline font-black uppercase text-on-surface">Pattern &amp; Mold Making</h3>
+<p class="text-zinc-500 text-sm mt-1">High-precision patterns from wood or resin.</p>
+</div>
+</div>
+<div class="z-10 w-12 h-12 rounded-sm bg-surface-container-highest border border-primary-container/50 flex items-center justify-center order-1 md:order-2">
+<span class="material-symbols-outlined text-primary">format_paint</span>
+</div>
+<div class="flex-1 order-2 md:order-3 hidden md:block">
+<span class="text-primary font-display text-4xl mb-2 block">02</span>
+<h3 class="text-2xl font-headline font-black uppercase text-on-surface tracking-tight">Pattern &amp; Mold Making</h3>
+<p class="text-zinc-500 max-w-sm mt-2">High-precision patterns are crafted from wood, specialized resins, or aluminum to ensure dimensional accuracy.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col md:flex-row items-center gap-8 group">
+<div class="flex-1 text-right order-2 md:order-1 hidden md:block">
+<span class="text-primary font-display text-4xl mb-2 block">03</span>
+<h3 class="text-2xl font-headline font-black uppercase text-on-surface tracking-tight">Core Setting &amp; Assembly</h3>
+<p class="text-zinc-500 max-w-sm ml-auto mt-2">Careful placement of sand cores to create internal cavities and highly complex part geometries.</p>
+</div>
+<div class="z-10 w-12 h-12 rounded-sm bg-surface-container-highest border border-primary-container/50 flex items-center justify-center order-1 md:order-2">
+<span class="material-symbols-outlined text-primary">layers</span>
+</div>
+<div class="flex-1 order-3">
+<div class="bg-surface-container-low p-1 border border-outline-variant/10 rounded-sm overflow-hidden group-hover:border-primary-container/40 transition-all duration-500">
+<img class="w-full h-48 object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="technician in heavy duty gloves carefully assembling a multi-part sand mold with internal cores in an industrial foundry" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaq9fscSNnND5reosHjDmkTMyXWGZRO_UGr5pVV_UhgqOba23XrQu-NmGQgyGv4nI6OrWuAwnrI_fVSEdtQBeLXRAuIVYJPshtOxfGkwPFcLiZb_mrao89uKRzVCciG26OJvqWyHb_HAMSwe0M4xqn6Kb6DB7A9Q-47bBcl_gFa7-ivf-p_VQuD04AhYPC3rgZK9nP8TkouHrOGuGCDgbzXSYFa7h6SNauVmPQa9SU80oK-EEiSM9Py-4V5Z_IWw0b4V7ZFh920g"/>
+</div>
+<div class="md:hidden mt-4">
+<span class="text-primary font-display text-3xl mb-1 block">03</span>
+<h3 class="text-xl font-headline font-black uppercase text-on-surface">Core Setting</h3>
+<p class="text-zinc-500 text-sm mt-1">Creating internal cavities and complex geometries.</p>
+</div>
+</div>
+</div>
+<!-- Step 4 - ACTIVE/MOLTEN STATE -->
+<div class="flex flex-col md:flex-row items-center gap-8 group">
+<div class="flex-1 order-3 md:order-1">
+<div class="relative bg-surface-container-low p-1 border-2 border-primary-container rounded-sm overflow-hidden shadow-[0_0_30px_rgba(255,86,37,0.2)]">
+<div class="absolute inset-0 bg-gradient-to-t from-primary-container/40 to-transparent z-10"></div>
+<img class="w-full h-56 object-cover z-0" data-alt="dramatic wide shot of molten orange metal being poured from a glowing crucible into a sand mold with bright sparks flying" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7dgAfYbr5AvtwzKoVb7KVvxUtGdTBbAzH7Zt5-NuH1REN61HJqjTutavroyMEBeitxwV_2Vqvj8iuim5FiYuWvtl5rKdlsjTEQvn_QLfXd7n6vIS9Xu1PMAfQvRfmfJDBmwrwDssEiHu6wbfvJAtYDPaHebRdniJSS34h1XwYTiUuDnFxVeF1113s-K5uhgF5JrjCcsm8r_73sjBrDGVXN_5wgAHN1ndT19pF9BusNTwryo-Tp2XUUalqB2PE7q7PAU4jGAuLoA"/>
+<div class="absolute top-4 left-4 z-20 bg-primary-container text-[10px] font-bold px-2 py-1 uppercase tracking-widest text-on-primary-container">Live Process</div>
+</div>
+<div class="md:hidden mt-4">
+<span class="text-primary font-display text-3xl mb-1 block">04</span>
+<h3 class="text-xl font-headline font-black uppercase text-on-surface">Melting &amp; Pouring</h3>
+<p class="text-zinc-500 text-sm mt-1">Controlled pouring of induction-melted metal.</p>
+</div>
+</div>
+<div class="z-20 w-16 h-16 rounded-sm bg-primary-container flex items-center justify-center order-1 md:order-2 molten-glow scale-110 border-4 border-background">
+<span class="material-symbols-outlined text-on-primary-container text-3xl" style="font-variation-settings: 'FILL' 1;">person_filled</span>
+</div>
+<div class="flex-1 order-2 md:order-3 hidden md:block">
+<div class="bg-primary-container/10 p-6 border-l-4 border-primary-container asymmetric-clip">
+<span class="text-primary font-display text-4xl mb-2 block">04</span>
+<h3 class="text-3xl font-headline font-black uppercase text-on-surface tracking-tighter">Melting &amp; Pouring</h3>
+<p class="text-on-surface/80 max-w-sm mt-2 font-medium">Metal is superheated in induction furnaces and poured at precisely controlled temperatures into the mold cavity.</p>
+</div>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="flex flex-col md:flex-row items-center gap-8 group">
+<div class="flex-1 text-right order-2 md:order-1 hidden md:block">
+<span class="text-primary font-display text-4xl mb-2 block">05</span>
+<h3 class="text-2xl font-headline font-black uppercase text-on-surface tracking-tight">Cooling &amp; Shakeout</h3>
+<p class="text-zinc-500 max-w-sm ml-auto mt-2">Post-casting, components cool under monitoring before mechanical sand removal reveals the final metallic form.</p>
+</div>
+<div class="z-10 w-12 h-12 rounded-sm bg-surface-container-highest border border-primary-container/50 flex items-center justify-center order-1 md:order-2">
+<span class="material-symbols-outlined text-primary">ac_unit</span>
+</div>
+<div class="flex-1 order-3">
+<div class="bg-surface-container-low p-1 border border-outline-variant/10 rounded-sm overflow-hidden group-hover:border-primary-container/40 transition-all duration-500">
+<img class="w-full h-48 object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="industrial vibratory shakeout machine removing dark sand from a cooling grey metal casting with dust and texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKFxYH19k7M0gh_6zhH_CkKlv_mHzdvcUUWcPWQsjvqZzCmufs_qZjOYKuQE3ZQ7lmDkIu09lUkDyarqOrYNnUfxKzkmVc8LedjgLub6apgB42_oXbEOXmANlkG7sY9C7s1EZ0pPu2MEu8SqTJcg5sTD-ITBEeUQKP0BxMTdLheV_qjuAEnGyFjdpWUmWhNp3-KMA1onZymbHxt8-mkuzNRyyc9NToRR_M3a82jmlqms9gsQIQjKLqCHAkvUWejmZbHa_oUUC-Dg"/>
+</div>
+<div class="md:hidden mt-4">
+<span class="text-primary font-display text-3xl mb-1 block">05</span>
+<h3 class="text-xl font-headline font-black uppercase text-on-surface">Cooling &amp; Shakeout</h3>
+<p class="text-zinc-500 text-sm mt-1">Controlled cooling and mechanical sand removal.</p>
+</div>
+</div>
+</div>
+<!-- Step 6 -->
+<div class="flex flex-col md:flex-row items-center gap-8 group">
+<div class="flex-1 order-3 md:order-1">
+<div class="bg-surface-container-low p-1 border border-outline-variant/10 rounded-sm overflow-hidden group-hover:border-primary-container/40 transition-all duration-500">
+<img class="w-full h-48 object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="macro photo of a robotic arm performing a precision laser inspection on a silver metal engine part in a lab setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqpHfjdG9n1rxKxRJs97BUpEbdox7Li7pFc3lvDDOFtbcd1Lt6REtQoGFlDttfGGbdbt3RC6RRmrP5ECXri6iOKij8QIzgQ7RAOoNkZ5ymmsWu-iYUntq4PteTws_Lv0KE5tGOhFwjaXmW9v-HNWsGWUyMOC2dt3l_zE_myHI2k9ZvQgfKIcHjePzhJ_lifJKIgO1KnazcNLqlSytb-Zk2xk6RdnXJh8AVgScSs_RS0f8Rn4IAS6SWqrC2Vi-RwYzoPc6zzLeIgQ"/>
+</div>
+<div class="md:hidden mt-4">
+<span class="text-primary font-display text-3xl mb-1 block">06</span>
+<h3 class="text-xl font-headline font-black uppercase text-on-surface">Finishing &amp; Inspection</h3>
+<p class="text-zinc-500 text-sm mt-1">X-ray certification and CMM validation.</p>
+</div>
+</div>
+<div class="z-10 w-12 h-12 rounded-sm bg-surface-container-highest border border-primary-container/50 flex items-center justify-center order-1 md:order-2">
+<span class="material-symbols-outlined text-primary">biotech</span>
+</div>
+<div class="flex-1 order-2 md:order-3 hidden md:block">
+<span class="text-primary font-display text-4xl mb-2 block">06</span>
+<h3 class="text-2xl font-headline font-black uppercase text-on-surface tracking-tight">Finishing &amp; Inspection</h3>
+<p class="text-zinc-500 max-w-sm mt-2">Rigorous finishing via shot blasting and grinding, followed by certification through CMM, X-Ray, and Ultrasonic testing.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Technical Specs / Data Strip -->
+<section class="mt-32 grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="bg-surface-container p-6 border-l-2 border-secondary">
+<p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Cycle Efficiency</p>
+<div class="text-3xl font-display text-on-surface tracking-tighter">94.8%</div>
+<div class="mt-2 text-[10px] text-primary uppercase font-bold">+2.4% vs last shift</div>
+</div>
+<div class="bg-surface-container p-6 border-l-2 border-primary-container">
+<p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Induction Temp</p>
+<div class="text-3xl font-display text-on-surface tracking-tighter">1,450°C</div>
+<div class="mt-2 text-[10px] text-zinc-400 uppercase font-bold">Optimal Range</div>
+</div>
+<div class="bg-surface-container p-6 border-l-2 border-secondary">
+<p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Scrap Rate</p>
+<div class="text-3xl font-display text-on-surface tracking-tighter">0.82%</div>
+<div class="mt-2 text-[10px] text-zinc-400 uppercase font-bold">ISO-9001 Compliant</div>
+</div>
+<div class="bg-surface-container p-6 border-l-2 border-primary-container">
+<p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Mold Pressure</p>
+<div class="text-3xl font-display text-on-surface tracking-tighter">12.5 BAR</div>
+<div class="mt-2 text-[10px] text-zinc-400 uppercase font-bold">Static Head</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-[#131313]/80 backdrop-blur-xl flex justify-around items-center px-4 py-3 border-t border-outline-variant/20">
+<a class="flex flex-col items-center gap-1 text-[#ffb5a0]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Inventory</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Analysis</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Profile</span>
+</a>
+</nav>
+<!-- Floating Action Button - Contextual for "New Process Entry" -->
+<button class="fixed bottom-8 right-8 z-50 w-14 h-14 bg-primary-container text-on-primary-container rounded-sm shadow-2xl shadow-black flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</body></html>

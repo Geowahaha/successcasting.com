@@ -1,0 +1,325 @@
+{
+  "standard": {
+    "size": "1200x1200",
+    "format": "webp",
+    "quality": 85,
+    "background": "transparent",
+    "model": "rembg+resize+webp"
+  },
+  "counts": {
+    "source": 31,
+    "processed": 31
+  },
+  "items": [
+    {
+      "id": "original-2bd1e373-b0e3-444e-9e7f-22630d7b834f",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\2BD1E373-B0E3-444E-9E7F-22630D7B834F.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-2bd1e373-b0e3-444e-9e7f-22630d7b834f.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-2bd1e373-b0e3-444e-9e7f-22630d7b834f.webp",
+      "nextjsSrc": "/products/generated/original-2bd1e373-b0e3-444e-9e7f-22630d7b834f.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-73d23231-530d-472b-950c-6b73b63446d9",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\73D23231-530D-472B-950C-6B73B63446D9.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-73d23231-530d-472b-950c-6b73b63446d9.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-73d23231-530d-472b-950c-6b73b63446d9.webp",
+      "nextjsSrc": "/products/generated/original-73d23231-530d-472b-950c-6b73b63446d9.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-82a34289-49de-4836-a85e-a7f5a14c96f1",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\82A34289-49DE-4836-A85E-A7F5A14C96F1.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-82a34289-49de-4836-a85e-a7f5a14c96f1.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-82a34289-49de-4836-a85e-a7f5a14c96f1.webp",
+      "nextjsSrc": "/products/generated/original-82a34289-49de-4836-a85e-a7f5a14c96f1.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-a2c10246-205d-4858-a322-8c2355f4f7db",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\A2C10246-205D-4858-A322-8C2355F4F7DB.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-a2c10246-205d-4858-a322-8c2355f4f7db.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-a2c10246-205d-4858-a322-8c2355f4f7db.webp",
+      "nextjsSrc": "/products/generated/original-a2c10246-205d-4858-a322-8c2355f4f7db.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-cbdfc026-e69d-428f-ab47-44665c9de726",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\CBDFC026-E69D-428F-AB47-44665C9DE726.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-cbdfc026-e69d-428f-ab47-44665c9de726.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-cbdfc026-e69d-428f-ab47-44665c9de726.webp",
+      "nextjsSrc": "/products/generated/original-cbdfc026-e69d-428f-ab47-44665c9de726.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-f16b2b59-1331-4826-a071-f0542dc95b98",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\F16B2B59-1331-4826-A071-F0542DC95B98.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-f16b2b59-1331-4826-a071-f0542dc95b98.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-f16b2b59-1331-4826-a071-f0542dc95b98.webp",
+      "nextjsSrc": "/products/generated/original-f16b2b59-1331-4826-a071-f0542dc95b98.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113492002",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113492002.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113492002.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113492002.webp",
+      "nextjsSrc": "/products/generated/original-s-113492002.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557515-0",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557515_0.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557515-0.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557515-0.webp",
+      "nextjsSrc": "/products/generated/original-s-113557515-0.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557517-0",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557517_0.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557517-0.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557517-0.webp",
+      "nextjsSrc": "/products/generated/original-s-113557517-0.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557518-0",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557518_0.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557518-0.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557518-0.webp",
+      "nextjsSrc": "/products/generated/original-s-113557518-0.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557519-0",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557519_0.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557519-0.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557519-0.webp",
+      "nextjsSrc": "/products/generated/original-s-113557519-0.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557520-0",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557520_0.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557520-0.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557520-0.webp",
+      "nextjsSrc": "/products/generated/original-s-113557520-0.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557521-0",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557521_0.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557521-0.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557521-0.webp",
+      "nextjsSrc": "/products/generated/original-s-113557521-0.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557522-1",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557522(1).jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557522-1.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557522-1.webp",
+      "nextjsSrc": "/products/generated/original-s-113557522-1.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557522",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557522.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557522.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557522.webp",
+      "nextjsSrc": "/products/generated/original-s-113557522.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113557677",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113557677.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113557677.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113557677.webp",
+      "nextjsSrc": "/products/generated/original-s-113557677.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113565711",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113565711.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113565711.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113565711.webp",
+      "nextjsSrc": "/products/generated/original-s-113565711.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113565712",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113565712.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113565712.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113565712.webp",
+      "nextjsSrc": "/products/generated/original-s-113565712.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-s-113565721",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\S__113565721.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-s-113565721.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-s-113565721.webp",
+      "nextjsSrc": "/products/generated/original-s-113565721.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196197314",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4926514618573464580_506018196197314.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196197314.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196197314.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196197314.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196267314-1",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4926514618573464580_506018196267314(1).jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196267314-1.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196267314-1.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196267314-1.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196267314",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4926514618573464580_506018196267314.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196267314.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196267314.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196267314.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196331468",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4926514618573464580_506018196331468.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196331468.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196331468.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4926514618573464580-506018196331468.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597311616",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4926552845573800917_511083597311616.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597311616.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597311616.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597311616.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597451693",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4926552845573800917_511083597451693.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597451693.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597451693.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597451693.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597484154",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4926552845573800917_511083597484154.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597484154.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597484154.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4926552845573800917-511083597484154.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4927691185528910827-651799247690849",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4927691185528910827_651799247690849.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4927691185528910827-651799247690849.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4927691185528910827-651799247690849.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4927691185528910827-651799247690849.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4927691185528910827-651799247742695",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4927691185528910827_651799247742695.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4927691185528910827-651799247742695.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4927691185528910827-651799247742695.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4927691185528910827-651799247742695.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4927711356795703592-655900151513093",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4927711356795703592_655900151513093.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4927711356795703592-655900151513093.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4927711356795703592-655900151513093.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4927711356795703592-655900151513093.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-temp-c86a623052d680085d3aee0cff7b74347-4927711356795703592-655900151687478",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\temp_c86a623052d680085d3aee0cff7b74347_4927711356795703592_655900151687478.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-temp-c86a623052d680085d3aee0cff7b74347-4927711356795703592-655900151687478.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-temp-c86a623052d680085d3aee0cff7b74347-4927711356795703592-655900151687478.webp",
+      "nextjsSrc": "/products/generated/original-temp-c86a623052d680085d3aee0cff7b74347-4927711356795703592-655900151687478.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    },
+    {
+      "id": "original-timeline-20251122-075100",
+      "sourceFile": "D:\\Success_Suphancasting\\Product_image\\original\\timeline_20251122_075100.jpg",
+      "webFile": "D:\\Success_Suphancasting\\Product_image\\web\\original-timeline-20251122-075100.webp",
+      "nextjsPublicFile": "D:\\Success_Suphancasting\\suphancasting\\public\\products\\generated\\original-timeline-20251122-075100.webp",
+      "nextjsSrc": "/products/generated/original-timeline-20251122-075100.webp",
+      "width": 1200,
+      "height": 1200,
+      "format": "webp"
+    }
+  ]
+}
