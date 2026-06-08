@@ -41,6 +41,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // HTML pages: tell browsers not to cache so deploys show immediately.
+        // s-maxage=60 (set by revalidate=60) still controls CDN/proxy cache.
+        source: "/(|products|products/[^.]+|blog)",
+        headers: [
+          { key: "Cache-Control", value: "no-store" },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           {
