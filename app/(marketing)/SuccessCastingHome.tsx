@@ -25,8 +25,8 @@ const lineUrl = "https://line.me/R/ti/p/@SCNW";
 const lineQrGreen = "/successcasting-assets/line-official-qr-green.png";
 const pulleyLogo = "/successcasting-assets/logo/success-logo-header.webp";
 const mapEmbedSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3878.0468607006387!2d100.8540115!3d13.5939493!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x311d43805247e39b%3A0xa792ad76155fb9a1!2sSuccess%20Network%20Co.%2CLTD.!5e0!3m2!1sen!2sth!4v1779216458535!5m2!1sen!2sth";
-const materialListTh = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr28, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
-const materialListEn = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr28, ASTM A532 Class A, Ni-Hard, 1.4777 and 1.4823";
+const materialListTh = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr2828, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
+const materialListEn = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr2828, ASTM A532 Class A, Ni-Hard, 1.4777 and 1.4823";
 const unsupportedMaterialsTh = "ไม่รับหล่อทองเหลือง ทองแดง หรือทองคำ";
 const unsupportedMaterialsEn = "Brass, copper and gold casting are not accepted.";
 
@@ -46,7 +46,7 @@ const copy = {
     welcome: [
       "บริษัท ซัคเซสเน็ทเวิร์ค จำกัด (Success Casting) ก่อตั้งขึ้นในปี พ.ศ. 2544 ดำเนินธุรกิจโรงหล่อเหล็กและงานหลอมโลหะมากว่า 20 ปี รับหล่อเหล็กอุตสาหกรรมตามแบบ Drawing ตามรูปชิ้นงาน หรือถอดแบบจากอะไหล่เดิม สำหรับชิ้นส่วนเครื่องจักร อะไหล่ทดแทน และงานสั่งผลิตเฉพาะทาง",
       "เรามุ่งมั่นในการผลิตสินค้าที่มีคุณภาพ ได้มาตรฐาน และตอบสนองความต้องการของลูกค้าอย่างดีที่สุด เรารับผลิตชิ้นงาน เหล็กหล่อ เหล็กหล่อเหนียว เหล็กทนสึก ไปจนถึงเหล็กทนความร้อน",
-      "วัสดุที่รับหล่อครอบคลุม เหล็กหล่อสีเทา FC15–FC30 (FC150, FC200, FC250, FC300) สำหรับพูลเล่ย์ housing และฐานเครื่องที่ต้องรับแรงอัดและซับแรงสั่น, เหล็กหล่อเหนียว FCD45–FCD70 สำหรับเฟืองและชิ้นส่วนรับแรงดึงและแรงกระแทก, เหล็กกล้าหล่อ Sc46, S45c, S50c, Mo4140, 4340, SCMn สำหรับงานที่ต้องการความแข็งแรงสูง, เหล็กทนสึก Cr28, ASTM A532 Class A, Ni-Hard สำหรับงานเสียดสีในเหมืองแร่และปูนซีเมนต์ และเหล็กทนความร้อน 1.4777, 1.4823 สำหรับชิ้นส่วนที่ใช้งานในอุณหภูมิสูง",
+      "วัสดุที่รับหล่อครอบคลุม เหล็กหล่อสีเทา FC15–FC30 (FC150, FC200, FC250, FC300) สำหรับพูลเล่ย์ housing และฐานเครื่องที่ต้องรับแรงอัดและซับแรงสั่น, เหล็กหล่อเหนียว FCD45–FCD70 สำหรับเฟืองและชิ้นส่วนรับแรงดึงและแรงกระแทก, เหล็กกล้าหล่อ Sc46, S45c, S50c, Mo4140, 4340, SCMn สำหรับงานที่ต้องการความแข็งแรงสูง, เหล็กทนสึก Cr2828, ASTM A532 Class A, Ni-Hard สำหรับงานเสียดสีในเหมืองแร่และปูนซีเมนต์ และเหล็กทนความร้อน 1.4777, 1.4823 สำหรับชิ้นส่วนที่ใช้งานในอุณหภูมิสูง",
       "เราเชี่ยวชาญงานหล่อทราย (Sand Casting) และให้บริการกลึงแต่งและแปรรูปหลังหล่อ เพื่อส่งมอบชิ้นงานที่พร้อมใช้งานตามแบบ เหมาะกับงานซ่อมบำรุงโรงงาน การผลิตอะไหล่ทดแทนของนำเข้า งานต้นแบบ และการผลิตเป็นล็อต โดยรับงานได้ตั้งแต่ 1 ชิ้นไปจนถึงปริมาณมาก",
       "เลือกวัสดุไม่ถูก ทีมงานช่วยแนะนำเกรดที่เหมาะกับการใช้งานจริง โดยพิจารณาจากลักษณะแรง อุณหภูมิ และการสึกหรอ พร้อมประเมินกระบวนการผลิตและงานกลึงก่อนเสนอราคา ดูแลลูกค้าในกลุ่มเครื่องจักรกล เกษตร เหมืองแร่ ปูนซีเมนต์ ยานยนต์ และอุตสาหกรรมทั่วไปทั่วประเทศ",
       "เราให้ความสำคัญกับความสัมพันธ์ที่ดีกับลูกค้า เพื่อให้ผลิตภัณฑ์เป็นไปตามกำหนดเวลา และนำส่งตรงตามข้อตกลง",
@@ -88,7 +88,7 @@ const copy = {
     welcome: [
       "Success Network Co., Ltd. (Success Casting) was founded in 2001 and has operated as an iron foundry and metal-melting workshop for over 20 years. We cast industrial iron and steel to your drawing, photo, or an existing sample — for machine components, replacement parts, and specialized custom work.",
       "We focus on producing quality parts to required standards and customer needs, including gray cast iron, ductile iron, wear-resistant steel and heat-resistant steel.",
-      "Materials we cast include gray cast iron FC15–FC30 (FC150, FC200, FC250, FC300) for pulleys, housings and bases that absorb compression and vibration; ductile iron FCD45–FCD70 for gears and load- and impact-bearing parts; cast and carbon steel Sc46, S45c, S50c, Mo4140, 4340, SCMn for higher-strength work; wear-resistant Cr28, ASTM A532 Class A and Ni-Hard for abrasive duty in mining and cement; and heat-resistant 1.4777 and 1.4823 for high-temperature service.",
+      "Materials we cast include gray cast iron FC15–FC30 (FC150, FC200, FC250, FC300) for pulleys, housings and bases that absorb compression and vibration; ductile iron FCD45–FCD70 for gears and load- and impact-bearing parts; cast and carbon steel Sc46, S45c, S50c, Mo4140, 4340, SCMn for higher-strength work; wear-resistant Cr2828, ASTM A532 Class A and Ni-Hard for abrasive duty in mining and cement; and heat-resistant 1.4777 and 1.4823 for high-temperature service.",
       "We specialize in sand casting and offer post-cast machining and finishing to deliver parts ready to install. This suits factory maintenance, replacing imported spares, prototypes, and batch production — with orders accepted from a single piece up to large volumes.",
       "Not sure which grade to use? Our team recommends the right material based on load, temperature and wear, and reviews the casting process and machining before quoting. We serve customers in machinery, agriculture, mining, cement, automotive and general industry across Thailand.",
       "We value strong customer relationships so products are completed on schedule and delivered according to agreed requirements.",
@@ -133,7 +133,7 @@ const materialDetails = [
   { no: "01", title: "เหล็กหล่อ", subtitle: "GREY CAST IRON · FC", text: "เหล็กหล่อ: FC 15–30 (FC150, FC200, FC250, FC300)", chips: ["FC 15–30", "FC150", "FC200", "FC250", "FC300"] },
   { no: "02", title: "เหล็กหล่อเหนียว", subtitle: "DUCTILE IRON · FCD", text: "เหล็กหล่อเหนียว: FCD 45–70 (FCD450, 500, 600, 700)", chips: ["FCD 45–70", "FCD450", "500", "600", "700"] },
   { no: "03", title: "เหล็กเหนียว", subtitle: "CAST & CARBON STEEL", text: "เหล็กเหนียว: Sc46, S45c, S50c, Mo4140, 4340, SCMn", chips: ["Sc46", "S45c", "S50c", "Mo4140", "4340", "SCMn"] },
-  { no: "04", title: "เหล็กทนสึก", subtitle: "WEAR RESISTANT", text: "เหล็กทนสึก: Cr28, ASTM A532 Class A, Ni-Hard", chips: ["Cr28", "ASTM A532", "Class A", "Ni-Hard"] },
+  { no: "04", title: "เหล็กทนสึก", subtitle: "WEAR RESISTANT", text: "เหล็กทนสึก: Cr2828, ASTM A532 Class A, Ni-Hard", chips: ["Cr2828", "ASTM A532", "Class A", "Ni-Hard"] },
   { no: "05", title: "เหล็กทนความร้อน", subtitle: "HEAT RESISTANT", text: "เหล็กทนความร้อน: 1.4777, 1.4823, ASTM", chips: ["1.4777", "1.4823", "ASTM"] },
 ] as const;
 
@@ -175,20 +175,20 @@ const portfolio: Array<{ grade: string; title: TextPair; body: TextPair; images:
     ],
   },
   {
-    grade: "Cr28",
+    grade: "Cr2828",
     title: ["เหล็กทนสึก", "Wear Resistant Steel"],
-    body: ["ชิ้นงานเหล็กทนสึก Cr28 สำหรับงานเสียดสี งานกระแทก และสภาพใช้งานที่ต้องการความทนทานสูง", "Cr28 wear-resistant steel parts for abrasive, impact and high-durability applications."],
+    body: ["ชิ้นงานเหล็กทนสึก Cr2828 สำหรับงานเสียดสี งานกระแทก และสภาพใช้งานที่ต้องการความทนทานสูง", "Cr2828 wear-resistant steel parts for abrasive, impact and high-durability applications."],
     images: [
-      "/successcasting-assets/product-grades/cr28/cr28-01.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-02.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-03.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-04.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-05.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-06.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-07.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-08.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-09.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-10.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-01.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-02.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-03.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-04.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-05.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-06.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-07.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-08.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-09.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-10.webp",
     ],
   },
 ];
@@ -197,7 +197,7 @@ const materials: Array<{ code: string; name: TextPair; body: TextPair; img: stri
   { code: "FC15-30", name: ["เหล็กหล่อเทา", "Gray Cast Iron"], body: ["FC150, FC200, FC250, FC300 สำหรับพูลเล่ย์ housing ฐานเครื่อง และชิ้นส่วนที่ต้องการซับแรงสั่น", "FC150, FC200, FC250, FC300 for pulleys, housings, bases and vibration-damping parts"], img: "/successcasting-assets/shopee-new/pulley-product-fc25-no-price.webp" },
   { code: "FCD45-70", name: ["เหล็กหล่อเหนียว", "Ductile Cast Iron"], body: ["FCD450, FCD500, FCD600, FCD700 สำหรับชิ้นส่วนรับแรง เฟือง และงานที่ต้องการความเหนียวสูงกว่าเหล็กหล่อเทา", "FCD450, FCD500, FCD600, FCD700 for tougher load-bearing components and gears"], img: "/successcasting-assets/shopee-new/large-gear-fcd.webp" },
   { code: "Sc46", name: ["เหล็กกล้าหล่อ", "Cast Steel"], body: ["Sc46, S45c, S50c, Mo4140, 4340 และ SCMn สำหรับชิ้นส่วนโครงสร้างและงานหล่อที่ต้องการความแข็งแรงสูง", "Sc46, S45c, S50c, Mo4140, 4340 and SCMn for structural and higher-strength cast components"], img: "/successcasting-assets/shopee-new/molten-metal-sc46.webp" },
-  { code: "Cr28", name: ["เหล็กทนสึก", "Wear Resistant"], body: ["Cr28, ASTM A532 Class A และ Ni-Hard สำหรับงานเสียดสีและงานสึกหรอสูง", "Cr28, ASTM A532 Class A and Ni-Hard for abrasive and high-wear applications"], img: "/successcasting-assets/product-grades/cr28/cr28-01.webp" },
+  { code: "Cr2828", name: ["เหล็กทนสึก", "Wear Resistant"], body: ["Cr2828, ASTM A532 Class A และ Ni-Hard สำหรับงานเสียดสีและงานสึกหรอสูง", "Cr2828, ASTM A532 Class A and Ni-Hard for abrasive and high-wear applications"], img: "/successcasting-assets/product-grades/Cr2828/Cr2828-01.webp" },
   { code: "1.4777/1.4823", name: ["เหล็กทนความร้อน", "Heat Resistant"], body: ["เกรดทนความร้อน 1.4777, 1.4823 และ ASTM สำหรับสภาพใช้งานอุณหภูมิสูง", "Heat-resistant 1.4777, 1.4823 and ASTM grades for high-temperature service"], img: "/successcasting-assets/shopee-new/mold-boxes-fc25.webp" },
 ];
 

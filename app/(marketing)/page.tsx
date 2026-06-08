@@ -8,7 +8,7 @@ export const revalidate = 60;
 const siteUrl = "https://www.successcasting.com";
 const canonicalUrl = `${siteUrl}/`;
 const ogImage = `${siteUrl}/successcasting-assets/gpt-hero/molten-pour-1.webp`;
-const materialList = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr28, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
+const materialList = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr2828, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
 const title = "รับหล่อเหล็กอุตสาหกรรมทุกชนิด | โรงหล่อเหล็ก Success Casting";
 const description = `Success Casting รับจ้างผลิตงานหล่อโลหะ งานหล่อทราย ชิ้นส่วนเครื่องจักร และอะไหล่ตามแบบ รองรับ ${materialList} รับงานตั้งแต่ 1 ชิ้น โทร 098-636-2356 หรือ 06-3989-1165 LINE @SCNW`;
 
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     "หล่ออะไหล่เครื่องจักร",
     "เหล็กหล่อ FC",
     "เหล็กหล่อเหนียว FCD",
-    "เหล็กทนสึก Cr28",
+    "เหล็กทนสึก Cr2828",
     "เหล็กทนความร้อน 1.4777 1.4823",
     "OEM casting parts Thailand",
     "metal casting factory Thailand",
@@ -89,7 +89,7 @@ export default function HomePage() {
       "S45c",
       "S50c",
       "Mo4140",
-      "Cr28",
+      "Cr2828",
       "ASTM A532 Class A",
       "Ni-Hard",
       "1.4777",
@@ -130,7 +130,7 @@ export default function HomePage() {
         "FC15-30 เหล็กหล่อเทา",
         "FCD45-70 เหล็กหล่อเหนียว",
         "Sc46 / S45c / S50c / Mo4140 / 4340 / SCMn เหล็กกล้าหล่อ",
-        "Cr28, ASTM A532 Class A, Ni-Hard เหล็กทนสึก",
+        "Cr2828, ASTM A532 Class A, Ni-Hard เหล็กทนสึก",
         "1.4777 / 1.4823 เหล็กทนความร้อน",
       ].map((name) => ({
         "@type": "Offer",

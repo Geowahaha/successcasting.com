@@ -11,7 +11,7 @@ const phoneHref = "tel:0986362356";
 const phoneDisplayAlt = "06-3989-1165";
 const phoneHrefAlt = "tel:0639891165";
 const pulleyLogo = "/successcasting-assets/logo/success-logo-header.webp";
-const materialList = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr28, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
+const materialList = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr2828, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
 const unsupportedMaterials = "ไม่รับหล่อทองเหลือง ทองแดง หรือทองคำ";
 const mapEmbedSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3878.0468607006387!2d100.8540115!3d13.5939493!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x311d43805247e39b%3A0xa792ad76155fb9a1!2sSuccess%20Network%20Co.%2CLTD.!5e0!3m2!1sen!2sth!4v1779216458535!5m2!1sen!2sth";
 
@@ -77,24 +77,24 @@ const productRows: ProductRow[] = [
     specs: ["Mo4140 / 4340 / SCMn", "High strength material family", "Controlled production planning"],
   },
   {
-    material: "Cr28",
+    material: "Cr2828",
     title: "Wear Resistant Castings",
     img: "/successcasting-assets/shopee-products/LINE_NOTE_260502_10.webp",
     images: [
-      "/successcasting-assets/product-grades/cr28/cr28-01.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-02.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-03.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-04.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-05.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-06.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-07.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-08.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-09.webp",
-      "/successcasting-assets/product-grades/cr28/cr28-10.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-01.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-02.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-03.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-04.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-05.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-06.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-07.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-08.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-09.webp",
+      "/successcasting-assets/product-grades/Cr2828/Cr2828-10.webp",
     ],
     description:
-      "Cr28, ASTM A532 Class A และ Ni-Hard สำหรับชิ้นส่วนที่ต้องรับการเสียดสี งานสึกหรอสูง และสภาพใช้งานหนัก.",
-    specs: ["Cr28", "ASTM A532 Class A", "Ni-Hard"],
+      "Cr2828, ASTM A532 Class A และ Ni-Hard สำหรับชิ้นส่วนที่ต้องรับการเสียดสี งานสึกหรอสูง และสภาพใช้งานหนัก.",
+    specs: ["Cr2828", "ASTM A532 Class A", "Ni-Hard"],
   },
   {
     material: "1.4777/1.4823",

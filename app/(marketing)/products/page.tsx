@@ -6,7 +6,7 @@ import { MATERIAL_PAGES } from "@/lib/seo/materials";
 // Short CDN cache so deploys propagate within ~1 min (avoids 1-year s-maxage / manual purge).
 export const revalidate = 60;
 
-const materialList = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr28, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
+const materialList = "FC15-30, FCD45-70, Sc46, S45c, S50c, Mo4140, 4340, SCMn, Cr2828, ASTM A532 Class A, Ni-Hard, 1.4777 และ 1.4823";
 const canonicalUrl = "https://www.successcasting.com/products";
 const siteUrl = "https://www.successcasting.com";
 const ogImage = `${siteUrl}/successcasting-assets/gpt-hero/success-fcd-wide.webp`;
@@ -16,7 +16,7 @@ const products = [
   ["Sc46", "Cast Steel Machinery Parts", "Sc46 สำหรับงานเหล็กกล้าหล่อ ชิ้นส่วนรับแรง งานโครงสร้าง และงานโรงงานที่ต้องควบคุมกระบวนการผลิตอย่างจริงจัง.", "/successcasting-assets/shopee-products/LINE_NOTE_260502_10.webp"],
   ["S45c/S50c", "Machinery Shafts / Hubs / Carbon Steel Parts", "S45c และ S50c สำหรับชิ้นงานที่ต้องการความแข็งแรง งานกลึงต่อ งาน hub, shaft และอะไหล่เครื่องจักรตามแบบเฉพาะ.", "/successcasting-assets/shopee-products/LINE_NOTE_260502_15.webp"],
   ["Mo4140", "High Strength Heavy-Duty Components", "Mo4140, 4340 และ SCMn สำหรับงานหนัก งานแข็งแรงสูง ชิ้นส่วนเฉพาะทาง และงานซ่อมบำรุงที่ต้องลด downtime.", "/successcasting-assets/shopee-products/LINE_NOTE_260502_20.webp"],
-  ["Cr28", "Wear Resistant Castings", "Cr28, ASTM A532 Class A และ Ni-Hard สำหรับชิ้นส่วนที่ต้องรับการเสียดสี งานสึกหรอสูง และสภาพใช้งานหนัก.", "/successcasting-assets/shopee-products/LINE_NOTE_260502_10.webp"],
+  ["Cr2828", "Wear Resistant Castings", "Cr2828, ASTM A532 Class A และ Ni-Hard สำหรับชิ้นส่วนที่ต้องรับการเสียดสี งานสึกหรอสูง และสภาพใช้งานหนัก.", "/successcasting-assets/shopee-products/LINE_NOTE_260502_10.webp"],
   ["1.4777/1.4823", "Heat Resistant Castings", "1.4777, 1.4823 และ ASTM สำหรับงานทนความร้อนและชิ้นส่วนที่ใช้งานในสภาพอุณหภูมิสูง.", "/successcasting-assets/shopee-products/LINE_NOTE_260502_1.webp"],
 ] as const;
 

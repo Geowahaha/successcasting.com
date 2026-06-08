@@ -226,19 +226,19 @@ export const MATERIAL_PAGES: MaterialPage[] = [
     family: "เหล็กทนสึก (Wear-Resistant Steel)",
     standard: "ASTM A532 / Ni-Hard",
     th: {
-      title: "รับหล่อเหล็กทนสึก Cr28 / Ni-Hard เหมืองแร่ ปูนซีเมนต์ | Success Casting",
-      h1: "เหล็กทนสึก Cr28 / ASTM A532 / Ni-Hard",
+      title: "รับหล่อเหล็กทนสึก Cr2828 / Ni-Hard เหมืองแร่ ปูนซีเมนต์ | Success Casting",
+      h1: "เหล็กทนสึก Cr2828 / ASTM A532 / Ni-Hard",
       lead:
-        "รับหล่อเหล็กทนสึก (Wear-Resistant Castings) เกรด Cr28 (High-Chromium White Iron), " +
+        "รับหล่อเหล็กทนสึก (Wear-Resistant Castings) เกรด Cr2828 (High-Chromium White Iron), " +
         "ASTM A532 Class A และ Ni-Hard สำหรับงานเสียดสีในเหมืองแร่ ปูนซีเมนต์ " +
         "และโรงโม่หิน รับงานหล่อตามแบบและถอดแบบจากอะไหล่เดิม",
     },
     en: {
-      title: "Wear-Resistant Castings Cr28 / Ni-Hard / ASTM A532 | Success Casting",
+      title: "Wear-Resistant Castings Cr2828 / Ni-Hard / ASTM A532 | Success Casting",
       lead:
         "High-chromium white iron and Ni-Hard wear castings (ASTM A532) for mining, cement and aggregate plants.",
     },
-    grades: ["Cr28 (High-Cr White Iron)", "ASTM A532 Class A", "Ni-Hard"],
+    grades: ["Cr2828 (High-Cr White Iron)", "ASTM A532 Class A", "Ni-Hard"],
     properties: [
       { label: "Hardness", value: "ประมาณ 56–63 HRC (อิงตาม ASTM A532)" },
       { label: "ความต้านทานการสึกหรอ", value: "สูงมาก เทียบเท่าหรือดีกว่า Ni-Hard" },
@@ -253,7 +253,7 @@ export const MATERIAL_PAGES: MaterialPage[] = [
     image: "/successcasting-assets/shopee-products/LINE_NOTE_260502_10.webp",
     keywords: [
       "เหล็กทนสึก",
-      "Cr28", "Ni-Hard", "ASTM A532",
+      "Cr2828", "Ni-Hard", "ASTM A532",
       "หล่อเหล็กเหมืองแร่",
       "Wear Resistant Casting",
       "High Chromium White Iron",
