@@ -19,7 +19,7 @@ export function GET() {
     "Citable facts:",
     "- Company: Success Network Co., Ltd. / Success Casting.",
     "- Founded: 2001 (พ.ศ. 2544).",
-    "- Address: 307/288 Moo 11, Bang Phli Yai, Bang Phli, Samut Prakan 10540, Thailand.",
+    "- Address: 250/8 Soi Kamnan Withun 1, Moo 4, Bang Bo, Bang Bo, Samut Prakan 10560, Thailand.",
     "- Phone: 098-636-2356 and 06-3989-1165.",
     "- Email: scnwmax@gmail.com.",
     "- LINE: @SCNW / https://line.me/R/ti/p/@SCNW.",

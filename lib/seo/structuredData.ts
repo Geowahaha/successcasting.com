@@ -17,10 +17,10 @@ export function buildOrganizationJsonLd(): JsonLd {
     email: "scnwmax@gmail.com",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "307/288 หมู่ที่ 11 ตำบลบางพลีใหญ่",
-      addressLocality: "บางพลี",
+      streetAddress: "250/8 ซอยกำนันวิฑูรย์ 1 หมู่ที่ 4 ตำบลบางบ่อ",
+      addressLocality: "บางบ่อ",
       addressRegion: "สมุทรปราการ",
-      postalCode: "10540",
+      postalCode: "10560",
       addressCountry: "TH",
     },
     sameAs: ["https://www.facebook.com/profile.php?id=61589947250816", "https://line.me/R/ti/p/@SCNW"],

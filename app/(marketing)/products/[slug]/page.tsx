@@ -269,7 +269,7 @@ export default async function MaterialPage({
 
       <footer className="mt-10 border-t border-white/10 bg-[#1c1b1b] px-4 py-8 text-sm text-zinc-400 sm:px-6">
         <div className="mx-auto max-w-5xl">
-          <p>บริษัท ซัคเซสเน็ทเวิร์ค จำกัด — 307/288 หมู่ที่ 11 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540</p>
+          <p>บริษัท ซัคเซสเน็ทเวิร์ค จำกัด — 250/8 ซอยกำนันวิฑูรย์ 1 ม.4 ต.บางบ่อ อ.บางบ่อ จ.สมุทรปราการ 10560</p>
           <p className="mt-1">โทร {PHONE_MAIN}, {PHONE_ALT} · LINE @SCNW · scnwmax@gmail.com</p>
           <p className="mt-3">© Success Casting / Success Network Co., Ltd.</p>
         </div>

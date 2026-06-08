@@ -1108,7 +1108,7 @@ function ContactFooter({ lang }: { lang: Lang }) {
           <h3 className="border-b border-zinc-600 pb-3 text-2xl font-semibold text-[#e23a40]">{t.contactTitle}</h3>
           <div className="mt-5 space-y-2 leading-7">
             <p>บริษัท ซัคเซสเน็ทเวิร์ค จำกัด</p>
-            <p>307/288 หมู่ที่ 11 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540</p>
+            <p>250/8 ซอยกำนันวิฑูรย์ 1 ม.4 ต.บางบ่อ อ.บางบ่อ จ.สมุทรปราการ 10560</p>
             <p>{lang === "th" ? "โทร" : "Phone"}: <a href={phoneHref} className="text-white hover:text-[#e23a40]">{phoneDisplay}</a>, <a href={phoneHrefAlt} className="text-white hover:text-[#e23a40]">{phoneDisplayAlt}</a></p>
             <p>Email: <a href="mailto:scnwmax@gmail.com" className="text-white hover:text-[#e23a40]">scnwmax@gmail.com</a></p>
             <p>LINE: <a href={lineUrl} target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#e23a40]">@SCNW</a></p>

@@ -177,7 +177,7 @@ const buyerIntentKeywords = [
   "รับหล่อเหล็กตามแบบ",
   "รับหล่อเหล็ก 1 ชิ้น",
   "โรงหล่อเหล็ก บางนา",
-  "โรงหล่อเหล็ก บางพลี",
+  "โรงหล่อเหล็ก บางบ่อ",
   "รับหล่อเหล็ก สมุทรปราการ",
   "รับหล่อ pulley",
   "หล่อเหล็ก FC FCD",
@@ -844,7 +844,7 @@ function ContactBand({ lang }: { lang: Lang }) {
           <h2 className="border-b border-zinc-600 pb-3 text-2xl font-semibold text-[#e23a40]">{t.contact}</h2>
           <div className="mt-5 space-y-2 leading-7">
             <p>บริษัท ซัคเซสเน็ทเวิร์ค จำกัด</p>
-            <p>307/288 หมู่ที่ 11 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540</p>
+            <p>250/8 ซอยกำนันวิฑูรย์ 1 ม.4 ต.บางบ่อ อ.บางบ่อ จ.สมุทรปราการ 10560</p>
             <p>
               {lang === "th" ? "โทร" : "Phone"}:{" "}
               <a href={phoneHref} className="text-white hover:text-[#e23a40]">{phoneDisplay}</a>

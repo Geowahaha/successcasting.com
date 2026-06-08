@@ -70,13 +70,13 @@ export default function HomePage() {
     email: "scnwmax@gmail.com",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "307/288 หมู่ที่ 11 ตำบลบางพลีใหญ่",
-      addressLocality: "บางพลี",
+      streetAddress: "250/8 ซอยกำนันวิฑูรย์ 1 หมู่ที่ 4 ตำบลบางบ่อ",
+      addressLocality: "บางบ่อ",
       addressRegion: "สมุทรปราการ",
-      postalCode: "10540",
+      postalCode: "10560",
       addressCountry: "TH",
     },
-    areaServed: ["บางนา", "บางพลี", "สมุทรปราการ", "กรุงเทพมหานคร", "ประเทศไทย"],
+    areaServed: ["บางบ่อ", "บางนา", "สมุทรปราการ", "กรุงเทพมหานคร", "ประเทศไทย"],
     sameAs: ["https://www.facebook.com/profile.php?id=61589947250816", "https://line.me/R/ti/p/@SCNW"],
     knowsAbout: [
       "รับหล่อเหล็ก",
