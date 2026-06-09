@@ -234,6 +234,29 @@ export default async function MaterialPage({
           </ul>
         </section>
 
+        {/* Detail sections — comprehensive technical content */}
+        {m.details && m.details.length > 0 && (
+          <section className="mt-14 space-y-10">
+            <h2 className="text-2xl font-bold">รายละเอียดทางเทคนิค</h2>
+            {m.details.map((section) => (
+              <div key={section.heading} className="rounded-xl border border-white/10 bg-[#1c1b1b] p-6">
+                <h3 className="text-lg font-bold text-[#e8b84b]">{section.heading}</h3>
+                <p className="mt-3 leading-8 text-zinc-300">{section.body}</p>
+                {section.list && section.list.length > 0 && (
+                  <ul className="mt-4 space-y-2">
+                    {section.list.map((item) => (
+                      <li key={item} className="flex items-start gap-3 text-sm leading-7 text-zinc-300">
+                        <span aria-hidden="true" className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[#e8b84b]" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
         {/* Sibling materials */}
         <section className="mt-14">
           <h2 className="text-2xl font-bold">วัสดุอื่น ๆ ที่รับหล่อ</h2>

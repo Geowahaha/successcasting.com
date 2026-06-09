@@ -131,11 +131,12 @@ const materialDetails = [
   { no: "05", title: "เหล็กทนความร้อน", subtitle: "HEAT RESISTANT", text: "เหล็กทนความร้อน: 1.4777, 1.4823, ASTM", chips: ["1.4777", "1.4823", "ASTM"] },
 ] as const;
 
-const portfolio: Array<{ grade: string; title: TextPair; body: TextPair; images: string[] }> = [
+const portfolio: Array<{ grade: string; slug: string; title: TextPair; body: TextPair; images: string[] }> = [
   {
     grade: "FC15-25",
+    slug: "gray-cast-iron",
     title: ["เหล็กหล่อเทา", "Gray Cast Iron"],
-    body: ["ชิ้นงานเหล็กหล่อเทา สำหรับพูลเล่ย์ housing ฐานเครื่อง และอะไหล่เครื่องจักรตามแบบ", "Gray cast iron parts for pulleys, housings, machine bases and custom replacement components."],
+    body: ["เหล็กหล่อสีเทา FC150–FC300 ซับแรงสั่นสะเทือนดีเยี่ยม กลึงต่อง่าย เหมาะกับพูลเล่ย์ ฐานเครื่อง และชิ้นส่วนเครื่องจักรที่ต้องรับแรงอัด", "Gray cast iron FC150–FC300 — excellent vibration damping and machinability. Ideal for pulleys, machine bases and compression-loaded components."],
     images: [
       "/successcasting-assets/product-grades/fc15-25/fc15-25-01.webp",
       "/successcasting-assets/product-grades/fc15-25/fc15-25-02.webp",
@@ -144,8 +145,9 @@ const portfolio: Array<{ grade: string; title: TextPair; body: TextPair; images:
   },
   {
     grade: "FCD 45-70",
+    slug: "ductile-iron",
     title: ["เหล็กหล่อเหนียว", "Ductile Cast Iron"],
-    body: ["ชิ้นงาน FCD สำหรับอะไหล่รับแรง เฟือง และชิ้นส่วนที่ต้องการความเหนียวสูงกว่าเหล็กหล่อเทา", "Ductile iron parts for load-bearing spares, gears and components needing higher toughness."],
+    body: ["เหล็กหล่อเหนียว FCD450–FCD700 ทนแรงดึงและแรงกระแทกสูงกว่าเหล็กหล่อสีเทา 3–4 เท่า เหมาะกับเฟือง Shaft และชิ้นส่วนรับแรงสูง", "Ductile iron FCD450–FCD700 with 3–4× higher tensile strength and impact resistance than gray iron. For gears, shafts and high-load components."],
     images: [
       "/successcasting-assets/product-grades/fcd/fcd-01.webp",
       "/successcasting-assets/product-grades/fcd/fcd-02.webp",
@@ -153,16 +155,18 @@ const portfolio: Array<{ grade: string; title: TextPair; body: TextPair; images:
   },
   {
     grade: "Sc46 / S45c / S50c / Mo4140",
+    slug: "cast-steel",
     title: ["เหล็กกล้าหล่อ", "Cast Steel"],
-    body: ["ชิ้นงานเหล็กกล้าหล่อสำหรับงานโครงสร้างและอะไหล่ที่ต้องการความแข็งแรงสูง", "Cast steel work for structural parts and stronger industrial replacement components."],
+    body: ["เหล็กกล้าหล่อ Sc46 และเหล็กกล้าคาร์บอน S45c/S50c/Mo4140 แข็งแรงสูง เชื่อมได้ เหมาะกับชิ้นส่วนโครงสร้าง Shaft และอะไหล่รับแรงที่ต้องการความเชื่อถือได้", "Cast and carbon steel Sc46 / S45c / Mo4140 — high strength, weldable. For structural parts, shafts and load-bearing replacements requiring reliability."],
     images: [
       "/successcasting-assets/product-grades/sc46/sc46-01.webp",
     ],
   },
   {
     grade: "1.4777 / 1.4823",
+    slug: "heat-resistant",
     title: ["เหล็กทนความร้อน", "Heat Resistant Steel"],
-    body: ["ชิ้นงานเหล็กทนความร้อน สำหรับสภาพใช้งานอุณหภูมิสูงและงานเฉพาะทาง", "Heat-resistant steel parts for high-temperature and specialized service conditions."],
+    body: ["เหล็กทนความร้อน 1.4777 / 1.4823 ใช้งานได้ถึง 1,000–1,100°C ทนการออกซิเดชั่นสูง เหมาะกับชิ้นส่วนเตาเผาและ Heat treatment fixture", "Heat-resistant alloys 1.4777 / 1.4823 rated to 1,000–1,100°C. For furnace components, heat-treatment fixtures and hot conveying systems."],
     images: [
       "/successcasting-assets/product-grades/heat-resistant/heat-resistant-01.webp",
       "/successcasting-assets/product-grades/heat-resistant/heat-resistant-02.webp",
@@ -170,8 +174,9 @@ const portfolio: Array<{ grade: string; title: TextPair; body: TextPair; images:
   },
   {
     grade: "Cr2828",
+    slug: "wear-resistant",
     title: ["เหล็กทนสึก", "Wear Resistant Steel"],
-    body: ["ชิ้นงานเหล็กทนสึก Cr2828 สำหรับงานเสียดสี งานกระแทก และสภาพใช้งานที่ต้องการความทนทานสูง", "Cr2828 wear-resistant steel parts for abrasive, impact and high-durability applications."],
+    body: ["เหล็กทนสึก Cr2828 (High-Chromium White Iron) ทนการสึกหรอแบบ Abrasion สูงมากจากคาร์ไบด์โครเมียม เหมาะกับ Liner ใบพัด และชิ้นส่วนเสียดสีในงานเหมืองและปูนซีเมนต์", "Cr2828 high-chromium white iron — outstanding abrasion resistance from chromium carbides. For mill liners, impellers and wear parts in mining and cement plants."],
     images: [
       "/successcasting-assets/product-grades/cr28/cr28-01.webp",
       "/successcasting-assets/product-grades/cr28/cr28-02.webp",
@@ -776,7 +781,13 @@ function Portfolio({ lang }: { lang: Lang }) {
               <PortfolioImageCarousel item={item} itemIndex={itemIndex} lang={lang} openViewer={openViewer} />
               <div className="pt-5">
                 <h3 className="text-2xl font-semibold text-zinc-800">{text(item.title, lang)}</h3>
-                <p className="mt-2 min-h-[4.25rem] text-sm leading-7 text-zinc-600">{text(item.body, lang)}</p>
+                <p className="mt-2 line-clamp-2 text-sm leading-7 text-zinc-600">{text(item.body, lang)}</p>
+                <Link
+                  href={`/products/${item.slug}`}
+                  className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#c72127] hover:underline"
+                >
+                  {lang === "th" ? "อ่านต่อ" : "Learn more"} →
+                </Link>
               </div>
             </article>
           ))}
