@@ -39,6 +39,9 @@ export const metadata: Metadata = {
   description: siteConfig.defaultDescription,
   metadataBase: new URL(process.env.NEXT_PUBLIC_CANONICAL_SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.successcasting.com"),
   alternates: { canonical: "/" },
+  icons: {
+    icon: "/favicon.ico",
+  },
   openGraph: {
     title: siteConfig.defaultTitle,
     description: siteConfig.defaultDescription,
