@@ -46,6 +46,7 @@ const nextConfig: NextConfig = {
         source: "/(|products|products/[^.]+|blog)",
         headers: [
           { key: "Cache-Control", value: "no-store" },
+          { key: "Link", value: '</llms.txt>; rel="llms-txt"' },
         ],
       },
       {

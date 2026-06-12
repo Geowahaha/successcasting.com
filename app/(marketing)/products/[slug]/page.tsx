@@ -7,6 +7,11 @@ import {
   absoluteMaterialUrl,
   getMaterialPage,
 } from "@/lib/seo/materials";
+import {
+  buildProductJsonLdForSlug,
+  buildFAQJsonLdForSlug,
+} from "@/lib/seo/structuredData";
+import ProductSiteHeader from "@/components/site/ProductSiteHeader";
 
 // Build all 7 material pages at build time → fully static, fast.
 export function generateStaticParams() {
@@ -68,7 +73,7 @@ export default async function MaterialPage({
     ],
   };
 
-  const faqJsonLd = {
+  const faqJsonLd = buildFAQJsonLdForSlug(slug) ?? {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
@@ -80,24 +85,10 @@ export default async function MaterialPage({
           text: `รับหล่อ ${m.family} ตามแบบ Drawing รูปชิ้นงาน หรือถอดแบบจากอะไหล่เดิม ครอบคลุมเกรด ${m.grades.join(", ")} ตามมาตรฐาน ${m.standard}`,
         },
       },
-      {
-        "@type": "Question",
-        name: "รับงานจำนวนน้อยหรือ 1 ชิ้นได้ไหม",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "รับบริการงานหล่อตั้งแต่ 1 ชิ้น เหมาะกับงานซ่อมบำรุง งานตัวอย่าง และอะไหล่เครื่องจักรที่ต้องการผลิตทดแทน",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "ขอใบเสนอราคาอย่างไร",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `ส่งรูป/แบบ ขนาด วัสดุ และจำนวน ผ่าน LINE @SCNW หรือโทร ${PHONE_MAIN} ทีมงานประเมินและเสนอราคาให้ภายในเวลาทำการ`,
-        },
-      },
     ],
   };
+
+  const productJsonLd = buildProductJsonLdForSlug(slug);
 
   const itemListJsonLd = {
     "@context": "https://schema.org",
@@ -127,22 +118,17 @@ export default async function MaterialPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
+      {productJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+      )}
 
-      {/* Header */}
-      <header className="border-b border-white/10 bg-[#1c1b1b]">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link href="/" className="text-sm font-bold tracking-wide text-[#e8b84b] hover:text-white">
-            ← Success Casting
-          </Link>
-          <nav className="flex gap-4 text-sm text-zinc-300">
-            <Link href="/products" className="hover:text-white">สินค้า/บริการ</Link>
-            <Link href="/blog" className="hover:text-white">FAQ</Link>
-            <Link href="/#contact" className="hover:text-white">ติดต่อ</Link>
-          </nav>
-        </div>
-      </header>
+      {/* Header — same design as homepage */}
+      <ProductSiteHeader />
 
-      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+      <main className="mx-auto max-w-5xl px-4 pt-28 pb-12 sm:px-6">
         {/* Breadcrumb (visible) */}
         <nav aria-label="Breadcrumb" className="text-xs text-zinc-500">
           <Link href="/" className="hover:text-white">หน้าแรก</Link>
@@ -275,26 +261,31 @@ export default async function MaterialPage({
           </div>
         </section>
 
-        {/* CTA */}
-        <section id="quote" className="mt-14 rounded-xl border border-white/10 bg-gradient-to-br from-[#1c1b1b] to-[#0e0e0e] p-6">
+        {/* CTA — links to homepage contact section */}
+        <section id="quote" className="mt-14 rounded-xl border border-white/10 bg-gradient-to-br from-[#1c1b1b] to-[#0e0e0e] p-6 text-center">
           <h2 className="text-xl font-bold">ขอใบเสนอราคา / ปรึกษางานหล่อ {m.family}</h2>
           <p className="mt-2 leading-7 text-zinc-300">
             ส่งรูปชิ้นงาน แบบ Drawing ขนาด วัสดุ จำนวน และรายละเอียดงานกลึง
             ทีมงานประเมินและเสนอราคาภายในเวลาทำการ
           </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <a href={LINE_URL} target="_blank" rel="noopener noreferrer" className="rounded-full bg-[#06c755] px-5 py-2.5 font-semibold text-white hover:bg-[#05a948]">LINE @SCNW</a>
-            <a href={`tel:${PHONE_MAIN.replace(/-/g, "")}`} className="rounded-full bg-[#c72127] px-5 py-2.5 font-semibold text-white hover:bg-[#a91920]">โทร {PHONE_MAIN}</a>
-            <a href={`tel:${PHONE_ALT.replace(/-/g, "")}`} className="rounded-full border border-zinc-500 px-5 py-2.5 font-semibold text-white hover:bg-white/10">{PHONE_ALT}</a>
-          </div>
+          <a
+            href="/#contact"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#c72127] px-8 py-3 text-base font-bold text-white shadow-lg transition hover:bg-[#a91920]"
+          >
+            ติดต่อ / ขอใบเสนอราคา →
+          </a>
         </section>
       </main>
 
       <footer className="mt-10 border-t border-white/10 bg-[#1c1b1b] px-4 py-8 text-sm text-zinc-400 sm:px-6">
-        <div className="mx-auto max-w-5xl">
-          <p>บริษัท ซัคเซสเน็ทเวิร์ค จำกัด — 250/8 ซอยกำนันวิฑูรย์ 1 ม.4 ต.บางบ่อ อ.บางบ่อ จ.สมุทรปราการ 10560</p>
-          <p className="mt-1">โทร {PHONE_MAIN}, {PHONE_ALT} · LINE @SCNW · scnwmax@gmail.com</p>
-          <p className="mt-3">© Success Casting / Success Network Co., Ltd.</p>
+        <div className="mx-auto max-w-5xl flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+          <p>© Success Casting / Success Network Co., Ltd.</p>
+          <a
+            href="https://www.successcasting.com/#contact"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#c72127]/60 bg-[#c72127]/10 px-5 py-2 text-sm font-semibold text-[#e8b84b] transition hover:bg-[#c72127] hover:text-white"
+          >
+            ติดต่อเรา / Contact →
+          </a>
         </div>
       </footer>
     </div>
